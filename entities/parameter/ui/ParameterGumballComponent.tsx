@@ -4,6 +4,7 @@ import {
 	createToolbarCheckboxItem,
 	createToolbarCommand,
 } from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {AppBuilderLabeledActionIcon} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -32,6 +33,8 @@ import {
 } from "../config/propsParameter";
 import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
 import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
+import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
+import {hasLocalTransformationDelta} from "../lib/transformedNodes";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useGumball} from "../model/interaction/useGumball";
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
@@ -115,6 +118,8 @@ export default function ParameterGumballComponent(
 		value,
 		state,
 		sessionDependencies,
+		executing,
+		cancelPendingChange,
 	} = useParameterComponentCommons<string>(props);
 
 	const {namespace} = props;
@@ -125,6 +130,7 @@ export default function ParameterGumballComponent(
 		hoverColor,
 		confirmButton: confirmButtonTheme,
 		cancelButton: cancelButtonTheme,
+		clearButton: clearButtonTheme,
 	} = useProps("ParameterGumballComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
@@ -165,6 +171,10 @@ export default function ParameterGumballComponent(
 
 	// state for the gumball application
 	const alwaysActive = gumballProps.activeMode === "alwaysActive";
+	const {
+		enabled: automaticSceneUpdate,
+		timeout: automaticSceneUpdateTimeout,
+	} = resolveAutomaticSceneUpdate(gumballProps, alwaysActive);
 	const gumballPresentation = resolveInteractionPresentation(
 		gumballProps.presentation,
 		alwaysActive,
@@ -195,6 +205,8 @@ export default function ParameterGumballComponent(
 		gumballProps,
 		gumballActive,
 		parseTransformation(value),
+		true,
+		executing,
 	);
 
 	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";
@@ -205,6 +217,10 @@ export default function ParameterGumballComponent(
 	const cancelButton = resolveParameterInteractionButtonTheme(
 		cancelButtonTheme,
 		{label: "Cancel", icon: "tabler:x"},
+	);
+	const clearButton = resolveParameterInteractionButtonTheme(
+		clearButtonTheme,
+		{label: "Clear", icon: "tabler:circle-off"},
 	);
 
 	const automaticallyActivated =
@@ -242,27 +258,71 @@ export default function ParameterGumballComponent(
 		});
 	}, [tryAcquireClaim]);
 
+	// The value sent by this component (Confirm or an automatic scene update):
+	// its commit is the confirmation of the transformation shown in the scene.
+	const sentValueRef = useRef<string | undefined>(undefined);
+	// The restore of an own confirmation, deferred to the end of its execution.
+	const pendingRestoreRef = useRef<
+		{parsed: TransformedNode[]; previous: TransformedNode[]} | undefined
+	>(undefined);
+
+	// Apply a committed transformation to the scene: the transformations the
+	// tool applied to the nodes are replaced by the committed ones. Nothing
+	// changes when the nodes were replaced by an output update meanwhile (the
+	// executed transformation is part of the model output then). Otherwise the
+	// gizmo is stale, it is closed and restarted if always active.
+	const applyCommittedTransformation = useCallback(
+		(parsed: TransformedNode[], previous: TransformedNode[]) => {
+			const changed = restoreTransformedNodeNames(
+				structuredClone(parsed),
+				structuredClone(previous),
+			);
+			if (!changed) return;
+			closeTransform();
+			if (alwaysActive) restartPersistentTransform();
+		},
+		[
+			alwaysActive,
+			closeTransform,
+			restartPersistentTransform,
+			restoreTransformedNodeNames,
+		],
+	);
+
 	// React to commits of the parameter and reset the last confirmed value.
-	// The committed value differs from the executed value in case the parameter
-	// was reset after the execution (see the "resetValue" setting). The executed
-	// transformation is part of the model output then, and the transformation
-	// applied in the viewport is reset to the committed value.
+	// An own confirmation is shown in the scene already: the transformations
+	// applied by the tool are kept until the execution replaced the nodes, which
+	// avoids a jump back to the previous placement while the request runs. Any
+	// other commit (a reset value after the execution, a cleared value, undo, a
+	// model state) is applied to the scene right away.
 	useEffect(() => {
 		const parsed = parseTransformation(state.commitValue);
+		// A transformation still waiting for its automatic scene update was
+		// made on the scene before this commit, it is dropped.
+		if (automaticSceneUpdate) cancelPendingChange();
 		setParsedCommitValue(structuredClone(parsed));
 		setLastConfirmedValue(structuredClone(parsed));
-		if (state.commitValue !== state.execValue) {
-			closeTransform();
-			restoreTransformedNodeNames(
-				structuredClone(parsed),
-				structuredClone(transformedNodeNamesRef.current),
-			);
-			setTransformedNodeNames(structuredClone(parsed));
-			if (alwaysActive) restartPersistentTransform();
-		} else {
-			setTransformedNodeNames(structuredClone(parsed));
+		setTransformedNodeNames(structuredClone(parsed));
+		const previous = structuredClone(transformedNodeNamesRef.current);
+		if (state.commitValue === sentValueRef.current) {
+			sentValueRef.current = undefined;
+			// a custom parameter commits once its execution ended, a session
+			// parameter before: the restore waits for a running execution
+			if (executing) {
+				pendingRestoreRef.current = {parsed, previous};
+				return;
+			}
 		}
+		pendingRestoreRef.current = undefined;
+		applyCommittedTransformation(parsed, previous);
 	}, [state.commitValue, state.commitRevision]);
+
+	useEffect(() => {
+		if (executing || !pendingRestoreRef.current) return;
+		const {parsed, previous} = pendingRestoreRef.current;
+		pendingRestoreRef.current = undefined;
+		applyCommittedTransformation(parsed, previous);
+	}, [executing]);
 
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
@@ -283,7 +343,7 @@ export default function ParameterGumballComponent(
 	 * It also ends the gumball interaction process and resets the selected nodes.
 	 */
 	const changeValue = useCallback(
-		(transformedNodeNames: TransformedNode[]) => {
+		(transformedNodeNames: TransformedNode[], timeout = 0) => {
 			if (!alwaysActive) setGumballActive(false);
 			const parameterValue: GumballTransformParameterValue = {
 				names: transformedNodeNames.map((node) => node.name),
@@ -296,14 +356,16 @@ export default function ParameterGumballComponent(
 			setLastConfirmedValue(structuredClone(transformedNodeNames));
 			// if the value is already the same, do not change it
 			const serializedValue = JSON.stringify(parameterValue);
-			if (value === serializedValue) {
+			// compare with the store: the local value keeps a cancelled pending change
+			if (state.uiValue === serializedValue) {
 				if (!alwaysActive) setSelectedNodeNames([]);
 				return;
 			}
-			handleChange(serializedValue, 0);
+			sentValueRef.current = serializedValue;
+			handleChange(serializedValue, timeout);
 			if (!alwaysActive) setSelectedNodeNames([]);
 		},
-		[alwaysActive, value],
+		[alwaysActive, state.uiValue],
 	);
 
 	const restartAfterCancel = useCallback(() => {
@@ -356,6 +418,64 @@ export default function ParameterGumballComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
+	// Automatic scene update (always active tools only): a moved handle sends
+	// the transformation like Confirm would, debounced by the timeout. The
+	// identity transformations emitted on creation of the gizmo are not sent.
+	const hasLocalTransformation =
+		hasLocalTransformationDelta(transformedNodeNames);
+	// A move while a request is in flight is not sent: after our own request
+	// the gizmo is recreated on the new nodes and the move is dropped; after
+	// another parameter's execution the move is sent once it ends.
+	const seenTransformedNodeNamesRef = useRef(transformedNodeNames);
+	const movedWhileExecutingRef = useRef(false);
+	useEffect(() => {
+		const moved =
+			seenTransformedNodeNamesRef.current !== transformedNodeNames;
+		seenTransformedNodeNamesRef.current = transformedNodeNames;
+		if (!automaticSceneUpdate || !effectiveGumballActive) return;
+		if (!hasLocalTransformation) {
+			movedWhileExecutingRef.current = false;
+			return;
+		}
+		if (executing) {
+			if (moved) movedWhileExecutingRef.current = true;
+			return;
+		}
+		// the execution ended: only a move made during it is sent, a stale
+		// local transformation of a gizmo about to be recreated is not
+		if (!moved && !movedWhileExecutingRef.current) return;
+		movedWhileExecutingRef.current = false;
+		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
+	}, [transformedNodeNames, executing]);
+
+	// Clear: the committed transformations are undone (the parameter is reset
+	// to its default value and executed), a pending transformation is dropped.
+	const clearTransformation = useCallback(() => {
+		if (automaticSceneUpdate) cancelPendingChange();
+		sentValueRef.current = undefined;
+		if (parsedCommitValue.length === 0) {
+			// nothing is committed: only the pending transformation is undone
+			_onCancelCallback();
+			return;
+		}
+		if (!alwaysActive) {
+			setGumballActive(false);
+			setSelectedNodeNames([]);
+		}
+		resetToDefault();
+	}, [
+		alwaysActive,
+		automaticSceneUpdate,
+		cancelPendingChange,
+		parsedCommitValue,
+		resetToDefault,
+		_onCancelCallback,
+	]);
+	// Clear can be turned off by the "buttons.clear" setting (default true)
+	const showClearButton =
+		(gumballProps.buttons?.clear ?? true) &&
+		(parsedCommitValue.length > 0 || hasLocalTransformation);
+
 	const {takeOverInteraction} = useInteractionRequestLifecycle({
 		viewportId,
 		active: gumballRegistered,
@@ -391,6 +511,17 @@ export default function ParameterGumballComponent(
 								`Currently transformed: ${transformedNodeNames.length}`}
 						</TextWeighted>
 					</Box>
+					{showClearButton && (
+						<Box style={{width: "auto"}}>
+							<AppBuilderLabeledActionIcon
+								label={clearButton.label}
+								tooltipLabel={clearButton.tooltip}
+								icon={<Icon iconType={clearButton.icon} />}
+								onClick={clearTransformation}
+								variant="light"
+							/>
+						</Box>
+					)}
 				</Flex>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>
@@ -410,23 +541,25 @@ export default function ParameterGumballComponent(
 				</Flex>
 			</Group>
 
-			<Group justify="space-between" w="100%" wrap="nowrap">
-				<Button
-					disabled={transformedNodeNames.length === 0}
-					fullWidth={true}
-					variant="filled"
-					onClick={() => changeValue(transformedNodeNames)}
-				>
-					<Text>{confirmButton.label}</Text>
-				</Button>
-				<Button
-					fullWidth={true}
-					variant={"light"}
-					onClick={resetTransformation}
-				>
-					<Text>{cancelButton.label}</Text>
-				</Button>
-			</Group>
+			{!automaticSceneUpdate && (
+				<Group justify="space-between" w="100%" wrap="nowrap">
+					<Button
+						disabled={transformedNodeNames.length === 0}
+						fullWidth={true}
+						variant="filled"
+						onClick={() => changeValue(transformedNodeNames)}
+					>
+						<Text>{confirmButton.label}</Text>
+					</Button>
+					<Button
+						fullWidth={true}
+						variant={"light"}
+						onClick={resetTransformation}
+					>
+						<Text>{cancelButton.label}</Text>
+					</Button>
+				</Group>
+			)}
 		</Stack>
 	);
 
@@ -486,30 +619,47 @@ export default function ParameterGumballComponent(
 				},
 			}),
 		],
-		commands: hasPendingTransformation
-			? [
-					createToolbarCommand({
-						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-						aggregationId: "gumball-confirm",
-						label: confirmButton.label,
-						tooltip: confirmButton.tooltip,
-						icon: confirmButton.icon,
-						order: 10,
-						disabled: !hasPendingTransformation,
-						execute: () => changeValue(transformedNodeNames),
-					}),
-					createToolbarCommand({
-						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-						aggregationId: "gumball-cancel",
-						label: cancelButton.label,
-						tooltip: cancelButton.tooltip,
-						icon: cancelButton.icon,
-						order: 20,
-						disabled: !hasPendingTransformation,
-						execute: resetTransformation,
-					}),
-				]
-			: [],
+		// with automatic scene updates a moved handle is sent after the idle
+		// timeout: there is nothing to confirm or cancel, only Clear remains
+		commands: [
+			...(hasPendingTransformation && !automaticSceneUpdate
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+							aggregationId: "gumball-confirm",
+							label: confirmButton.label,
+							tooltip: confirmButton.tooltip,
+							icon: confirmButton.icon,
+							order: 10,
+							disabled: !hasPendingTransformation,
+							execute: () => changeValue(transformedNodeNames),
+						}),
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+							aggregationId: "gumball-cancel",
+							label: cancelButton.label,
+							tooltip: cancelButton.tooltip,
+							icon: cancelButton.icon,
+							order: 20,
+							disabled: !hasPendingTransformation,
+							execute: resetTransformation,
+						}),
+					]
+				: []),
+			...(showClearButton
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-clear`,
+							aggregationId: "gumball-clear",
+							label: clearButton.label,
+							tooltip: clearButton.tooltip,
+							icon: clearButton.icon,
+							order: 30,
+							execute: clearTransformation,
+						}),
+					]
+				: []),
+		],
 	});
 
 	if (gumballPresentation === "toolbar") return <></>;

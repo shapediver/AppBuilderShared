@@ -9,6 +9,7 @@ import type {ResolvedToolbarRegistration} from "../config/toolbarRenderTypes";
 import {resolveRuntimeToolbarGroups} from "./resolveRuntimeToolbarGroups";
 import {resolveToolbarRegistration} from "./resolveToolbarRegistration";
 import {useRuntimeToolbarContributions} from "./runtimeToolbarContributionRegistry";
+import {CUSTOM_SESSION_ID_POSTFIX} from "./useAppBuilderCustomParameters";
 import {useShapeDiverStoreToolbars} from "./useShapeDiverStoreToolbars";
 
 interface UseAppBuilderToolbarsProps {
@@ -66,9 +67,25 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 		viewportId,
 	]);
 
-	const runtimeToolbarContributions = useRuntimeToolbarContributions(
+	// Custom parameters defined by the model's App Builder output live in the
+	// namespace "<session id>_appbuilder". Their interaction controls belong to
+	// the same viewport toolbar as those of the session parameters.
+	const sessionContributions = useRuntimeToolbarContributions(
 		viewportId ?? "",
 		namespace,
+	);
+	const customContributions = useRuntimeToolbarContributions(
+		viewportId ?? "",
+		namespace + CUSTOM_SESSION_ID_POSTFIX,
+	);
+	const runtimeToolbarContributions = useMemo(
+		() =>
+			[...sessionContributions, ...customContributions].sort(
+				(a, b) =>
+					(a.order ?? Infinity) - (b.order ?? Infinity) ||
+					a.id.localeCompare(b.id),
+			),
+		[sessionContributions, customContributions],
 	);
 	const controls = useMemo(
 		() => resolveRuntimeToolbarGroups(runtimeToolbarContributions),

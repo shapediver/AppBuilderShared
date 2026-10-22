@@ -141,6 +141,12 @@ export function useSelectManager(
 	 * decremented.
 	 */
 	removeAvailableEffectsForNodes(nodes: ITreeNode[]): void;
+	/**
+	 * Synchronously apply the available interaction effect to the given nodes
+	 * (idempotent). Call this for the new candidate nodes of an output update
+	 * before the scene shows them; the state-driven sync keeps them.
+	 */
+	applyAvailableEffectsForNodes(nodes: ITreeNode[]): void;
 	/** Current candidates supplied to the manager. */
 	availableNodes: ITreeNode[] | undefined;
 } {
@@ -369,6 +375,24 @@ export function useSelectManager(
 		});
 	}, []);
 
+	// Stable callback (refs only) that applies the available interaction effect
+	// to nodes synchronously, e.g. to the new candidates of an output update
+	// before the scene shows them. The sync effect above finds them applied.
+	const applyAvailableEffectsForNodes = useCallback((nodes: ITreeNode[]) => {
+		const mgr = selectManagerCurrentRef.current;
+		const effect = prevAvailableEffectRef.current;
+		const appliedMap = appliedAvailableEffectsRef.current;
+		if (!mgr || !effect) return;
+		nodes.forEach((node) => {
+			if (appliedMap.has(node)) return;
+			const token = mgr.interactionEffectUtils.applyInteractionEffect(
+				node,
+				effect,
+			);
+			appliedMap.set(node, {token, geometries: gatherGeometryData(node)});
+		});
+	}, []);
+
 	// Hoist selectMultiple so it can be used as a stable dep instead of the full settings object.
 	const selectMultiple = useMemo(() => {
 		if (!settings) return false;
@@ -477,6 +501,7 @@ export function useSelectManager(
 		selectManager,
 		setAvailableNodes,
 		removeAvailableEffectsForNodes,
+		applyAvailableEffectsForNodes,
 		availableNodes,
 	};
 }
