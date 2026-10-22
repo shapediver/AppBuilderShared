@@ -49,7 +49,8 @@ export function useSelection(
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
 	 * Used for ownership conflict detection at the registration layer.
 	 */
-	candidateNodes: Array<{nodeId: string; name: string}>;
+	/** The candidate nodes; `node` is the current scene node (new after an output update). */
+	candidateNodes: Array<{nodeId: string; name: string; node: ITreeNode}>;
 	/**
 	 * The available node names in a dictionary for each output.
 	 */
@@ -86,6 +87,7 @@ export function useSelection(
 		selectManager,
 		setAvailableNodes,
 		removeAvailableEffectsForNodes,
+		applyAvailableEffectsForNodes,
 		availableNodes: managerAvailableNodes,
 	} = useSelectManager(
 		viewportId,
@@ -153,6 +155,30 @@ export function useSelection(
 			selectManager.deselectAll();
 	}, [selectManager, selectedNodeNames]);
 
+	// Applied synchronously by the output update callback (see
+	// useNodesInteractionData) to the new candidate nodes before the scene shows
+	// them: the selection and available effects would otherwise be applied by
+	// the effects below only after the first frame, which renders the plain
+	// material of the new nodes. The effects below restore the same state.
+	const applyEffectsRef = React.useRef<
+		((nodes: IUseNodeInteractionDataResult) => void) | undefined
+	>(undefined);
+	applyEffectsRef.current = (nodes) => {
+		const manager = selectManagerRef.current;
+		if (!activate || singleCandidateSuppressed || !manager) return;
+		const selected = nodes.filter((entry) =>
+			selectedNodeNames.includes(entry.name),
+		);
+		for (const {node} of selected) {
+			manager.select({distance: 1, point: vec3.create(), node});
+		}
+		applyAvailableEffectsForNodes(
+			nodes
+				.filter((entry) => !selectedNodeNames.includes(entry.name))
+				.map((entry) => entry.node),
+		);
+	};
+
 	const nodesInteractionInput = useMemo(() => {
 		const nodesInteractionInput: {
 			[key: string]: IUseNodeInteractionDataProps;
@@ -177,6 +203,7 @@ export function useSelection(
 							},
 							selectManagerRef,
 							removeAvailableEffectsRef,
+							applyEffectsRef,
 							strictNaming,
 						};
 					});
@@ -407,7 +434,11 @@ export function useSelection(
 		() =>
 			Object.values(availableNodeNames)
 				.flat()
-				.map((entry) => ({nodeId: entry.node.id, name: entry.name})),
+				.map((entry) => ({
+					nodeId: entry.node.id,
+					name: entry.name,
+					node: entry.node,
+				})),
 		[availableNodeNames],
 	);
 

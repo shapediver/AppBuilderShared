@@ -1,9 +1,9 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
 import type {ParameterRectangleTransformComponentThemeDefaultProps} from "../parameterRectangleTransformComponent.theme.types";
-import type {ParameterInteractionConfirmCancelThemeProps} from "./parameterInteractionButtonTheme";
+import type {ParameterInteractionConfirmCancelClearThemeProps} from "./parameterInteractionButtonTheme";
 
-export interface ParameterRectangleTransformComponentStyleProps extends ParameterInteractionConfirmCancelThemeProps {
+export interface ParameterRectangleTransformComponentStyleProps extends ParameterInteractionConfirmCancelClearThemeProps {
 	selectionColor?: InteractionEffect;
 	availableColor?: InteractionEffect;
 	hoverColor?: InteractionEffect;
