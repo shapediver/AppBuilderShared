@@ -605,48 +605,49 @@ export default function ParameterDrawingComponent(
 			}),
 		],
 		// with automatic scene updates the change is sent after the idle
-		// timeout: there is nothing to confirm or cancel, only Clear remains
-		commands: dirty
-			? [
-					...(automaticSceneUpdate
-						? []
-						: [
-								createToolbarCommand({
-									id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-									aggregationId: "drawing-confirm",
-									label: confirmButton.label,
-									tooltip: confirmButton.tooltip,
-									icon: confirmButton.icon,
-									order: 10,
-									disabled: !isWithinConstraints || !dirty,
-									execute: () => confirmDrawing(pointsData),
-								}),
-								createToolbarCommand({
-									id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-									aggregationId: "drawing-cancel",
-									label: cancelButton.label,
-									tooltip: cancelButton.tooltip,
-									icon: cancelButton.icon,
-									order: 20,
-									disabled: !dirty,
-									execute: cancelDrawing,
-								}),
-							]),
-					...(showClearButton
-						? [
-								createToolbarCommand({
-									id: `${namespace}-${definition.id}-${viewportId}-clear`,
-									aggregationId: "drawing-clear",
-									label: clearButton.label,
-									tooltip: clearButton.tooltip,
-									icon: clearButton.icon,
-									order: 30,
-									execute: clearDrawing,
-								}),
-							]
-						: []),
-				]
-			: [],
+		// timeout: there is nothing to confirm or cancel. Clear is offered while
+		// there is something to clear (pending or committed), like for the
+		// gumball and the rectangle transform, so a committed drawing can be
+		// cleared in the toolbar presentation as well.
+		commands: [
+			...(dirty && !automaticSceneUpdate
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+							aggregationId: "drawing-confirm",
+							label: confirmButton.label,
+							tooltip: confirmButton.tooltip,
+							icon: confirmButton.icon,
+							order: 10,
+							disabled: !isWithinConstraints || !dirty,
+							execute: () => confirmDrawing(pointsData),
+						}),
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+							aggregationId: "drawing-cancel",
+							label: cancelButton.label,
+							tooltip: cancelButton.tooltip,
+							icon: cancelButton.icon,
+							order: 20,
+							disabled: !dirty,
+							execute: cancelDrawing,
+						}),
+					]
+				: []),
+			...(showClearButton && (dirty || (pointsData?.length ?? 0) > 0)
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-clear`,
+							aggregationId: "drawing-clear",
+							label: clearButton.label,
+							tooltip: clearButton.tooltip,
+							icon: clearButton.icon,
+							order: 30,
+							execute: clearDrawing,
+						}),
+					]
+				: []),
+		],
 	});
 
 	useInteractionToolbarContribution({
