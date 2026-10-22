@@ -439,4 +439,45 @@ describe("appBuilderActionSlots helpers", () => {
 			selectionSlotGroupKey({nameFilter, hoverColor: "#0000ff"}, "vp"),
 		);
 	});
+
+	it("keys selection slots independently of the JSON key order", () => {
+		// the model may serialize the same settings with another key order
+		// in a later response, the group (and its selection) must survive
+		const outline = (properties: Record<string, unknown>) => ({
+			type: "outline",
+			properties,
+		});
+		const first = {
+			nameFilter: ["vase"],
+			hover: true,
+			hoverColor: outline({
+				blur: true,
+				visibleEdgeColor: "#0d44f0",
+				xRay: true,
+			}),
+			selectionColor: outline({edgeStrength: 50, blur: true}),
+			occludeBySceneGeometry: true,
+		};
+		const second = {
+			occludeBySceneGeometry: true,
+			selectionColor: outline({blur: true, edgeStrength: 50}),
+			hoverColor: outline({
+				xRay: true,
+				visibleEdgeColor: "#0d44f0",
+				blur: true,
+			}),
+			hover: true,
+			nameFilter: ["vase"],
+		};
+		expect(selectionSlotGroupKey(first, "vp")).toBe(
+			selectionSlotGroupKey(second, "vp"),
+		);
+		expect(selectionSlotNameFilterKey(first, "vp")).toBe(
+			selectionSlotNameFilterKey(second, "vp"),
+		);
+		// the order of the name filter still matters
+		expect(selectionSlotGroupKey({nameFilter: ["a", "b"]}, "vp")).not.toBe(
+			selectionSlotGroupKey({nameFilter: ["b", "a"]}, "vp"),
+		);
+	});
 });
