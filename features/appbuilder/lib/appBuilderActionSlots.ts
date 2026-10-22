@@ -548,12 +548,32 @@ function normalizedNameFilter(
 	return nameFilter?.length ? nameFilter : undefined;
 }
 
+/**
+ * `JSON.stringify` with object keys in a stable (sorted) order at every level.
+ * The model emits the settings of a slot again with every response and does
+ * not guarantee the key order of its JSON objects: a key derived from the
+ * plain serialization could change for identical settings, which would
+ * recreate the interaction group (and lose its selection) for no reason.
+ */
+function stableStringify(value: unknown): string {
+	return JSON.stringify(value, (_key, item) => {
+		if (!item || typeof item !== "object" || Array.isArray(item))
+			return item;
+		return Object.keys(item as Record<string, unknown>)
+			.sort()
+			.reduce<Record<string, unknown>>((sorted, key) => {
+				sorted[key] = (item as Record<string, unknown>)[key];
+				return sorted;
+			}, {});
+	});
+}
+
 /** Viewport + nameFilter only — used to detect conflicting selection configs. */
 export function selectionSlotNameFilterKey(
 	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
 	viewportId: string,
 ): string {
-	return JSON.stringify({
+	return stableStringify({
 		viewportId: eventProps?.viewportId ?? viewportId,
 		nameFilter: normalizedNameFilter(eventProps) ?? null,
 	});
@@ -563,13 +583,14 @@ export function selectionSlotNameFilterKey(
  * Full effective `useSelection` config. Slots that share this key share one
  * interaction manager; different colors/max/hover become separate groups.
  * Color keys preserve omitted vs explicit `null` (`JSON.stringify` drops
- * `undefined`; `null` disables the default effect).
+ * `undefined`; `null` disables the default effect). The key does not depend
+ * on the key order of the JSON objects, see {@link stableStringify}.
  */
 export function selectionSlotGroupKey(
 	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
 	viewportId: string,
 ): string {
-	return JSON.stringify({
+	return stableStringify({
 		viewportId: eventProps?.viewportId ?? viewportId,
 		nameFilter: normalizedNameFilter(eventProps) ?? null,
 		minimumSelection: eventProps?.minimumSelection ?? 0,
