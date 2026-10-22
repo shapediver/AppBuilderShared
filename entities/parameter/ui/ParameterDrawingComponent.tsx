@@ -280,7 +280,19 @@ export default function ParameterDrawingComponent(
 	const clearDrawing = useCallback(() => {
 		setPointsData([]);
 		setParsedUiValue([]);
-	}, []);
+		// With automatic scene updates there is no Confirm to send the cleared
+		// drawing, and the drawing tools' idle timer only reacts to changes made
+		// with the tools: the empty drawing is sent right away when it is a
+		// valid value (no minimum number of points), otherwise it is sent once
+		// the user drew the minimum number of points again.
+		const minPoints = drawingProps.geometry?.minPoints;
+		if (automaticSceneUpdate && (minPoints === undefined || minPoints <= 0))
+			confirmDrawing([]);
+	}, [
+		automaticSceneUpdate,
+		confirmDrawing,
+		drawingProps.geometry?.minPoints,
+	]);
 
 	// the drawing tools are recreated whenever these callbacks change, keep
 	// them stable
