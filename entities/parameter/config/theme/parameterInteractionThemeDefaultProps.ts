@@ -28,7 +28,7 @@ export interface ParameterDraggingComponentThemeDefaultProps
 export interface ParameterGumballComponentThemeDefaultProps
 	extends
 		IGumballTransformParameterProps,
-		ParameterInteractionConfirmCancelThemeProps {}
+		ParameterInteractionConfirmCancelClearThemeProps {}
 
 /**
  * @docAttached

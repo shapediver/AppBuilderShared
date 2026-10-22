@@ -78,6 +78,15 @@ export type IUseNodeInteractionDataProps = {
 		((nodes: ITreeNode[]) => void) | undefined
 	>;
 	/**
+	 * A ref to a callback that synchronously applies the interaction effects
+	 * (selection, available) to the candidate nodes of an output update. The
+	 * callback runs before the scene shows the new nodes; applied later (in an
+	 * effect) the first frame would render their plain material.
+	 */
+	applyEffectsRef?: MutableRefObject<
+		((nodes: IUseNodeInteractionDataResult) => void) | undefined
+	>;
+	/**
 	 * If the naming should be strict.
 	 */
 	strictNaming?: boolean;
@@ -115,6 +124,9 @@ const createOutputUpdateCallback = (
 		((nodes: ITreeNode[]) => void) | undefined
 	>,
 	strictNaming?: boolean,
+	applyEffectsRef?: MutableRefObject<
+		((nodes: IUseNodeInteractionDataResult) => void) | undefined
+	>,
 ) => {
 	return (newNode?: ITreeNode, oldNode?: ITreeNode) => {
 		// remove interaction data on deregistration
@@ -192,12 +204,13 @@ const createOutputUpdateCallback = (
 				);
 			});
 
-			setAvailableNodeNames(
-				Object.values(availableNodes).map((n) => ({
-					node: n.node,
-					name: n.name,
-				})),
-			);
+			const names = Object.values(availableNodes).map((n) => ({
+				node: n.node,
+				name: n.name,
+			}));
+			// the effects are applied before the scene shows the new nodes
+			applyEffectsRef?.current?.(names);
+			setAvailableNodeNames(names);
 		}
 
 		// clear the available node names if the node is removed
@@ -330,6 +343,7 @@ export function useNodesInteractionData(props: {
 				prop.selectManagerRef,
 				prop.removeAvailableEffectsRef,
 				prop.strictNaming,
+				prop.applyEffectsRef,
 			);
 
 			removeOutputUpdateCallbacks.push(

@@ -15,10 +15,11 @@ import type {
 	ISelectionParameterProps,
 } from "@shapediver/viewer.shared.types";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useId, useMemo, useRef} from "react";
+import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
 import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useGumballEvents} from "./useGumballEvents";
+import {TRANSFORMATION_TOOLS_MATRIX_ID} from "./useRectangleTransform";
 import {useSelection} from "./useSelection";
 
 // #region Functions (1)
@@ -65,7 +66,9 @@ export interface IGumballState {
 	 *
 	 * @param newTransformedNodeNames
 	 * @param oldTransformedNodeNames
-	 * @returns
+	 * @returns Whether the transformation of a scene node changed (false if
+	 * no node carried a transformation of the tool, e.g. after the nodes were
+	 * replaced by an output update).
 	 */
 	restoreTransformedNodeNames: (
 		newTransformedNodeNames: {
@@ -74,7 +77,7 @@ export interface IGumballState {
 			localTransformations?: number[];
 		}[],
 		oldTransformedNodeNames: {name: string}[],
-	) => void;
+	) => boolean;
 	/** Close the active gumball before restoring a transformation. */
 	closeTransform: () => void;
 }
@@ -89,6 +92,11 @@ export interface IGumballState {
  * @param activate Set this to true to activate the gumball. If false, preparations are made but no gumball is possible.
  * @param initialTransformedNodeNames The initial transformed node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
+ * @param executing Whether an execution of the parameter's session runs. A gizmo
+ * 					created during an execution (the output update delivers the new nodes
+ * 					before the scene is updated) is recreated once the execution ended:
+ * 					the nodes have no bounds before that and a gizmo on several nodes
+ * 					cannot be placed.
  */
 export function useGumball(
 	sessionIds: string[],
@@ -97,6 +105,7 @@ export function useGumball(
 	activate: boolean,
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
 	strictNaming = true,
+	executing = false,
 ): IGumballState {
 	// get the session API
 	const sessionApis = useShapeDiverStoreSession((state) => state.sessions);
@@ -147,20 +156,31 @@ export function useGumball(
 	// convert the dragging data
 	const {objects} = useConvertDraggingData(sessionIds, gumballProps);
 
+	// scene node ids of the current gumball, mapped to their names
+	const nodeNamesRef = useRef<Map<string, string>>(new Map());
+
 	// use the gumball events hook to get the transformed node names
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
 		selectedNodeNames,
 		componentId,
+		nodeNamesRef,
 		initialTransformedNodeNames,
 	);
+
+	const selectedNodeNamesRef = useRef(selectedNodeNames);
+	selectedNodeNamesRef.current = selectedNodeNames;
 
 	// use an effect to set the selected node names to the first available node name if only one is available
 	useEffect(() => {
 		const singleAvailableNodeName =
 			getSingleAvailableNodeName(availableNodeNames);
-		if (activate && singleAvailableNodeName) {
-			setSelectedNodeNames([singleAvailableNodeName]);
-		}
+		if (!activate || !singleAvailableNodeName) return;
+		// keep the state when it already is that selection (every output
+		// update re-evaluates the candidates)
+		const current = selectedNodeNamesRef.current;
+		if (current.length === 1 && current[0] === singleAvailableNodeName)
+			return;
+		setSelectedNodeNames([singleAvailableNodeName]);
 	}, [activate, availableNodeNames, setSelectedNodeNames]);
 
 	// create a reference for the gumball
@@ -169,19 +189,50 @@ export function useGumball(
 	// use the restrictions
 	const {restrictions} = useRestrictions(gumballProps.restrictions);
 
+	// The selected scene nodes, taken from the candidates: an output update
+	// (e.g. after a customization) replaces the nodes and the candidates carry
+	// the new ones before the session's node tree does. The gizmo is created on
+	// them and recreated when they change, like a new selection would.
+	const selectedNodes = useMemo(
+		() =>
+			candidateNodes
+				.filter((candidate) =>
+					selectedNodeNames.includes(candidate.name),
+				)
+				.map((candidate) => ({
+					node: candidate.node,
+					name: candidate.name,
+				})),
+		[candidateNodes, selectedNodeNames],
+	);
+	// The candidates change with every output update; the gizmo is only
+	// recreated when the selected nodes themselves change (replaced nodes or a
+	// changed selection), which this key captures by node id and name.
+	const selectedNodesKey = selectedNodes
+		.map((entry) => `${entry.node.id}:${entry.name}`)
+		.join("|");
+	const selectedNodesRef = useRef(selectedNodes);
+	selectedNodesRef.current = selectedNodes;
+	// a gizmo created during an execution is recreated once it ended, see
+	// the "executing" parameter
+	const [gizmoRevision, setGizmoRevision] = useState(0);
+	const createdWhileExecutingRef = useRef(false);
+	useEffect(() => {
+		if (executing || !createdWhileExecutingRef.current) return;
+		createdWhileExecutingRef.current = false;
+		setGizmoRevision((revision) => revision + 1);
+	}, [executing]);
+
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
 		if (
 			activate &&
 			viewportApi &&
 			sessionApis &&
-			selectedNodeNames.length > 0
+			selectedNodesRef.current.length > 0
 		) {
 			// whenever the selected node names change, create a new gumball
-			const nodes = getNodesByName(
-				Object.values(sessionApis),
-				selectedNodeNames,
-			);
+			const nodes = selectedNodesRef.current;
 
 			// for the nodes, we search for the correct restrictions in the dragging objects
 			// this allows us to have different restrictions for different nodes
@@ -248,6 +299,10 @@ export function useGumball(
 						: restrictionsToUse,
 			};
 
+			// the constructor already emits a matrix change event
+			nodeNamesRef.current = new Map(
+				nodes.map((n) => [n.node.id, n.name]),
+			);
 			const gumball = new GumballTransform(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
@@ -255,6 +310,7 @@ export function useGumball(
 				componentId,
 			);
 			gumballRef.current = gumball;
+			createdWhileExecutingRef.current = executing;
 		}
 
 		return () => {
@@ -268,7 +324,8 @@ export function useGumball(
 		viewportApi,
 		sessionApis,
 		activate,
-		selectedNodeNames,
+		selectedNodesKey,
+		gizmoRevision,
 		objects,
 		restrictions,
 		componentId,
@@ -303,6 +360,9 @@ export function useGumball(
 				oldTransformedNodeNames.map((tn) => tn.name),
 			);
 
+			// whether a node still carried a transformation of the tool (the
+			// nodes are replaced by the output of an executed transformation)
+			let changed = false;
 			nodes.forEach((tn) => {
 				// get the new transformation matrix (if it exists)
 				const newTransformation = newTransformedNodeNames.find(
@@ -335,11 +395,19 @@ export function useGumball(
 
 				// update the gumball transformation
 				// in case the transformation matrix is undefined, the transformation will be reset
+				if (
+					transformationMatrix ||
+					tn.node.transformations.some(
+						(t) => t.id === TRANSFORMATION_TOOLS_MATRIX_ID,
+					)
+				)
+					changed = true;
 				updateTransformation(tn.node, transformationMatrix);
 			});
 
 			viewportApi?.render();
 			setTransformedNodeNames(newTransformedNodeNames);
+			return changed;
 		},
 		[sessionApis, viewportApi],
 	);

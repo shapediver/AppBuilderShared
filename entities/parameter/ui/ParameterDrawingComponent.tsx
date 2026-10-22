@@ -35,6 +35,8 @@ import {
 	resolveParameterInteractionButtonTheme,
 	type ParameterInteractionConfirmCancelClearThemeProps,
 } from "../config/theme/parameterInteractionButtonTheme";
+import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
+import {drawingPointsEqual} from "../lib/drawingPoints";
 import {getResetValue} from "../lib/parameterResetValue";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
@@ -149,19 +151,65 @@ export default function ParameterDrawingComponent(
 
 	// state for the drawing application
 	const alwaysActive = drawingProps.general?.activeMode === "alwaysActive";
+	const {
+		enabled: automaticSceneUpdate,
+		timeout: automaticSceneUpdateTimeout,
+	} = resolveAutomaticSceneUpdate(drawingProps.behavior, alwaysActive);
+	// The drawing tools call onUpdate on their own after the idle timeout when
+	// behavior.automaticSceneUpdate is set. App Builder supports this for
+	// always active drawings only and provides the default timeout.
+	const drawingToolsProps = useMemo(() => {
+		const behavior = drawingProps.behavior;
+		if (automaticSceneUpdate) {
+			return {
+				...drawingProps,
+				behavior: {
+					...behavior,
+					automaticSceneUpdate: true,
+					automaticSceneUpdateTimeout,
+				},
+			};
+		}
+		// not always active: the flag is ignored (an explicit false still wins
+		// over the deprecated autoUpdate and is kept)
+		if (behavior?.automaticSceneUpdate !== true) return drawingProps;
+		const {
+			automaticSceneUpdate: _ignored,
+			automaticSceneUpdateTimeout: _ignoredTimeout,
+			...rest
+		} = behavior;
+		return {...drawingProps, behavior: rest};
+	}, [automaticSceneUpdate, automaticSceneUpdateTimeout, drawingProps]);
+	// a closing point of a closed drawing is not reported by the drawing tools
+	const closedDrawing =
+		drawingProps.geometry?.close === true ||
+		drawingProps.geometry?.autoClose === true;
 	const drawingPresentation = resolveInteractionPresentation(
 		drawingProps.general?.presentation,
 		alwaysActive,
 	);
 	const [drawingResetRevision, setDrawingResetRevision] = useState(0);
+	// The settings menu (point and distance labels) can be turned off by the
+	// "general.buttons.settings" setting (default true). The cast goes once the
+	// Viewer types of the released package declare the setting.
+	const showSettings =
+		(
+			drawingProps.general?.buttons as
+				| {clear?: boolean; settings?: boolean}
+				| null
+				| undefined
+		)?.settings ?? true;
 	// A drawing which is reset to an empty drawing after each execution (see
-	// the "resetValue" setting) has nothing to clear.
+	// the "resetValue" setting) has nothing to clear. Clear can also be turned
+	// off by the "general.buttons.clear" setting (default true).
 	const resetValue = getResetValue(definition);
-	const showClearButton = !(
-		resetValue !== undefined &&
-		actions.isValid(resetValue) &&
-		parsePointsData(resetValue as string).length === 0
-	);
+	const showClearButton =
+		(drawingProps.general?.buttons?.clear ?? true) &&
+		!(
+			resetValue !== undefined &&
+			actions.isValid(resetValue) &&
+			parsePointsData(resetValue as string).length === 0
+		);
 	const [drawingActive, setDrawingActive] = useState<boolean>(
 		alwaysActive || drawingProps.general?.activeMode === "activeOnStart",
 	);
@@ -200,7 +248,13 @@ export default function ParameterDrawingComponent(
 			if (!alwaysActive) setDrawingActive(false);
 			// if the value is already the same, do not change it
 			const serializedValue = JSON.stringify({points: confirmedPoints});
-			setParsedUiValue(confirmedPoints);
+			// keep the state if the points did not change, a new array would
+			// recreate the drawing tools
+			setParsedUiValue((previous) =>
+				JSON.stringify(previous) === JSON.stringify(confirmedPoints)
+					? previous
+					: confirmedPoints,
+			);
 			if (value === serializedValue) return;
 			handleChange(serializedValue, 0);
 		},
@@ -226,14 +280,38 @@ export default function ParameterDrawingComponent(
 	const clearDrawing = useCallback(() => {
 		setPointsData([]);
 		setParsedUiValue([]);
-	}, []);
+		// With automatic scene updates there is no Confirm to send the cleared
+		// drawing, and the drawing tools' idle timer only reacts to changes made
+		// with the tools: the empty drawing is sent right away when it is a
+		// valid value (no minimum number of points), otherwise it is sent once
+		// the user drew the minimum number of points again.
+		const minPoints = drawingProps.geometry?.minPoints;
+		if (automaticSceneUpdate && (minPoints === undefined || minPoints <= 0))
+			confirmDrawing([]);
+	}, [
+		automaticSceneUpdate,
+		confirmDrawing,
+		drawingProps.geometry?.minPoints,
+	]);
+
+	// the drawing tools are recreated whenever these callbacks change, keep
+	// them stable
+	const confirmDrawingRef = useRef(confirmDrawing);
+	confirmDrawingRef.current = confirmDrawing;
+	const cancelDrawingRef = useRef(cancelDrawing);
+	cancelDrawingRef.current = cancelDrawing;
+	const onDrawingUpdate = useCallback(
+		(points: PointsData) => confirmDrawingRef.current(points),
+		[],
+	);
+	const onDrawingCancel = useCallback(() => cancelDrawingRef.current(), []);
 
 	// use the drawing tools
 	const {pointsData, setPointsData, drawingToolsApi} = useDrawingTools(
 		viewportId,
-		drawingProps,
-		confirmDrawing,
-		cancelDrawing,
+		drawingToolsProps,
+		onDrawingUpdate,
+		onDrawingCancel,
 		drawingActive && hasInteractionPermission,
 		parsedUiValue,
 		drawingResetRevision,
@@ -272,14 +350,13 @@ export default function ParameterDrawingComponent(
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
 		const parsed = parsePointsData(state.uiValue);
-		setParsedUiValue(parsed);
+		setParsedUiValue((previous) =>
+			JSON.stringify(previous) === JSON.stringify(parsed)
+				? previous
+				: parsed,
+		);
 		// compare the parsed value with the current points data
-		if (
-			parsed.length !== pointsData?.length ||
-			!parsed.every(
-				(p, i) => JSON.stringify(p) === JSON.stringify(pointsData[i]),
-			)
-		) {
+		if (!drawingPointsEqual(parsed, pointsData, closedDrawing)) {
 			if (!alwaysActive) setDrawingActive(false);
 			setPointsData(parsed);
 		}
@@ -306,18 +383,9 @@ export default function ParameterDrawingComponent(
 	// check if the current points data is different from the uiValue
 	useEffect(() => {
 		const parsed = parsePointsData(state.uiValue);
-
-		// compare uiValue to pointsData
-		if (
-			parsed.length !== pointsData?.length ||
-			!parsed.every(
-				(p, i) => JSON.stringify(p) === JSON.stringify(pointsData[i]),
-			)
-		) {
-			setDirty(true);
-		} else {
-			setDirty(false);
-		}
+		// compare uiValue to pointsData (a closing point of the value is not
+		// reported by the drawing tools, it must not make the drawing dirty)
+		setDirty(!drawingPointsEqual(parsed, pointsData, closedDrawing));
 	}, [pointsData, state.uiValue]);
 
 	// check if the current selection is within the constraints
@@ -438,27 +506,33 @@ export default function ParameterDrawingComponent(
 				</Flex>
 			</Group>
 
-			<DrawingOptionsComponent
-				drawingToolsApi={drawingToolsApi}
-				options={drawingOptions}
-			/>
+			{showSettings && (
+				<DrawingOptionsComponent
+					drawingToolsApi={drawingToolsApi}
+					options={drawingOptions}
+				/>
+			)}
 
 			<Group justify="space-between" w="100%" wrap="nowrap">
-				<Button
-					disabled={!isWithinConstraints || !dirty}
-					fullWidth={true}
-					variant="filled"
-					onClick={() => confirmDrawing(pointsData)}
-				>
-					<Text>{confirmButton.label}</Text>
-				</Button>
-				<Button
-					fullWidth={true}
-					variant={"light"}
-					onClick={cancelDrawing}
-				>
-					<Text>{cancelButton.label}</Text>
-				</Button>
+				{!automaticSceneUpdate && (
+					<Button
+						disabled={!isWithinConstraints || !dirty}
+						fullWidth={true}
+						variant="filled"
+						onClick={() => confirmDrawing(pointsData)}
+					>
+						<Text>{confirmButton.label}</Text>
+					</Button>
+				)}
+				{!automaticSceneUpdate && (
+					<Button
+						fullWidth={true}
+						variant={"light"}
+						onClick={cancelDrawing}
+					>
+						<Text>{cancelButton.label}</Text>
+					</Button>
+				)}
 			</Group>
 		</Stack>
 	);
@@ -528,50 +602,59 @@ export default function ParameterDrawingComponent(
 				setChecked: (checked) => setDrawingActive(checked),
 			}),
 		],
-		commands: dirty
-			? [
-					createToolbarCommand({
-						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-						aggregationId: "drawing-confirm",
-						label: confirmButton.label,
-						tooltip: confirmButton.tooltip,
-						icon: confirmButton.icon,
-						order: 10,
-						disabled: !isWithinConstraints || !dirty,
-						execute: () => confirmDrawing(pointsData),
-					}),
-					createToolbarCommand({
-						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-						aggregationId: "drawing-cancel",
-						label: cancelButton.label,
-						tooltip: cancelButton.tooltip,
-						icon: cancelButton.icon,
-						order: 20,
-						disabled: !dirty,
-						execute: cancelDrawing,
-					}),
-					...(showClearButton
-						? [
-								createToolbarCommand({
-									id: `${namespace}-${definition.id}-${viewportId}-clear`,
-									aggregationId: "drawing-clear",
-									label: clearButton.label,
-									tooltip: clearButton.tooltip,
-									icon: clearButton.icon,
-									order: 30,
-									execute: clearDrawing,
-								}),
-							]
-						: []),
-				]
-			: [],
+		// with automatic scene updates the change is sent after the idle
+		// timeout: there is nothing to confirm or cancel. Clear is offered while
+		// there is something to clear (pending or committed), like for the
+		// gumball and the rectangle transform, so a committed drawing can be
+		// cleared in the toolbar presentation as well.
+		commands: [
+			...(dirty && !automaticSceneUpdate
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+							aggregationId: "drawing-confirm",
+							label: confirmButton.label,
+							tooltip: confirmButton.tooltip,
+							icon: confirmButton.icon,
+							order: 10,
+							disabled: !isWithinConstraints || !dirty,
+							execute: () => confirmDrawing(pointsData),
+						}),
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+							aggregationId: "drawing-cancel",
+							label: cancelButton.label,
+							tooltip: cancelButton.tooltip,
+							icon: cancelButton.icon,
+							order: 20,
+							disabled: !dirty,
+							execute: cancelDrawing,
+						}),
+					]
+				: []),
+			...(showClearButton && (dirty || (pointsData?.length ?? 0) > 0)
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-clear`,
+							aggregationId: "drawing-clear",
+							label: clearButton.label,
+							tooltip: clearButton.tooltip,
+							icon: clearButton.icon,
+							order: 30,
+							execute: clearDrawing,
+						}),
+					]
+				: []),
+		],
 	});
 
 	useInteractionToolbarContribution({
 		id: `${namespace}-${definition.id}-${viewportId}-settings`,
 		namespace,
 		viewportId,
-		presentation: drawingToolsApi ? drawingPresentation : "widget",
+		// a "widget" presentation does not contribute to the toolbar
+		presentation:
+			showSettings && drawingToolsApi ? drawingPresentation : "widget",
 		sectionId: "drawing-settings",
 		groupId: "drawing",
 		order: definition.order,
