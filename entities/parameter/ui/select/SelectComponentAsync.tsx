@@ -1,6 +1,9 @@
 import {Anchor, Group, Loader} from "@mantine/core";
 import {useCallback, useMemo, useState, type ReactNode} from "react";
-import {resolveDisplayValueForCards} from "../../lib/select/selectComponentAsyncValue";
+import {
+	emitSelectValue,
+	resolveDisplayValueForCards,
+} from "../../lib/select/selectComponentAsyncValue";
 import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
@@ -10,11 +13,21 @@ const SEARCH_PREFIX = "search:";
 
 type SelectComponentAsyncType = "grid" | "fullwidthcards";
 
-interface SelectComponentAsyncProps extends SelectComponentProps {
+interface SelectComponentAsyncProps extends Omit<
+	SelectComponentProps,
+	"items" | "itemData"
+> {
 	/** Type of select component to use. */
 	type: SelectComponentAsyncType;
 	/** Optional content rendered above search-term anchors in the top section. */
 	prependTopSection?: ReactNode;
+	/**
+	 * Ignored. The visible rows come from `scrollingApi`.
+	 * Accepted so existing callers can keep passing their static list.
+	 */
+	items?: SelectComponentProps["items"];
+	/** Ignored. Item data comes from `scrollingApi`. */
+	itemData?: SelectComponentProps["itemData"];
 }
 
 /**
@@ -31,6 +44,8 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		value,
 		emitValue = "itemData",
 		prependTopSection,
+		items: _items,
+		itemData: _itemData,
 		...propsDefault
 	} = props;
 
@@ -61,11 +76,8 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				const term = v.substring(SEARCH_PREFIX.length);
 				setSearchTerms((prev) => [...prev, term]);
 				debouncedOnSearch([...searchTerms, term], 0);
-			} else if (emitValue === "itemData" && v && itemsData?.[v].data) {
-				// Card click passes item key `v`; commit JSON for String+database params.
-				onChange(JSON.stringify(itemsData[v].data));
 			} else {
-				onChange(v);
+				onChange(emitSelectValue(v, emitValue, itemsData));
 			}
 		},
 		[onChange, itemsData, debouncedOnSearch, searchTerms, emitValue],

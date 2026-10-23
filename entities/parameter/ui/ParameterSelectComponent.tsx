@@ -220,6 +220,7 @@ export default function ParameterSelectComponent(
 				itemData={settings.itemData}
 				settings={settings.settings}
 				height={settings.height}
+				database={settings.database}
 			/>
 		) : (
 			<SelectComponent

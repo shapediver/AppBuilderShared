@@ -22,6 +22,15 @@ describe("filterableDatabaseSettingsSchema", () => {
 		}
 	});
 
+	it("accepts an empty filter list", () => {
+		const result = filterableDatabaseSettingsSchema.safeParse({
+			...baseSettings,
+			filters: [],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
 	it("accepts filters without columnLabel", () => {
 		const result = filterableDatabaseSettingsSchema.safeParse(baseSettings);
 
