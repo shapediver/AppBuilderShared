@@ -20,6 +20,14 @@ export interface IInteractionRequest {
 	 * A function to disable the interaction request.
 	 */
 	disable: () => void;
+	/**
+	 * Let toolbar popovers close while this request is active.
+	 * By default an active request keeps the open popover open, because the
+	 * popover may host the component owning the interaction. Interactions whose
+	 * UI lives in the runtime interaction toolbar set this, so clicking the
+	 * canvas closes the menu while the interaction keeps running.
+	 */
+	allowToolbarPopoverDismissal?: boolean;
 }
 
 export interface IActiveInteractionRequest extends IInteractionRequest {

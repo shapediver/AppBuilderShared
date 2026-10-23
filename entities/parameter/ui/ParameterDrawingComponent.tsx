@@ -360,6 +360,8 @@ export default function ParameterDrawingComponent(
 					: {
 							type: "active",
 							viewportId,
+							allowToolbarPopoverDismissal:
+								drawingPresentation === "toolbar",
 							disable: cancelDrawing,
 						},
 			);
@@ -376,7 +378,7 @@ export default function ParameterDrawingComponent(
 				updateInteractionRequestToken(undefined);
 			}
 		};
-	}, [alwaysActive, drawingActive, cancelDrawing]);
+	}, [alwaysActive, drawingActive, drawingPresentation, cancelDrawing]);
 
 	/**
 	 * The content of the parameter when it is active.

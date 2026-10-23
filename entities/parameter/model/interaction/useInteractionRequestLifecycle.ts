@@ -5,6 +5,8 @@ interface UseInteractionRequestLifecycleOptions {
 	viewportId: string;
 	active: boolean;
 	persistent?: boolean;
+	/** See `IInteractionRequest.allowToolbarPopoverDismissal`. */
+	allowToolbarPopoverDismissal?: boolean;
 	onDisable: () => void;
 	onSuspend?: () => void;
 	onResume?: () => void;
@@ -20,6 +22,7 @@ export const useInteractionRequestLifecycle = ({
 	viewportId,
 	active,
 	persistent = false,
+	allowToolbarPopoverDismissal = false,
 	onDisable,
 	onSuspend,
 	onResume,
@@ -29,8 +32,7 @@ export const useInteractionRequestLifecycle = ({
 		activatePassiveInteraction,
 		addInteractionRequest,
 		removeInteractionRequest,
-	} =
-		useShapeDiverStoreInteractionRequestManagement();
+	} = useShapeDiverStoreInteractionRequestManagement();
 	const tokenRef = useRef<string>();
 	const callbacksRef = useRef({
 		onDisable,
@@ -62,23 +64,22 @@ export const useInteractionRequestLifecycle = ({
 		callbacksRef.current.setDisableOtherParameters(!persistent && active);
 
 		if (active && !tokenRef.current) {
-				tokenRef.current = addInteractionRequest(
-					persistent
-						? {
+			tokenRef.current = addInteractionRequest(
+				persistent
+					? {
 							type: "passive",
 							viewportId,
 							disable: () =>
 								callbacksRef.current.onSuspend?.() ??
 								callbacksRef.current.onDisable(),
-							enable: () =>
-								callbacksRef.current.onResume?.(),
+							enable: () => callbacksRef.current.onResume?.(),
 						}
-						: {
-								type: "active",
-								viewportId,
-								disable: () =>
-									callbacksRef.current.onDisable(),
-							},
+					: {
+							type: "active",
+							viewportId,
+							allowToolbarPopoverDismissal,
+							disable: () => callbacksRef.current.onDisable(),
+						},
 			);
 		} else if (!active && tokenRef.current) {
 			releaseInteraction();
@@ -90,6 +91,7 @@ export const useInteractionRequestLifecycle = ({
 	}, [
 		active,
 		addInteractionRequest,
+		allowToolbarPopoverDismissal,
 		persistent,
 		releaseInteraction,
 		viewportId,

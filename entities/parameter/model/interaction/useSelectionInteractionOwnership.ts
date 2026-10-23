@@ -11,6 +11,8 @@ interface UseSelectionInteractionOwnershipOptions {
 	label: string;
 	candidateNodes: CandidateNode[];
 	alwaysActive: boolean;
+	/** See `IInteractionRequest.allowToolbarPopoverDismissal`. */
+	allowToolbarPopoverDismissal?: boolean;
 	automaticallyActivated: boolean;
 	selectionRegistered: boolean;
 	effectiveSelectionActive: boolean;
@@ -30,6 +32,7 @@ export const useSelectionInteractionOwnership = ({
 	label,
 	candidateNodes,
 	alwaysActive,
+	allowToolbarPopoverDismissal,
 	automaticallyActivated,
 	selectionRegistered,
 	effectiveSelectionActive,
@@ -116,6 +119,7 @@ export const useSelectionInteractionOwnership = ({
 			viewportId,
 			active: selectionRegistered,
 			persistent: alwaysActive,
+			allowToolbarPopoverDismissal,
 			onDisable,
 			onSuspend: suspend,
 			onResume: resume,

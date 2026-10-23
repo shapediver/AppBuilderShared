@@ -304,6 +304,8 @@ export default function ParameterDraggingComponent(
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
+				allowToolbarPopoverDismissal:
+					draggingPresentation === "toolbar",
 				disable: cancel,
 			});
 			interactionRequestTokenRef.current = returnedToken;
@@ -322,7 +324,7 @@ export default function ParameterDraggingComponent(
 				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [effectiveDraggingActive, cancel]);
+	}, [effectiveDraggingActive, draggingPresentation, cancel]);
 
 	/**
 	 * The content of the parameter when it is active.

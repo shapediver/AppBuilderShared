@@ -519,6 +519,9 @@ export default function ParameterSelectionComponent(
 			label: definition.name,
 			candidateNodes,
 			alwaysActive,
+			// The toolbar menu only toggles the selection, which keeps running
+			// after the menu closes, so a canvas click may close it.
+			allowToolbarPopoverDismissal: presentation === "toolbar",
 			automaticallyActivated,
 			selectionRegistered,
 			effectiveSelectionActive,

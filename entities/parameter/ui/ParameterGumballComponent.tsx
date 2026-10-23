@@ -360,6 +360,7 @@ export default function ParameterGumballComponent(
 		viewportId,
 		active: gumballRegistered,
 		persistent: alwaysActive,
+		allowToolbarPopoverDismissal: gumballPresentation === "toolbar",
 		onDisable: resetTransformation,
 		onSuspend: () => setGumballSuspended(true),
 		onResume: () => setGumballSuspended(false),

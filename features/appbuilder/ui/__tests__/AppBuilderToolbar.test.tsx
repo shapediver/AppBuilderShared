@@ -243,45 +243,49 @@ describe("AppBuilderToolbar", () => {
 		expect(firstButton.getAttribute("data-open")).toBe("false");
 	});
 
-	it("closes an open popover when the canvas is clicked during an interaction", () => {
-		const toolbar = createToolbar("top");
-		useShapeDiverStoreInteractionRequestManagement.setState({
-			interactionRequests: {
-				viewer: {
-					activeRequest: {
-						type: "active",
-						viewportId: "viewer",
-						token: "active-request",
-						disable: jest.fn(),
+	it.each([
+		{allowToolbarPopoverDismissal: undefined, expectedOpen: "true"},
+		{allowToolbarPopoverDismissal: true, expectedOpen: "false"},
+	])(
+		"handles a canvas click during an interaction (allowToolbarPopoverDismissal: $allowToolbarPopoverDismissal)",
+		({allowToolbarPopoverDismissal, expectedOpen}) => {
+			const toolbar = createToolbar("top");
+			useShapeDiverStoreInteractionRequestManagement.setState({
+				interactionRequests: {
+					viewer: {
+						activeRequest: {
+							type: "active",
+							viewportId: "viewer",
+							token: "active-request",
+							allowToolbarPopoverDismissal,
+							disable: jest.fn(),
+						},
+						passiveRequests: [],
 					},
-					passiveRequests: [],
 				},
-			},
-		});
+			});
 
-		render(
-			<MantineProvider>
-				<AppBuilderToolbar
-					toolbar={toolbar}
-					buttonRenderContext={{
-						...buttonRenderContext,
-						viewportId: "viewer",
-					}}
-				/>
-			</MantineProvider>,
-		);
+			render(
+				<MantineProvider>
+					<AppBuilderToolbar
+						toolbar={toolbar}
+						buttonRenderContext={{
+							...buttonRenderContext,
+							viewportId: "viewer",
+						}}
+					/>
+				</MantineProvider>,
+			);
 
-		const firstButton = screen.getByRole("button", {name: "First"});
-		fireEvent.click(firstButton);
-		expect(firstButton.getAttribute("data-open")).toBe("true");
-		expect(firstButton.getAttribute("data-popover-dismissal-blocked")).toBe(
-			"true",
-		);
+			const firstButton = screen.getByRole("button", {name: "First"});
+			fireEvent.click(firstButton);
+			expect(firstButton.getAttribute("data-open")).toBe("true");
 
-		const canvas = document.createElement("canvas");
-		document.body.appendChild(canvas);
-		fireEvent.pointerDown(canvas);
+			const canvas = document.createElement("canvas");
+			document.body.appendChild(canvas);
+			fireEvent.pointerDown(canvas);
 
-		expect(firstButton.getAttribute("data-open")).toBe("false");
-	});
+			expect(firstButton.getAttribute("data-open")).toBe(expectedOpen);
+		},
+	);
 });

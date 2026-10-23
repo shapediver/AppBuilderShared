@@ -371,6 +371,7 @@ export default function ParameterRectangleTransformComponent(
 		viewportId,
 		active: rectangleTransformRegistered,
 		persistent: alwaysActive,
+		allowToolbarPopoverDismissal: rectanglePresentation === "toolbar",
 		onDisable: resetTransformation,
 		onSuspend: () => setRectangleTransformSuspended(true),
 		onResume: () => setRectangleTransformSuspended(false),

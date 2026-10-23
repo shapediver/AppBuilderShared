@@ -1,3 +1,4 @@
+import type {IActiveInteractionRequest} from "@AppBuilderLib/entities/parameter/config/shapediverStoreInteractionRequestManagement";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
 import {
@@ -126,12 +127,16 @@ export default function AppBuilderToolbar(props: Props) {
 		useShapeDiverStoreInteractionRequestManagement(
 			useCallback(
 				(state) => {
+					const blocks = (request?: IActiveInteractionRequest) =>
+						!!request && !request.allowToolbarPopoverDismissal;
 					const {viewportId} = buttonRenderContext;
 					if (viewportId)
-						return !!state.interactionRequests[viewportId]
-							?.activeRequest;
+						return blocks(
+							state.interactionRequests[viewportId]
+								?.activeRequest,
+						);
 					return Object.values(state.interactionRequests).some(
-						({activeRequest}) => !!activeRequest,
+						({activeRequest}) => blocks(activeRequest),
 					);
 				},
 				[buttonRenderContext.viewportId],
@@ -206,6 +211,9 @@ export default function AppBuilderToolbar(props: Props) {
 		const closeOnOutsidePointerDown = (
 			event: PointerEvent | MouseEvent | TouchEvent,
 		) => {
+			// An active interaction may be owned by a component inside the
+			// popover (e.g. drawing); closing it would end the interaction.
+			if (popoverDismissalBlocked) return;
 			const canvasTarget =
 				event.target instanceof HTMLCanvasElement ||
 				(event.target instanceof Element &&
@@ -214,7 +222,6 @@ export default function AppBuilderToolbar(props: Props) {
 				setOpenedPopoverId(undefined);
 				return;
 			}
-			if (popoverDismissalBlocked) return;
 			if (isToolbarPopoverSafeTarget(event.target, toolbarRef.current)) {
 				return;
 			}
