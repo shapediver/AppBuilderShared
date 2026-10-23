@@ -73,6 +73,7 @@ export default function FilterableSelectComponent(
 						type={type}
 						items={catalog?.items ?? []}
 						itemData={catalog?.itemData}
+						limit={limit}
 						multiselect={false}
 					/>
 				);
