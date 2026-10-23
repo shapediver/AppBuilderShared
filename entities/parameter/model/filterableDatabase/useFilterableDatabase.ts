@@ -1,4 +1,7 @@
-import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {
+	IFilterableDatabaseSettings,
+	ISelectComponentItemDataType,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	buildActiveFilterTags,
@@ -35,7 +38,7 @@ export interface FilterTreeGroup {
 }
 
 export type {ActiveFilterTag};
-type FilterableDatabaseScrollingApi = ReturnType<
+export type FilterableDatabaseScrollingApi = ReturnType<
 	typeof createFilterableDatabaseScrollingApi
 >;
 
@@ -43,9 +46,19 @@ const FILTER_TEXT_DEBOUNCE_MS = 300;
 
 export function useFilterableDatabase(
 	settings: IFilterableDatabaseSettings,
-	options?: {pageSize?: number},
+	options?: {
+		pageSize?: number;
+		/** Grasshopper itemData patch applied to matching database rows. */
+		itemData?: Record<string, ISelectComponentItemDataType>;
+		/**
+		 * Build the in-memory paging structure. Set false when the widget
+		 * renders the full catalog list (dropdown, color, chips, checklist…).
+		 */
+		buildScrollingApi?: boolean;
+	},
 ) {
 	const pageSize = options?.pageSize ?? 20;
+	const buildApi = options?.buildScrollingApi ?? true;
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | undefined>();
 	const [table, setTable] = useState<DatabaseTable | undefined>();
@@ -67,6 +80,10 @@ export function useFilterableDatabase(
 	settingsRef.current = settings;
 	const selectionRef = useRef(selection);
 	selectionRef.current = selection;
+	const itemDataRef = useRef(options?.itemData);
+	itemDataRef.current = options?.itemData;
+	const itemDataKey = JSON.stringify(options?.itemData ?? null);
+	const appliedItemDataKeyRef = useRef<string | undefined>(undefined);
 
 	useEffect(() => {
 		const currentSettings = settingsRef.current;
@@ -94,12 +111,22 @@ export function useFilterableDatabase(
 
 				setTable(parsed);
 
+				if (!buildApi) {
+					scrollingApiRef.current = undefined;
+					setScrollingApi(undefined);
+					return;
+				}
+
 				const api = createFilterableDatabaseScrollingApi({
 					table: parsed,
 					settings: currentSettings,
 					selection: selectionRef.current,
 					pageSize,
+					itemData: itemDataRef.current,
 				});
+				appliedItemDataKeyRef.current = JSON.stringify(
+					itemDataRef.current ?? null,
+				);
 				scrollingApiRef.current = api;
 				setScrollingApi(api);
 			} catch (err) {
@@ -131,6 +158,7 @@ export function useFilterableDatabase(
 		filtersKey,
 		itemDataDefinitionKey,
 		pageSize,
+		buildApi,
 	]);
 
 	useEffect(() => {
@@ -140,6 +168,18 @@ export function useFilterableDatabase(
 			}
 		};
 	}, []);
+
+	useEffect(() => {
+		const api = scrollingApiRef.current;
+		if (!api) {
+			return;
+		}
+		if (appliedItemDataKeyRef.current === itemDataKey) {
+			return;
+		}
+		appliedItemDataKeyRef.current = itemDataKey;
+		api.updateItemData(itemDataRef.current);
+	}, [itemDataKey, scrollingApi]);
 
 	const applySelection = useCallback(
 		(updater: (prev: FilterSelection) => FilterSelection) => {
@@ -277,6 +317,7 @@ export function useFilterableDatabase(
 	return {
 		loading,
 		error,
+		table,
 		selection,
 		setFilterValue,
 		setFilterText,

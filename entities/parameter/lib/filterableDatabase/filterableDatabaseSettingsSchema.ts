@@ -63,5 +63,6 @@ export const filterableDatabaseSettingsSchema = z.object({
 		color: z.number().int().nonnegative().optional(),
 		data: z.record(z.string(), z.number().int().nonnegative()).optional(),
 	}),
-	filters: z.array(filterableDatabaseFilterSchema).min(1),
+	/** Empty array loads every row and renders no filter UI. */
+	filters: z.array(filterableDatabaseFilterSchema),
 });

@@ -82,4 +82,31 @@ describe("validateStringParameterSettings", () => {
 		const result = validateStringParameterSettings({debounce: -1});
 		expect(result.success).toBe(false);
 	});
+
+	it.each([
+		"dropdown",
+		"color",
+		"chipgroup",
+		"carousel",
+		"imagedropdown",
+		"buttonflex",
+		"multiselect-checkboxes",
+	] as const)(
+		"accepts a %s database with no filters and an itemData patch",
+		(type) => {
+			const result = validateStringParameterSettings({
+				selectSettings: {
+					type,
+					database: {
+						dataSource: {href: "https://example.com/stones.json"},
+						itemDataDefinition: {value: 0, displayname: 1},
+						filters: [],
+					},
+					itemData: {granite: {hidden: true}},
+				},
+			});
+
+			expect(result.success).toBe(true);
+		},
+	);
 });

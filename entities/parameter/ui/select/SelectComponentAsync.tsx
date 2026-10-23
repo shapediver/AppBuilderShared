@@ -10,11 +10,21 @@ const SEARCH_PREFIX = "search:";
 
 type SelectComponentAsyncType = "grid" | "fullwidthcards";
 
-interface SelectComponentAsyncProps extends SelectComponentProps {
+interface SelectComponentAsyncProps extends Omit<
+	SelectComponentProps,
+	"items" | "itemData"
+> {
 	/** Type of select component to use. */
 	type: SelectComponentAsyncType;
 	/** Optional content rendered above search-term anchors in the top section. */
 	prependTopSection?: ReactNode;
+	/**
+	 * Ignored. The visible rows come from `scrollingApi`.
+	 * Accepted so existing callers can keep passing their static list.
+	 */
+	items?: SelectComponentProps["items"];
+	/** Ignored. Item data comes from `scrollingApi`. */
+	itemData?: SelectComponentProps["itemData"];
 }
 
 /**
@@ -31,6 +41,8 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		value,
 		emitValue = "itemData",
 		prependTopSection,
+		items: _items,
+		itemData: _itemData,
 		...propsDefault
 	} = props;
 

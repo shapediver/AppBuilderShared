@@ -166,6 +166,45 @@ describe("createFilterableDatabaseScrollingApi", () => {
 		expect(api.resetState).toBe(resetStateBefore + 1);
 	});
 
+	it("applies an itemData patch and drops hidden rows", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+			itemData: {
+				id2: {hidden: true},
+				id1: {tooltip: "Keep"},
+				missing: {hidden: true},
+			},
+		});
+
+		expect(api.items.map((entry) => entry.item)).toEqual([
+			"id1",
+			"id3",
+			"id4",
+			"id5",
+		]);
+		expect(api.items[0].data).toMatchObject({
+			displayname: "Red Fabric",
+			tooltip: "Keep",
+		});
+	});
+
+	it("updateItemData hides a row that was previously visible", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+		});
+
+		api.updateItemData({id1: {hidden: true}});
+
+		expect(api.items.map((entry) => entry.item)).not.toContain("id1");
+		expect(api.items[0].data?.displayname).toBe("Blue Fabric");
+	});
+
 	it("setSearchTerms bumps resetState so consumers can re-render", async () => {
 		const api = createFilterableDatabaseScrollingApi({
 			table,

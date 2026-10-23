@@ -1,10 +1,12 @@
-import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {
+	IFilterableDatabaseSettings,
+	ISelectComponentItemDataType,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
-import {applyFilters} from "./filterLogic";
-import {mapRowsToSelectItems} from "./itemMapping";
+import {resolveDatabaseCatalog} from "./resolveDatabaseCatalog";
 import type {DatabaseTable, FilterSelection} from "./types";
 
 /** Deep-equal for filter maps so no-op updates skip resetState (avoids clearing the parameter value). */
@@ -63,12 +65,18 @@ export function createFilterableDatabaseScrollingApi(options: {
 	settings: IFilterableDatabaseSettings;
 	selection: FilterSelection;
 	pageSize?: number;
+	/** Grasshopper itemData patch. Matching keys overwrite database fields. */
+	itemData?: Record<string, ISelectComponentItemDataType>;
 }): IScrollingApi<IScrollingApiItemTypeSelect> & {
 	updateSelection(selection: FilterSelection): void;
 	updateTable(table: DatabaseTable): void;
+	updateItemData(
+		itemData: Record<string, ISelectComponentItemDataType> | undefined,
+	): void;
 } {
 	let table = options.table;
 	let selection = options.selection;
+	let itemDataPatch = options.itemData;
 	const settings = options.settings;
 	let pageSize = options.pageSize ?? 20;
 	let searchTerms: string[] = [];
@@ -78,10 +86,11 @@ export function createFilterableDatabaseScrollingApi(options: {
 
 	/** Filter rows → map to select items → optionally narrow by search terms. */
 	function buildAllItems(): IScrollingApiItemTypeSelect[] {
-		const filteredRows = applyFilters(table, settings.filters, selection);
-		const {items, itemData} = mapRowsToSelectItems(
-			filteredRows,
-			settings.itemDataDefinition,
+		const {items, itemData} = resolveDatabaseCatalog(
+			table,
+			settings,
+			selection,
+			itemDataPatch,
 		);
 
 		const mapped = items.map((item) => ({
@@ -113,6 +122,9 @@ export function createFilterableDatabaseScrollingApi(options: {
 	const api: IScrollingApi<IScrollingApiItemTypeSelect> & {
 		updateSelection(selection: FilterSelection): void;
 		updateTable(table: DatabaseTable): void;
+		updateItemData(
+			itemData: Record<string, ISelectComponentItemDataType> | undefined,
+		): void;
 	} = {
 		loading: false,
 		error: undefined,
@@ -158,6 +170,15 @@ export function createFilterableDatabaseScrollingApi(options: {
 		},
 		updateTable(nextTable: DatabaseTable) {
 			table = nextTable;
+			applyPaging();
+			bumpResetState();
+		},
+		updateItemData(
+			nextItemData:
+				| Record<string, ISelectComponentItemDataType>
+				| undefined,
+		) {
+			itemDataPatch = nextItemData;
 			applyPaging();
 			bumpResetState();
 		},
