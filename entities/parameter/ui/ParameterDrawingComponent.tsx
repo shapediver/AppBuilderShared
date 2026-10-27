@@ -236,6 +236,8 @@ export default function ParameterDrawingComponent(
 	);
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+	// the value sent by this component (Confirm or an automatic scene update)
+	const sentValueRef = useRef<string | undefined>(undefined);
 	const drawingToolsApiRef =
 		useRef<ReturnType<typeof useDrawingTools>["drawingToolsApi"]>(
 			undefined,
@@ -274,6 +276,7 @@ export default function ParameterDrawingComponent(
 					: confirmedPoints,
 			);
 			if (value === serializedValue) return;
+			sentValueRef.current = serializedValue;
 			if (automaticSceneUpdate && !immediate)
 				scheduleChange(serializedValue, automaticSceneUpdateTimeout);
 			else handleChange(serializedValue, 0);
@@ -359,10 +362,22 @@ export default function ParameterDrawingComponent(
 	// React to commits of the parameter: in case the parameter was reset after
 	// an execution (see the "resetValue" setting), the committed value differs
 	// from the executed value and the drawing is reset to the committed value.
+	const commitEffectMountedRef = useRef(false);
 	useEffect(() => {
-		// a drawing still waiting for its automatic scene update was made
-		// before this commit, it is dropped (an own update was sent already)
-		if (automaticSceneUpdate) cancelScheduledChange();
+		// A drawing still waiting for its automatic scene update was made
+		// before a foreign commit (reset value, undo, model state), it is
+		// dropped. The commit of an own update keeps a newer scheduled
+		// drawing, and the mount keeps a drawing scheduled before the
+		// component was unmounted.
+		const ownCommit = state.commitValue === sentValueRef.current;
+		if (ownCommit) sentValueRef.current = undefined;
+		if (
+			automaticSceneUpdate &&
+			!ownCommit &&
+			commitEffectMountedRef.current
+		)
+			cancelScheduledChange();
+		commitEffectMountedRef.current = true;
 		if (state.commitValue === state.execValue) return;
 		resetDrawingToCommittedRef.current();
 	}, [state.commitValue, state.commitRevision]);

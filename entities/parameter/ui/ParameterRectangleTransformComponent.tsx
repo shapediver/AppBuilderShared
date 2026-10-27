@@ -307,17 +307,27 @@ export default function ParameterRectangleTransformComponent(
 	// avoids a jump back to the previous placement while the request runs. Any
 	// other commit (a reset value after the execution, a cleared value, undo, a
 	// model state) is applied to the scene right away.
+	const commitEffectMountedRef = useRef(false);
 	useEffect(() => {
 		const parsed = parseTransformation(state.commitValue);
+		const ownCommit = state.commitValue === sentValueRef.current;
 		// A transformation still waiting for its automatic scene update was
-		// made on the scene before this commit, it is dropped (an own update
-		// was sent already).
-		if (automaticSceneUpdate) cancelScheduledChange();
+		// made on the scene before a foreign commit (reset value, Clear, undo,
+		// model state), it is dropped. The commit of an own update keeps a
+		// newer scheduled value, and the mount keeps a value scheduled before
+		// the component was unmounted.
+		if (
+			automaticSceneUpdate &&
+			!ownCommit &&
+			commitEffectMountedRef.current
+		)
+			cancelScheduledChange();
+		commitEffectMountedRef.current = true;
 		setParsedCommitValue(structuredClone(parsed));
 		setLastConfirmedValue(structuredClone(parsed));
 		setTransformedNodeNames(structuredClone(parsed));
 		const previous = structuredClone(transformedNodeNamesRef.current);
-		if (state.commitValue === sentValueRef.current) {
+		if (ownCommit) {
 			sentValueRef.current = undefined;
 			// a custom parameter commits once its execution ended, a session
 			// parameter before: the restore waits for a running execution
