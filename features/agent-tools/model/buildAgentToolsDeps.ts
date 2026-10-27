@@ -1,4 +1,5 @@
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {findNamedNodesByNameFilter} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
 import {getOutputContent} from "@AppBuilderLib/entities/parameter/lib/getOutputContent";
 import {resetParameterValues} from "@AppBuilderLib/entities/parameter/lib/parameterImportExport";
 import {
@@ -260,6 +261,8 @@ export function buildAgentToolsDeps(
 					.viewportAccessFunctions[id]?.getScreenshot;
 			return getScreenshot ? await getScreenshot(props) : undefined;
 		},
+		getAvailableNodes: (nameFilter) =>
+			findNamedNodesByNameFilter(nameFilter, true).map(({name}) => name),
 		getOutputByName: (ns, name) => {
 			const result = getOutputContent(ns, name);
 			if (!result.found) return undefined;

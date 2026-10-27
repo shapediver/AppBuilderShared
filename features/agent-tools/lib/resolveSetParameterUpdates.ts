@@ -1,6 +1,5 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import {SUPPORTED_PARAMETER_TYPES} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
 import type {
 	ParameterUpdateInput,
 	SetParameterValuesError,
@@ -8,7 +7,9 @@ import type {
 } from "@AppBuilderLib/features/agent-tools/config/setParameterValues";
 import type {AppBuilderSetParameterValuesUpdateMode} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {findParameterByName} from "./findParameterByName";
+import {isAgentSettableParameter} from "./parameterTypeKey";
 import {prepareParameterStoreValue} from "./setParameterValueValidators/prepareParameterStoreValue";
+import type {ParameterValuePrepareContext} from "./setParameterValueValidators/types";
 
 type PrepareOneUpdateResult =
 	| {
@@ -24,6 +25,7 @@ function prepareOneUpdate(
 	defaultNamespace: string,
 	getParameters: (namespace: string) => IShapeDiverParameter<any>[],
 	processedIds: Set<string>,
+	context: ParameterValuePrepareContext,
 ): PrepareOneUpdateResult {
 	const targetNamespace = update.sessionId ?? defaultNamespace;
 	const parameter = findParameterByName(
@@ -53,7 +55,7 @@ function prepareOneUpdate(
 	}
 	processedIds.add(paramId);
 
-	if (!SUPPORTED_PARAMETER_TYPES.includes(parameter.definition.type)) {
+	if (!isAgentSettableParameter(parameter.definition)) {
 		return {
 			ok: false,
 			error: {
@@ -63,7 +65,11 @@ function prepareOneUpdate(
 		};
 	}
 
-	const prepared = prepareParameterStoreValue(parameter, update.value);
+	const prepared = prepareParameterStoreValue(
+		parameter,
+		update.value,
+		context,
+	);
 	if (!prepared.success) {
 		return {
 			ok: false,
@@ -85,6 +91,7 @@ function prepareOneUpdate(
  *
  * `updateMode` `"partial"` (default) writes the valid updates and still
  * returns every error. `"complete"` writes nothing when any update fails.
+ * `context` provides the available node names for selection parameters.
  */
 export async function applyParameterUpdates(
 	defaultNamespace: string,
@@ -92,6 +99,7 @@ export async function applyParameterUpdates(
 	updates: ParameterUpdateInput[],
 	batchUpdate: IShapeDiverStoreParameters["batchParameterValueUpdate"],
 	updateMode: AppBuilderSetParameterValuesUpdateMode = "partial",
+	context: ParameterValuePrepareContext = {},
 ): Promise<SetParameterValuesOutput> {
 	const errors: SetParameterValuesError[] = [];
 	const valuesByNamespace: Record<string, Record<string, unknown>> = {};
@@ -103,6 +111,7 @@ export async function applyParameterUpdates(
 			defaultNamespace,
 			getParameters,
 			processedIds,
+			context,
 		);
 		if (!prepared.ok) {
 			errors.push(prepared.error);

@@ -1,10 +1,9 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {
-	SUPPORTED_PARAMETER_TYPES,
-	type ListParameterDefinitionItem,
-} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
+import type {ListParameterDefinitionItem} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
 import {decomposeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {isAgentSettableParameter} from "./parameterTypeKey";
+import {getSelectionSettings, parseSelectionValue} from "./selectionParameter";
 import {parseStringListIndex} from "./stringListValue";
 
 export function mapParameterDefinition(
@@ -18,7 +17,7 @@ export function mapParameterDefinition(
 		id: def.id,
 		name,
 		type: def.type,
-		settable: SUPPORTED_PARAMETER_TYPES.includes(def.type),
+		settable: isAgentSettableParameter(def),
 	};
 
 	if (def.hidden !== undefined) {
@@ -33,7 +32,21 @@ export function mapParameterDefinition(
 		item.tooltip = def.tooltip;
 	}
 
-	if (def.type === ResParameterType.STRINGLIST) {
+	const selection = getSelectionSettings(def);
+
+	if (selection) {
+		// Selectable names are not listed here, they depend on the current
+		// outputs; see get_parameter_values.
+		item.settings = {
+			type: "selection",
+			props: {
+				minimumSelection: selection.minimumSelection,
+				maximumSelection: selection.maximumSelection,
+			},
+		};
+		item.currentValue = {names: parseSelectionValue(currentValue) ?? []};
+		item.defaultValue = {names: parseSelectionValue(def.defval) ?? []};
+	} else if (def.type === ResParameterType.STRINGLIST) {
 		item.choices = def.choices;
 		item.currentValue = parseStringListIndex(currentValue);
 		item.defaultValue = parseStringListIndex(def.defval);

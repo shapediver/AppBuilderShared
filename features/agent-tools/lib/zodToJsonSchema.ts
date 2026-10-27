@@ -83,6 +83,10 @@ function objectSchema(
 	for (const [key, fieldSchema] of Object.entries(shape)) {
 		const {schema: inner, optional} = unwrapOptional(fieldSchema);
 		properties[key] = zodToJsonSchema(inner);
+		// `.optional().describe()` puts the description on the wrapper
+		if (fieldSchema.description && !properties[key].description) {
+			properties[key].description = fieldSchema.description;
+		}
 		if (!optional) {
 			required.push(key);
 		}
@@ -126,10 +130,10 @@ export function zodToJsonSchema(schema: z.ZodType): JsonSchema {
 		case "literal":
 			return literalSchema(def.values?.[0]);
 		case "array":
-			return {
+			return withDescription(schema, {
 				type: "array",
 				items: def.element ? zodToJsonSchema(def.element) : {},
-			};
+			});
 		case "tuple": {
 			const items = def.items ?? [];
 			return {
@@ -142,9 +146,9 @@ export function zodToJsonSchema(schema: z.ZodType): JsonSchema {
 		case "object":
 			return objectSchema(def.shape ?? {}, schema);
 		case "union":
-			return {
+			return withDescription(schema, {
 				anyOf: (def.options ?? []).map(zodToJsonSchema),
-			};
+			});
 		case "record":
 			return {
 				type: "object",

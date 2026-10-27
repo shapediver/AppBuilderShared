@@ -14,6 +14,8 @@ export async function handleSetParameterValues(
 			deps.getLiveParameters,
 			parsed.updates,
 			deps.batchParameterValueUpdate,
+			undefined,
+			{getAvailableNodes: deps.getAvailableNodes},
 		);
 	} catch (e) {
 		return {applied: [], ...formatToolInputError(e)};
