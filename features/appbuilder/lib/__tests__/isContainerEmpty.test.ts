@@ -23,11 +23,15 @@ const interaction = (
 	props: Record<string, unknown>,
 	hidden = false,
 ) =>
-	definition({
-		type: PARAMETER_TYPE.INTERACTION,
-		hidden,
-		settings: {type, props},
-	});
+	// the drawing is a parameter type of its own with its settings at the top
+	// level, the others are "Interaction" parameters told apart by settings.type
+	type === "drawing"
+		? definition({type: PARAMETER_TYPE.DRAWING, hidden, settings: props})
+		: definition({
+				type: PARAMETER_TYPE.INTERACTION,
+				hidden,
+				settings: {type, props},
+			});
 
 const slider = definition({type: PARAMETER_TYPE.FLOAT});
 
@@ -196,6 +200,89 @@ describe("isWidgetEmpty / isContainerEmpty", () => {
 				definitions,
 			),
 		).toBe(false);
+	});
+
+	it("treats accordion widgets by their parameters and group headers", () => {
+		const accordion = (props: object) =>
+			({type: "accordion", props}) as IAppBuilderWidget;
+		const grouped = lookup({
+			"s/a": definition({
+				...interaction("gumball", {activeMode: "alwaysActive"}),
+				group: {id: "g", name: "Group"},
+			} as Partial<IShapeDiverParameterDefinition>),
+			"s/b": definition({
+				...interaction("drawing", {
+					general: {activeMode: "alwaysActive"},
+				}),
+				group: {id: "g", name: "Group"},
+			} as Partial<IShapeDiverParameterDefinition>),
+			"s/hidden": definition({type: PARAMETER_TYPE.FLOAT, hidden: true}),
+			"s/slider": slider,
+		});
+		// a single empty parameter: no header is rendered for it
+		expect(
+			isWidgetEmpty(accordion({parameters: [{name: "a"}]}), "s", grouped),
+		).toBe(true);
+		// two empty parameters of one group render the group header
+		expect(
+			isWidgetEmpty(
+				accordion({parameters: [{name: "a"}, {name: "b"}]}),
+				"s",
+				grouped,
+			),
+		).toBe(false);
+		// a default group name groups parameters without a group
+		expect(
+			isWidgetEmpty(
+				accordion({
+					parameters: [{name: "toolbar"}, {name: "toolbar"}],
+					defaultGroupName: "All",
+				}),
+				"s",
+				definitions,
+			),
+		).toBe(false);
+		// hidden and unknown parameters are skipped, exports are content
+		expect(
+			isWidgetEmpty(
+				accordion({parameters: [{name: "hidden"}, {name: "missing"}]}),
+				"s",
+				grouped,
+			),
+		).toBe(true);
+		expect(
+			isWidgetEmpty(
+				accordion({parameters: [{name: "a"}], exports: [{name: "e"}]}),
+				"s",
+				grouped,
+			),
+		).toBe(false);
+		expect(
+			isWidgetEmpty(
+				accordion({parameters: [{name: "slider"}]}),
+				"s",
+				grouped,
+			),
+		).toBe(false);
+		// the overrides of a reference apply (the drawing e2e example)
+		expect(
+			isWidgetEmpty(
+				accordion({
+					parameters: [
+						{
+							name: "slider",
+							overrides: {
+								settings: {
+									general: {activeMode: "alwaysActive"},
+								},
+							},
+						},
+					],
+				}),
+				"s",
+				lookup({"s/slider": interaction("drawing", {})}),
+			),
+		).toBe(true);
 	});
 
 	it("counts any other widget as content", () => {
