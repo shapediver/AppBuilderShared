@@ -9,6 +9,7 @@ import {
 	planMobileFallbacks,
 } from "@AppBuilderLib/features/appbuilder/lib/applyMobileFallbacks";
 import {
+	EMPTY_CONTENT_ATTRIBUTE,
 	isContainerEmpty,
 	type ParameterDefinitionLookup,
 } from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
@@ -21,7 +22,7 @@ import {
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import {useMantineTheme} from "@mantine/core";
+import {Box, useMantineTheme} from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
 import {useContext, useEffect, useMemo} from "react";
 import {
@@ -43,6 +44,16 @@ interface Props {
 	settings?: IAppBuilderSettingsResolved;
 	hasAppBuilderOutput: boolean;
 }
+
+/** A parameter referenced by a controls widget, like the widget renders it. */
+const getParameterDefinition: ParameterDefinitionLookup = (
+	parameterNamespace,
+	parameterId,
+) =>
+	useShapeDiverStoreParameters
+		.getState()
+		.getParameter(parameterNamespace, parameterId)
+		?.getState().definition;
 
 /**
  * Create rendering hints for the container.
@@ -124,6 +135,11 @@ export function useAppBuilderStandardContainers(props: Props) {
 		true,
 	);
 
+	// the parameter definitions decide whether a container renders anything
+	const parameterStores = useShapeDiverStoreParameters(
+		(state) => state.parameterStores,
+	);
+
 	const layoutContainers = useMemo(() => {
 		if (aboveMobileBreakpoint !== false) {
 			return mergedContainers;
@@ -146,13 +162,26 @@ export function useAppBuilderStandardContainers(props: Props) {
 				if (!source || !ContainerComponent) {
 					return undefined;
 				}
-				return (
+				const moved = (
 					<ContainerComponent
 						namespace={namespace}
 						{...source}
 						name={to}
 					/>
 				);
+				// moved content which renders nothing (e.g. only interaction
+				// parameters presented in the toolbar) stays mounted but
+				// hidden, and does not count as content of the target
+				if (isContainerEmpty(source, namespace, getParameterDefinition))
+					return (
+						<Box
+							style={{display: "none"}}
+							{...{[EMPTY_CONTENT_ATTRIBUTE]: true}}
+						>
+							{moved}
+						</Box>
+					);
+				return moved;
 			},
 		);
 		return mergeAllStandardContainers(
@@ -169,6 +198,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 		mobileFallbacks,
 		namespace,
 		ContainerComponent,
+		parameterStores,
 	]);
 
 	// viewport anchors
@@ -247,11 +277,6 @@ export function useAppBuilderStandardContainers(props: Props) {
 		FallbackContainerComponent,
 	]);
 
-	// the parameter definitions decide whether a container renders anything
-	const parameterStores = useShapeDiverStoreParameters(
-		(state) => state.parameterStores,
-	);
-
 	//create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = useMemo(() => {
 		const result: IAppBuilderTemplatePageProps = {
@@ -260,16 +285,6 @@ export function useAppBuilderStandardContainers(props: Props) {
 			left: undefined,
 			right: undefined,
 		};
-		// a parameter referenced by a controls widget, like the widget renders it
-		const getParameterDefinition: ParameterDefinitionLookup = (
-			parameterNamespace,
-			parameterId,
-		) =>
-			useShapeDiverStoreParameters
-				.getState()
-				.getParameter(parameterNamespace, parameterId)
-				?.getState().definition;
-
 		const mergedContainerArray = Object.values(layoutContainers).filter(
 			(container): container is IAppBuilderStandardContainer =>
 				!!container && containerOpen[container.name],
