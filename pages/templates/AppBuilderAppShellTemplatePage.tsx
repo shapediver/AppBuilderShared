@@ -241,10 +241,13 @@ export default function AppBuilderAppShellTemplatePage(
 	// AppShell only translates a collapsed navbar off-screen. Its widgets would
 	// stay subscribed. Idle them until the mobile drawer is actually open. On
 	// desktop the navbar content stays live: it is only collapsed while it
-	// renders nothing, and its components must keep working (an idle subtree
-	// runs no effects). A container with `containerOpen: false` is omitted
-	// earlier and is already unmounted.
+	// renders nothing. A container which renders nothing never idles: it only
+	// holds components which work outside of it (e.g. interaction parameters
+	// presented in the toolbar), and an idle subtree runs no effects. A
+	// container with `containerOpen: false` is omitted earlier and is already
+	// unmounted.
 	const navbarContentLive = aboveNavbarBreakpoint || opened;
+	const bottomInNavbar = !!bottom && !showBottomInGrid;
 	const hasRight =
 		hasRightContent && !showRightAtBottom && !showRightInNavbar;
 	const hasBottom =
@@ -334,7 +337,10 @@ export default function AppBuilderAppShellTemplatePage(
 								size="sm"
 							/>
 						) : undefined}
-						<AppBuilderContainerWrapper name="top">
+						<AppBuilderContainerWrapper
+							name="top"
+							hidden={!!top?.empty}
+						>
 							{top?.node}
 						</AppBuilderContainerWrapper>
 					</Group>
@@ -344,26 +350,36 @@ export default function AppBuilderAppShellTemplatePage(
 					className={classes.appShellMainNavbar}
 					withBorder={navbarBorder}
 				>
-					<IdleWhenHidden idle={!navbarContentLive}>
-						<AppBuilderContainerWrapper name="left">
+					<IdleWhenHidden idle={!navbarContentLive && hasLeft}>
+						<AppBuilderContainerWrapper
+							name="left"
+							hidden={!!left?.empty}
+						>
 							{left?.node}
 						</AppBuilderContainerWrapper>
-						{!bottom ? undefined : showBottomInGrid ? undefined : (
+					</IdleWhenHidden>
+					{!bottomInNavbar ? undefined : (
+						<IdleWhenHidden
+							idle={!navbarContentLive && hasBottomContent}
+						>
 							<AppBuilderContainerWrapper
 								name="bottom"
 								orientation={
 									AppBuilderContainerOrientation.Vertical
 								}
+								hidden={!!bottom?.empty}
 							>
-								{bottom.node}
+								{bottom?.node}
 							</AppBuilderContainerWrapper>
-						)}
-						{!right ? undefined : !showRightInNavbar ? undefined : (
+						</IdleWhenHidden>
+					)}
+					{!right ? undefined : !showRightInNavbar ? undefined : (
+						<IdleWhenHidden idle={!navbarContentLive}>
 							<AppBuilderContainerWrapper name="right">
 								{right.node}
 							</AppBuilderContainerWrapper>
-						)}
-					</IdleWhenHidden>
+						</IdleWhenHidden>
+					)}
 				</AppShell.Navbar>
 				<AppShell.Main
 					className={`${classes.appShellMain} ${showHeader ? classes.appShellMaxHeightBelowHeader : classes.appShellMaxHeight}`}

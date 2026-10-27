@@ -2,6 +2,7 @@ import type {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/param
 import {resolveInteractionPresentation} from "@AppBuilderLib/entities/parameter/model/interaction/resolveInteractionPresentation";
 import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
+import {isValidElement} from "react";
 import {
 	type IAppBuilderParameterRef,
 	type IAppBuilderWidget,
@@ -10,6 +11,13 @@ import {
 	isParameterRefControl,
 	isTextWidget,
 } from "../config/appbuilder";
+
+/**
+ * Attribute of an element injected into a standard container (e.g. the
+ * content of a viewport anchor below the mobile breakpoint) which renders
+ * nothing: the element counts as empty content.
+ */
+export const EMPTY_CONTENT_ATTRIBUTE = "data-app-builder-empty-content";
 
 /**
  * Looks up the definition of a parameter referenced by a control (by id,
@@ -25,6 +33,7 @@ const TOOLBAR_INTERACTION_TYPES = new Set([
 	"selection",
 	"gumball",
 	"rectangleTransform",
+	"dragging",
 ]);
 
 type InteractionPresentationSettings = {
@@ -71,6 +80,8 @@ export function isParameterControlEmpty(
 		return false;
 	}
 	props ??= {};
+	// dragging defaults to the widget presentation in every active mode
+	if (settings?.type === "dragging") return props.presentation === "toolbar";
 	return (
 		resolveInteractionPresentation(
 			props.presentation,
@@ -85,7 +96,8 @@ export function isParameterControlEmpty(
  * accordion; a visible parameter which renders nothing still gets a group
  * header when its group holds more than one visible parameter (the theme
  * default `avoidSingleComponentGroups` suppresses the header of a single
- * parameter), and a header is content.
+ * parameter), and a header is content. Groups are told apart by name, like
+ * the accordion does by default (`identifyGroupsById: false`).
  */
 function isAccordionEmpty(
 	props: {
@@ -104,8 +116,7 @@ function isAccordionEmpty(
 		const effective = applyOverrides(definition, ref.overrides);
 		if (effective.hidden) continue;
 		if (!isParameterControlEmpty(definition, ref)) return false;
-		const group =
-			effective.group?.id ?? (props.defaultGroupName ? "default" : "");
+		const group = effective.group?.name ?? props.defaultGroupName ?? "";
 		if (!group) continue;
 		const count = (groupCounts.get(group) ?? 0) + 1;
 		if (count > 1) return false;
@@ -125,6 +136,14 @@ export function isWidgetEmpty(
 	namespace: string,
 	getDefinition: ParameterDefinitionLookup,
 ): boolean {
+	// content injected as an element (e.g. a viewport anchor below the mobile
+	// breakpoint) which is marked as rendering nothing
+	if (isValidElement(widget))
+		return (
+			(widget.props as Record<string, unknown>)[
+				EMPTY_CONTENT_ATTRIBUTE
+			] === true
+		);
 	if (isTextWidget(widget))
 		return !widget.props?.text && !widget.props?.markdown;
 	if (isControlsWidget(widget))

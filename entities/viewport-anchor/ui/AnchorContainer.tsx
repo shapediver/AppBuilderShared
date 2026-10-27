@@ -8,6 +8,7 @@ import {
 import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
 import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
+import {EMPTY_CONTENT_ATTRIBUTE} from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
 import {overlayDefinedFields} from "@AppBuilderLib/features/appbuilder/lib/overlayDefinedFields";
 import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
@@ -761,7 +762,20 @@ export function useAnchorContainer({
 		const token = addAdditionalContainerContent(
 			// we know this is a standard container, as otherwise it wouldn't have passed the zod checks
 			mobileContainer as AppBuilderStandardContainerNameType,
-			inner,
+			// an anchor which renders nothing stays mounted (its components
+			// keep working) but hidden, and does not count as content of the
+			// standard container
+			empty ? (
+				<Box
+					key={inner.key}
+					style={{display: "none"}}
+					{...{[EMPTY_CONTENT_ATTRIBUTE]: true}}
+				>
+					{inner}
+				</Box>
+			) : (
+				inner
+			),
 			{
 				position: mobilePosition,
 				order: mobileOrder,
@@ -779,6 +793,7 @@ export function useAnchorContainer({
 		mobilePosition,
 		mobileOrder,
 		element,
+		empty,
 	]);
 
 	return {

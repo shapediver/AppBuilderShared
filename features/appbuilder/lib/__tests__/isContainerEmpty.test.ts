@@ -1,7 +1,9 @@
 import type {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
+import {createElement} from "react";
 import type {IAppBuilderWidget} from "../../config/appbuilder";
 import {
+	EMPTY_CONTENT_ATTRIBUTE,
 	isContainerEmpty,
 	isParameterControlEmpty,
 	isWidgetEmpty,
@@ -143,6 +145,22 @@ describe("isParameterControlEmpty", () => {
 		).toBe(false);
 	});
 
+	it("treats dragging as content unless presented in the toolbar", () => {
+		// dragging defaults to the widget presentation, also when always active
+		expect(
+			isParameterControlEmpty(
+				interaction("dragging", {activeMode: "alwaysActive"}),
+				ref,
+			),
+		).toBe(false);
+		expect(
+			isParameterControlEmpty(
+				interaction("dragging", {presentation: "toolbar"}),
+				ref,
+			),
+		).toBe(true);
+	});
+
 	it("has content for other interaction parameters", () => {
 		expect(
 			isParameterControlEmpty(
@@ -231,6 +249,25 @@ describe("isWidgetEmpty / isContainerEmpty", () => {
 				grouped,
 			),
 		).toBe(false);
+		// groups are told apart by name: two groups with the same name and
+		// different ids render one header
+		const sameName = lookup({
+			"s/a": definition({
+				...interaction("gumball", {activeMode: "alwaysActive"}),
+				group: {id: "g1", name: "Group"},
+			} as Partial<IShapeDiverParameterDefinition>),
+			"s/b": definition({
+				...interaction("gumball", {activeMode: "alwaysActive"}),
+				group: {id: "g2", name: "Group"},
+			} as Partial<IShapeDiverParameterDefinition>),
+		});
+		expect(
+			isWidgetEmpty(
+				accordion({parameters: [{name: "a"}, {name: "b"}]}),
+				"s",
+				sameName,
+			),
+		).toBe(false);
 		// a default group name groups parameters without a group
 		expect(
 			isWidgetEmpty(
@@ -282,6 +319,18 @@ describe("isWidgetEmpty / isContainerEmpty", () => {
 				"s",
 				lookup({"s/slider": interaction("drawing", {})}),
 			),
+		).toBe(true);
+	});
+
+	it("treats injected elements by their empty-content marker", () => {
+		const marked = createElement("div", {
+			[EMPTY_CONTENT_ATTRIBUTE]: true,
+		}) as unknown as IAppBuilderWidget;
+		const unmarked = createElement("div") as unknown as IAppBuilderWidget;
+		expect(isWidgetEmpty(marked, "s", definitions)).toBe(true);
+		expect(isWidgetEmpty(unmarked, "s", definitions)).toBe(false);
+		expect(
+			isContainerEmpty({widgets: [marked, text({})]}, "s", definitions),
 		).toBe(true);
 	});
 

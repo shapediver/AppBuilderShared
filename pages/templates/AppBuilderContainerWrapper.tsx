@@ -19,6 +19,11 @@ interface Props {
 	name: string;
 	orientation?: AppBuilderContainerThemeDefaultProps["orientation"];
 	children?: React.ReactNode;
+	/**
+	 * Render the container hidden (`display: none`): a container which
+	 * renders nothing stays mounted, so that its components keep working.
+	 */
+	hidden?: boolean;
 }
 
 /** Type for defining them overrides per Template name and AppBuilder container name */
@@ -65,6 +70,7 @@ export default function AppBuilderContainerWrapper(
 		name,
 		orientation = AppBuilderContainerOrientation.Unspecified,
 		children,
+		hidden = false,
 	} = props;
 
 	// style properties
@@ -85,6 +91,7 @@ export default function AppBuilderContainerWrapper(
 		<AppBuilderContainerContext.Provider value={context}>
 			<Box
 				data-app-builder-container={name}
+				display={hidden ? "none" : undefined}
 				h="100%"
 				w="100%"
 				mih={0}
