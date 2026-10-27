@@ -163,7 +163,7 @@ export const themeComponentDefaultPropsRegistry = {
 	),
 	ParameterDrawingComponent: ParameterDrawingComponentThemeDefaultPropsSchema,
 	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema.and(
-		parameterInteractionConfirmCancelThemeSchema,
+		parameterInteractionConfirmCancelClearThemeSchema,
 	),
 	ParameterLabelComponent: ParameterLabelComponentThemeDefaultPropsSchema,
 	ParameterRectangleTransformComponent:

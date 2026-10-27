@@ -3,6 +3,9 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib/automaticSceneUpdate";
+import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
+import {hasLocalTransformationDelta} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
@@ -12,6 +15,7 @@ import {
 	createToolbarCheckboxItem,
 	createToolbarCommand,
 } from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {AppBuilderLabeledActionIcon} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -115,6 +119,9 @@ export default function ParameterRectangleTransformComponent(
 		value,
 		state,
 		sessionDependencies,
+		executing,
+		scheduleChange,
+		cancelScheduledChange,
 	} = useParameterComponentCommons<string>(props);
 
 	const {namespace} = props;
@@ -125,6 +132,7 @@ export default function ParameterRectangleTransformComponent(
 		hoverColor,
 		confirmButton: confirmButtonTheme,
 		cancelButton: cancelButtonTheme,
+		clearButton: clearButtonTheme,
 	} = useProps(
 		"ParameterRectangleTransformComponent",
 		defaultStyleProps,
@@ -170,6 +178,10 @@ export default function ParameterRectangleTransformComponent(
 
 	// state for the rectangle transform application
 	const alwaysActive = rectangleTransformProps.activeMode === "alwaysActive";
+	const {
+		enabled: automaticSceneUpdate,
+		timeout: automaticSceneUpdateTimeout,
+	} = resolveAutomaticSceneUpdate(rectangleTransformProps, alwaysActive);
 	const rectanglePresentation = resolveInteractionPresentation(
 		rectangleTransformProps.presentation,
 		alwaysActive,
@@ -201,6 +213,8 @@ export default function ParameterRectangleTransformComponent(
 		rectangleTransformProps,
 		rectangleTransformActive,
 		parseTransformation(value),
+		true,
+		executing,
 	);
 
 	const rtLabel =
@@ -213,6 +227,10 @@ export default function ParameterRectangleTransformComponent(
 	const cancelButton = resolveParameterInteractionButtonTheme(
 		cancelButtonTheme,
 		{label: "Cancel", icon: "tabler:x"},
+	);
+	const clearButton = resolveParameterInteractionButtonTheme(
+		clearButtonTheme,
+		{label: "Clear", icon: "tabler:circle-off"},
 	);
 
 	const automaticallyActivated =
@@ -253,27 +271,91 @@ export default function ParameterRectangleTransformComponent(
 		});
 	}, [tryAcquireClaim]);
 
+	// The values sent by this component (Confirm or an automatic scene update):
+	// a commit of one of them confirms the transformation shown in the scene.
+	const sentValuesRef = useRef(new SentValues());
+	// The restore of an own confirmation, deferred to the end of its execution.
+	const pendingRestoreRef = useRef<
+		{parsed: TransformedNode[]; previous: TransformedNode[]} | undefined
+	>(undefined);
+
+	// Apply a committed transformation to the scene: the transformations the
+	// tool applied to the nodes are replaced by the committed ones. Nothing
+	// changes when the nodes were replaced by an output update meanwhile (the
+	// executed transformation is part of the model output then). Otherwise the
+	// gizmo is stale, it is closed and restarted if always active.
+	const applyCommittedTransformation = useCallback(
+		(parsed: TransformedNode[], previous: TransformedNode[]) => {
+			const changed = restoreTransformedNodeNames(
+				structuredClone(parsed),
+				structuredClone(previous),
+			);
+			if (!changed) return;
+			closeTransform();
+			if (alwaysActive) restartPersistentTransform();
+		},
+		[
+			alwaysActive,
+			closeTransform,
+			restartPersistentTransform,
+			restoreTransformedNodeNames,
+		],
+	);
+
 	// React to commits of the parameter and reset the last confirmed value.
-	// The committed value differs from the executed value in case the parameter
-	// was reset after the execution (see the "resetValue" setting). The executed
-	// transformation is part of the model output then, and the transformation
-	// applied in the viewport is reset to the committed value.
+	// An own confirmation is shown in the scene already: the transformations
+	// applied by the tool are kept until the execution replaced the nodes, which
+	// avoids a jump back to the previous placement while the request runs. Any
+	// other commit (a reset value after the execution, a cleared value, undo, a
+	// model state) is applied to the scene right away.
+	const commitEffectMountedRef = useRef(false);
 	useEffect(() => {
 		const parsed = parseTransformation(state.commitValue);
+		// an own commit of an older value may arrive while a newer value is
+		// sent or scheduled (the user kept moving during the request)
+		const {own: ownCommit, newerPending} = sentValuesRef.current.takeCommit(
+			state.commitValue,
+		);
+		// A transformation still waiting for its automatic scene update was
+		// made on the scene before a foreign commit (reset value, Clear, undo,
+		// model state), it is dropped. The commit of an own update keeps a
+		// newer scheduled value, and the mount keeps a value scheduled before
+		// the component was unmounted.
+		if (
+			automaticSceneUpdate &&
+			!ownCommit &&
+			commitEffectMountedRef.current
+		)
+			cancelScheduledChange();
+		commitEffectMountedRef.current = true;
 		setParsedCommitValue(structuredClone(parsed));
-		setLastConfirmedValue(structuredClone(parsed));
-		if (state.commitValue !== state.execValue) {
-			closeTransform();
-			restoreTransformedNodeNames(
-				structuredClone(parsed),
-				structuredClone(transformedNodeNamesRef.current),
-			);
-			setTransformedNodeNames(structuredClone(parsed));
-			if (alwaysActive) restartPersistentTransform();
-		} else {
-			setTransformedNodeNames(structuredClone(parsed));
+		// the scene shows the newer transformation: the local state is kept
+		// until that value commits
+		if (newerPending) {
+			pendingRestoreRef.current = undefined;
+			return;
 		}
+		setLastConfirmedValue(structuredClone(parsed));
+		setTransformedNodeNames(structuredClone(parsed));
+		const previous = structuredClone(transformedNodeNamesRef.current);
+		if (ownCommit) {
+			// a custom parameter commits once its execution ended, a session
+			// parameter before: the restore waits for a running execution
+			if (executing) {
+				pendingRestoreRef.current = {parsed, previous};
+				return;
+			}
+		}
+		pendingRestoreRef.current = undefined;
+		applyCommittedTransformation(parsed, previous);
 	}, [state.commitValue, state.commitRevision]);
+
+	useEffect(() => {
+		if (executing || !pendingRestoreRef.current) return;
+		const {parsed, previous} = pendingRestoreRef.current;
+		pendingRestoreRef.current = undefined;
+		applyCommittedTransformation(parsed, previous);
+	}, [executing]);
 
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
@@ -294,7 +376,7 @@ export default function ParameterRectangleTransformComponent(
 	 * It also ends the rectangle transform interaction process and resets the selected nodes.
 	 */
 	const changeValue = useCallback(
-		(transformedNodeNames: TransformedNode[]) => {
+		(transformedNodeNames: TransformedNode[], timeout = 0) => {
 			if (!alwaysActive) setRectangleTransformActive(false);
 			const parameterValue: RectangleTransformParameterValue = {
 				names: transformedNodeNames.map((node) => node.name),
@@ -307,14 +389,19 @@ export default function ParameterRectangleTransformComponent(
 			setLastConfirmedValue(structuredClone(transformedNodeNames));
 			// if the value is already the same, do not change it
 			const serializedValue = JSON.stringify(parameterValue);
-			if (value === serializedValue) {
+			// compare with the store: the local value keeps a cancelled pending change
+			if (state.uiValue === serializedValue) {
 				if (!alwaysActive) setSelectedNodeNames([]);
 				return;
 			}
-			handleChange(serializedValue, 0);
+			sentValuesRef.current.record(serializedValue);
+			// an automatic update is sent together with the pending updates of
+			// the other interaction parameters
+			if (automaticSceneUpdate) scheduleChange(serializedValue, timeout);
+			else handleChange(serializedValue, timeout);
 			if (!alwaysActive) setSelectedNodeNames([]);
 		},
-		[alwaysActive, value],
+		[alwaysActive, automaticSceneUpdate, state.uiValue],
 	);
 
 	const restartAfterCancel = useCallback(() => {
@@ -367,6 +454,64 @@ export default function ParameterRectangleTransformComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
+	// Automatic scene update (always active tools only): a moved handle sends
+	// the transformation like Confirm would, debounced by the timeout. The
+	// identity transformations emitted on creation of the gizmo are not sent.
+	const hasLocalTransformation =
+		hasLocalTransformationDelta(transformedNodeNames);
+	// A move while a request is in flight is not sent: after our own request
+	// the gizmo is recreated on the new nodes and the move is dropped; after
+	// another parameter's execution the move is sent once it ends.
+	const seenTransformedNodeNamesRef = useRef(transformedNodeNames);
+	const movedWhileExecutingRef = useRef(false);
+	useEffect(() => {
+		const moved =
+			seenTransformedNodeNamesRef.current !== transformedNodeNames;
+		seenTransformedNodeNamesRef.current = transformedNodeNames;
+		if (!automaticSceneUpdate || !effectiveRectangleActive) return;
+		if (!hasLocalTransformation) {
+			movedWhileExecutingRef.current = false;
+			return;
+		}
+		if (executing) {
+			if (moved) movedWhileExecutingRef.current = true;
+			return;
+		}
+		// the execution ended: only a move made during it is sent, a stale
+		// local transformation of a gizmo about to be recreated is not
+		if (!moved && !movedWhileExecutingRef.current) return;
+		movedWhileExecutingRef.current = false;
+		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
+	}, [transformedNodeNames, executing]);
+
+	// Clear: the committed transformations are undone (the parameter is reset
+	// to its default value and executed), a pending transformation is dropped.
+	const clearTransformation = useCallback(() => {
+		if (automaticSceneUpdate) cancelScheduledChange();
+		sentValuesRef.current.clear();
+		if (parsedCommitValue.length === 0) {
+			// nothing is committed: only the pending transformation is undone
+			_onCancelCallback();
+			return;
+		}
+		if (!alwaysActive) {
+			setRectangleTransformActive(false);
+			setSelectedNodeNames([]);
+		}
+		resetToDefault();
+	}, [
+		alwaysActive,
+		automaticSceneUpdate,
+		cancelScheduledChange,
+		parsedCommitValue,
+		resetToDefault,
+		_onCancelCallback,
+	]);
+	// Clear can be turned off by the "buttons.clear" setting (default true)
+	const showClearButton =
+		(rectangleTransformProps.buttons?.clear ?? true) &&
+		(parsedCommitValue.length > 0 || hasLocalTransformation);
+
 	const {takeOverInteraction} = useInteractionRequestLifecycle({
 		viewportId,
 		active: rectangleTransformRegistered,
@@ -402,6 +547,17 @@ export default function ParameterRectangleTransformComponent(
 								`Currently transformed: ${transformedNodeNames.length}`}
 						</TextWeighted>
 					</Box>
+					{showClearButton && (
+						<Box style={{width: "auto"}}>
+							<AppBuilderLabeledActionIcon
+								label={clearButton.label}
+								tooltipLabel={clearButton.tooltip}
+								icon={<Icon iconType={clearButton.icon} />}
+								onClick={clearTransformation}
+								variant="light"
+							/>
+						</Box>
+					)}
 				</Flex>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>
@@ -421,23 +577,25 @@ export default function ParameterRectangleTransformComponent(
 				</Flex>
 			</Group>
 
-			<Group justify="space-between" w="100%" wrap="nowrap">
-				<Button
-					disabled={transformedNodeNames.length === 0}
-					fullWidth={true}
-					variant="filled"
-					onClick={() => changeValue(transformedNodeNames)}
-				>
-					<Text>{confirmButton.label}</Text>
-				</Button>
-				<Button
-					fullWidth={true}
-					variant={"light"}
-					onClick={resetTransformation}
-				>
-					<Text>{cancelButton.label}</Text>
-				</Button>
-			</Group>
+			{!automaticSceneUpdate && (
+				<Group justify="space-between" w="100%" wrap="nowrap">
+					<Button
+						disabled={transformedNodeNames.length === 0}
+						fullWidth={true}
+						variant="filled"
+						onClick={() => changeValue(transformedNodeNames)}
+					>
+						<Text>{confirmButton.label}</Text>
+					</Button>
+					<Button
+						fullWidth={true}
+						variant={"light"}
+						onClick={resetTransformation}
+					>
+						<Text>{cancelButton.label}</Text>
+					</Button>
+				</Group>
+			)}
 		</Stack>
 	);
 
@@ -501,30 +659,47 @@ export default function ParameterRectangleTransformComponent(
 				},
 			}),
 		],
-		commands: hasPendingTransformation
-			? [
-					createToolbarCommand({
-						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-						aggregationId: "rectangle-transform-confirm",
-						label: confirmButton.label,
-						tooltip: confirmButton.tooltip,
-						icon: confirmButton.icon,
-						order: 10,
-						disabled: !hasPendingTransformation,
-						execute: () => changeValue(transformedNodeNames),
-					}),
-					createToolbarCommand({
-						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-						aggregationId: "rectangle-transform-cancel",
-						label: cancelButton.label,
-						tooltip: cancelButton.tooltip,
-						icon: cancelButton.icon,
-						order: 20,
-						disabled: !hasPendingTransformation,
-						execute: resetTransformation,
-					}),
-				]
-			: [],
+		// with automatic scene updates a moved handle is sent after the idle
+		// timeout: there is nothing to confirm or cancel, only Clear remains
+		commands: [
+			...(hasPendingTransformation && !automaticSceneUpdate
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+							aggregationId: "rectangle-transform-confirm",
+							label: confirmButton.label,
+							tooltip: confirmButton.tooltip,
+							icon: confirmButton.icon,
+							order: 10,
+							disabled: !hasPendingTransformation,
+							execute: () => changeValue(transformedNodeNames),
+						}),
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+							aggregationId: "rectangle-transform-cancel",
+							label: cancelButton.label,
+							tooltip: cancelButton.tooltip,
+							icon: cancelButton.icon,
+							order: 20,
+							disabled: !hasPendingTransformation,
+							execute: resetTransformation,
+						}),
+					]
+				: []),
+			...(showClearButton
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-clear`,
+							aggregationId: "rectangle-transform-clear",
+							label: clearButton.label,
+							tooltip: clearButton.tooltip,
+							icon: clearButton.icon,
+							order: 30,
+							execute: clearTransformation,
+						}),
+					]
+				: []),
+		],
 	});
 
 	if (rectanglePresentation === "toolbar") return <></>;
