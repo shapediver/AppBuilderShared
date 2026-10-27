@@ -270,13 +270,9 @@ export function useAppBuilderStandardContainers(props: Props) {
 				.getParameter(parameterNamespace, parameterId)
 				?.getState().definition;
 
-		// a container which renders nothing (e.g. only interaction parameters
-		// presented in the toolbar) is omitted like a closed one
 		const mergedContainerArray = Object.values(layoutContainers).filter(
 			(container): container is IAppBuilderStandardContainer =>
-				!!container &&
-				containerOpen[container.name] &&
-				!isContainerEmpty(container, namespace, getParameterDefinition),
+				!!container && containerOpen[container.name],
 		);
 
 		if (mergedContainerArray.length === 0) {
@@ -296,6 +292,14 @@ export function useAppBuilderStandardContainers(props: Props) {
 						/>
 					) : undefined,
 					hints: createContainerHints(container),
+					// a container which renders nothing (e.g. only interaction
+					// parameters presented in the toolbar) is not shown; its
+					// node is still rendered
+					empty: isContainerEmpty(
+						container,
+						namespace,
+						getParameterDefinition,
+					),
 				};
 			});
 		}

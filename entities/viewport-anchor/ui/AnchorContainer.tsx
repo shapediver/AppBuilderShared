@@ -94,6 +94,13 @@ export interface ViewportAnchorProps {
 	exclusive?: boolean;
 	/** Option to show a close button on the container */
 	useCloseButton?: boolean;
+	/**
+	 * The content of the anchor renders nothing (see `isContainerEmpty`): the
+	 * panel is hidden while the content is still rendered, so that its
+	 * components keep working (e.g. an interaction parameter presented in the
+	 * toolbar) and the panel appears once a widget renders something.
+	 */
+	empty?: boolean;
 	/** Whether the anchor is initially open. Defaults to !canBeHidden. */
 	defaultOpen?: boolean;
 }
@@ -200,6 +207,7 @@ export function useAnchorContainer({
 		useContainer = true,
 		closingStrategy,
 		selectionProperties,
+		empty = false,
 		...rest
 	} = properties;
 
@@ -612,7 +620,6 @@ export function useAnchorContainer({
 		<Stack
 			gap={0}
 			key={id}
-			data-app-builder-anchor={id}
 			{...anchorStackProps}
 			p={useContainer ? undefined : appBuilderPanelSpacing}
 		>
@@ -670,25 +677,33 @@ export function useAnchorContainer({
 	 */
 	const innerContainer = useMemo(() => {
 		if (aboveMobileBreakpoint) {
-			if (useContainer) {
-				return (
-					<Paper
-						{...anchorPaperProps}
-						pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
-					>
-						{inner}
-					</Paper>
-				);
-			} else {
-				return inner;
-			}
+			return (
+				<Box
+					data-app-builder-anchor={id}
+					data-app-builder-anchor-empty={empty ? true : undefined}
+					style={empty ? {display: "none"} : undefined}
+				>
+					{useContainer ? (
+						<Paper
+							{...anchorPaperProps}
+							pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
+						>
+							{inner}
+						</Paper>
+					) : (
+						inner
+					)}
+				</Box>
+			);
 		}
 		return null;
 	}, [
 		aboveMobileBreakpoint,
 		anchorPaperProps,
+		empty,
 		hasCloseIcon,
 		hasDragIcon,
+		id,
 		inner,
 		useContainer,
 	]);

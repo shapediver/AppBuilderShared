@@ -77,21 +77,13 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 				.getParameter(parameterNamespace, parameterId)
 				?.getState().definition;
 
-		const skipEmptyAnchor = (container: {
-			props: {id: string};
+		// an anchor which renders nothing (e.g. only an interaction parameter
+		// presented in the toolbar) is not shown; its content is still
+		// rendered when it opens, so its components keep working
+		const isEmpty = (container: {
 			tabs?: unknown[];
 			widgets?: IAppBuilderWidget[];
-		}) => {
-			// an anchor which renders nothing (e.g. only an interaction
-			// parameter presented in the toolbar) is not created at all: a
-			// selection or action opening it would show an empty panel
-			if (!isContainerEmpty(container, namespace, getParameterDefinition))
-				return false;
-			Logger.debug(
-				`Anchor ${container.props.id} renders no content and is not shown.`,
-			);
-			return true;
-		};
+		}) => isContainerEmpty(container, namespace, getParameterDefinition);
 
 		const existingIds = new Set<string>();
 		const actionTargetedAnchorIds =
@@ -102,7 +94,6 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
-				if (skipEmptyAnchor(container)) return;
 				// check if there are anchors with the same id
 				if (existingIds.has(container.props.id)) {
 					Logger.warn(
@@ -165,10 +156,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						selectionProperties={
 							container.props.selectionProperties
 						}
+						empty={isEmpty(container)}
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {
-				if (skipEmptyAnchor(container)) return;
 				// check if there are anchors with the same id
 				if (existingIds.has(container.props.id)) {
 					Logger.warn(
@@ -232,6 +223,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						selectionProperties={
 							container.props.selectionProperties
 						}
+						empty={isEmpty(container)}
 					/>,
 				);
 			}

@@ -133,15 +133,22 @@ export default function AppBuilderGridTemplatePage(
 	} = useProps("AppBuilderGridTemplatePage", defaultStyleProps, props);
 
 	const rootRef = useRef<HTMLDivElement>(null);
+	// A container which renders nothing (`empty`) is laid out like an absent
+	// one; its node is still rendered (hidden), so that its components keep
+	// working and the container appears once a widget renders something.
+	const hasTop = !!top && !top.empty;
+	const hasLeft = !!left && !left.empty;
+	const hasRight = !!right && !right.empty;
+	const hasBottom = !!bottom && !bottom.empty;
 	const [rootStyle, setRootStyle] = useState<React.CSSProperties>({
 		// We need to define the background color here, because the corresponding element
 		// is used for fullscreen mode and would otherwise be transparent (show as black).
 		backgroundColor: "var(--mantine-color-body)",
 		...createGridLayout({
-			hasTop: !!top,
-			hasLeft: !!left,
-			hasRight: !!right,
-			hasBottom: !!bottom,
+			hasTop,
+			hasLeft,
+			hasRight,
+			hasBottom,
 			rows,
 			columns,
 			topRows,
@@ -157,10 +164,10 @@ export default function AppBuilderGridTemplatePage(
 		setRootStyle({
 			...rootStyle,
 			...createGridLayout({
-				hasTop: !!top,
-				hasLeft: !!left,
-				hasRight: !!right,
-				hasBottom: !!bottom,
+				hasTop,
+				hasLeft,
+				hasRight,
+				hasBottom,
 				rows,
 				columns,
 				topRows,
@@ -172,10 +179,10 @@ export default function AppBuilderGridTemplatePage(
 			}),
 		});
 	}, [
-		left,
-		right,
-		bottom,
-		top,
+		hasLeft,
+		hasRight,
+		hasBottom,
+		hasTop,
 		columns,
 		rows,
 		leftColumns,
@@ -196,7 +203,10 @@ export default function AppBuilderGridTemplatePage(
 				{top ? (
 					<section
 						className={classes.appBuilderTemplatePageTop}
-						style={{background: bgTop}}
+						style={{
+							background: bgTop,
+							display: hasTop ? undefined : "none",
+						}}
 					>
 						<AppBuilderContainerWrapper name="top">
 							{top.node}
@@ -207,7 +217,10 @@ export default function AppBuilderGridTemplatePage(
 				{left ? (
 					<section
 						className={classes.appBuilderTemplatePageLeft}
-						style={{background: bgLeft}}
+						style={{
+							background: bgLeft,
+							display: hasLeft ? undefined : "none",
+						}}
 					>
 						<AppBuilderContainerWrapper name="left">
 							{left.node}
@@ -218,7 +231,10 @@ export default function AppBuilderGridTemplatePage(
 				{right ? (
 					<section
 						className={classes.appBuilderTemplatePageRight}
-						style={{background: bgRight}}
+						style={{
+							background: bgRight,
+							display: hasRight ? undefined : "none",
+						}}
 					>
 						<AppBuilderContainerWrapper name="right">
 							{right.node}
@@ -229,7 +245,10 @@ export default function AppBuilderGridTemplatePage(
 				{bottom ? (
 					<section
 						className={classes.appBuilderTemplatePageBottom}
-						style={{background: bgBottom}}
+						style={{
+							background: bgBottom,
+							display: hasBottom ? undefined : "none",
+						}}
 					>
 						<AppBuilderContainerWrapper
 							orientation={
