@@ -1,3 +1,4 @@
+import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
@@ -93,6 +94,7 @@ export default function ParameterDrawingComponent(
 		handleChange,
 		scheduleChange,
 		cancelScheduledChange,
+		isScheduledChangePending,
 		onCancel,
 		disabled,
 		showReset,
@@ -236,8 +238,8 @@ export default function ParameterDrawingComponent(
 	);
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
-	// the value sent by this component (Confirm or an automatic scene update)
-	const sentValueRef = useRef<string | undefined>(undefined);
+	// the values sent by this component (Confirm or an automatic scene update)
+	const sentValuesRef = useRef(new SentValues());
 	const drawingToolsApiRef =
 		useRef<ReturnType<typeof useDrawingTools>["drawingToolsApi"]>(
 			undefined,
@@ -276,7 +278,7 @@ export default function ParameterDrawingComponent(
 					: confirmedPoints,
 			);
 			if (value === serializedValue) return;
-			sentValueRef.current = serializedValue;
+			sentValuesRef.current.record(serializedValue);
 			if (automaticSceneUpdate && !immediate)
 				scheduleChange(serializedValue, automaticSceneUpdateTimeout);
 			else handleChange(serializedValue, 0);
@@ -369,8 +371,11 @@ export default function ParameterDrawingComponent(
 		// dropped. The commit of an own update keeps a newer scheduled
 		// drawing, and the mount keeps a drawing scheduled before the
 		// component was unmounted.
-		const ownCommit = state.commitValue === sentValueRef.current;
-		if (ownCommit) sentValueRef.current = undefined;
+		// an own commit of an older drawing may arrive while a newer drawing is
+		// sent or scheduled (the user kept drawing during the request)
+		const {own: ownCommit} = sentValuesRef.current.takeCommit(
+			state.commitValue,
+		);
 		if (
 			automaticSceneUpdate &&
 			!ownCommit &&
@@ -392,6 +397,9 @@ export default function ParameterDrawingComponent(
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
+		// a newer drawing waits for its automatic scene update: the value of an
+		// earlier update (sent meanwhile) must not replace it
+		if (automaticSceneUpdate && isScheduledChangePending()) return;
 		const parsed = parsePointsData(state.uiValue);
 		setParsedUiValue((previous) =>
 			JSON.stringify(previous) === JSON.stringify(parsed)

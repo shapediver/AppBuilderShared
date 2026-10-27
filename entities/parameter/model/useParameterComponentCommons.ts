@@ -285,6 +285,12 @@ export function useParameterComponentCommons<T>(
 		[namespace, definition.id],
 	);
 
+	/** Whether a value scheduled by {@link scheduleChange} waits to be sent. */
+	const isScheduledChangePending = useCallback(
+		() => automaticSceneUpdateScheduler.isPending(namespace, definition.id),
+		[namespace, definition.id],
+	);
+
 	useEffect(() => {
 		if (reactive) {
 			setValue(state.uiValue);
@@ -399,6 +405,7 @@ export function useParameterComponentCommons<T>(
 		cancelPendingChange,
 		scheduleChange,
 		cancelScheduledChange,
+		isScheduledChangePending,
 		setOnCancelCallback,
 		onCancel,
 		disabled,

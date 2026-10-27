@@ -1,3 +1,4 @@
+import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
@@ -259,9 +260,9 @@ export default function ParameterGumballComponent(
 		});
 	}, [tryAcquireClaim]);
 
-	// The value sent by this component (Confirm or an automatic scene update):
-	// its commit is the confirmation of the transformation shown in the scene.
-	const sentValueRef = useRef<string | undefined>(undefined);
+	// The values sent by this component (Confirm or an automatic scene update):
+	// a commit of one of them confirms the transformation shown in the scene.
+	const sentValuesRef = useRef(new SentValues());
 	// The restore of an own confirmation, deferred to the end of its execution.
 	const pendingRestoreRef = useRef<
 		{parsed: TransformedNode[]; previous: TransformedNode[]} | undefined
@@ -299,7 +300,11 @@ export default function ParameterGumballComponent(
 	const commitEffectMountedRef = useRef(false);
 	useEffect(() => {
 		const parsed = parseTransformation(state.commitValue);
-		const ownCommit = state.commitValue === sentValueRef.current;
+		// an own commit of an older value may arrive while a newer value is
+		// sent or scheduled (the user kept moving during the request)
+		const {own: ownCommit, newerPending} = sentValuesRef.current.takeCommit(
+			state.commitValue,
+		);
 		// A transformation still waiting for its automatic scene update was
 		// made on the scene before a foreign commit (reset value, Clear, undo,
 		// model state), it is dropped. The commit of an own update keeps a
@@ -313,11 +318,16 @@ export default function ParameterGumballComponent(
 			cancelScheduledChange();
 		commitEffectMountedRef.current = true;
 		setParsedCommitValue(structuredClone(parsed));
+		// the scene shows the newer transformation: the local state is kept
+		// until that value commits
+		if (newerPending) {
+			pendingRestoreRef.current = undefined;
+			return;
+		}
 		setLastConfirmedValue(structuredClone(parsed));
 		setTransformedNodeNames(structuredClone(parsed));
 		const previous = structuredClone(transformedNodeNamesRef.current);
 		if (ownCommit) {
-			sentValueRef.current = undefined;
 			// a custom parameter commits once its execution ended, a session
 			// parameter before: the restore waits for a running execution
 			if (executing) {
@@ -373,7 +383,7 @@ export default function ParameterGumballComponent(
 				if (!alwaysActive) setSelectedNodeNames([]);
 				return;
 			}
-			sentValueRef.current = serializedValue;
+			sentValuesRef.current.record(serializedValue);
 			// an automatic update is sent together with the pending updates of
 			// the other interaction parameters
 			if (automaticSceneUpdate) scheduleChange(serializedValue, timeout);
@@ -467,7 +477,7 @@ export default function ParameterGumballComponent(
 	// to its default value and executed), a pending transformation is dropped.
 	const clearTransformation = useCallback(() => {
 		if (automaticSceneUpdate) cancelScheduledChange();
-		sentValueRef.current = undefined;
+		sentValuesRef.current.clear();
 		if (parsedCommitValue.length === 0) {
 			// nothing is committed: only the pending transformation is undone
 			_onCancelCallback();
