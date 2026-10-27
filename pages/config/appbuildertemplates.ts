@@ -15,6 +15,13 @@ export interface IAppBuilderTemplatePageContainer {
 	node: React.ReactNode;
 	/** Hints for rendering the container. */
 	hints?: IAppBuilderTemplatePageContainerHints;
+	/**
+	 * The container renders nothing (see `isContainerEmpty`): the template
+	 * lays it out like an absent container but still renders its node, so
+	 * that its components keep working (e.g. interaction parameters presented
+	 * in the toolbar) and it appears once a widget renders something.
+	 */
+	empty?: boolean;
 }
 
 /**

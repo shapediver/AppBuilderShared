@@ -8,6 +8,7 @@ import {
 import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
 import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
+import {EMPTY_CONTENT_ATTRIBUTE} from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
 import {overlayDefinedFields} from "@AppBuilderLib/features/appbuilder/lib/overlayDefinedFields";
 import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
@@ -94,6 +95,13 @@ export interface ViewportAnchorProps {
 	exclusive?: boolean;
 	/** Option to show a close button on the container */
 	useCloseButton?: boolean;
+	/**
+	 * The content of the anchor renders nothing (see `isContainerEmpty`): the
+	 * panel is hidden while the content is still rendered, so that its
+	 * components keep working (e.g. an interaction parameter presented in the
+	 * toolbar) and the panel appears once a widget renders something.
+	 */
+	empty?: boolean;
 	/** Whether the anchor is initially open. Defaults to !canBeHidden. */
 	defaultOpen?: boolean;
 }
@@ -200,6 +208,7 @@ export function useAnchorContainer({
 		useContainer = true,
 		closingStrategy,
 		selectionProperties,
+		empty = false,
 		...rest
 	} = properties;
 
@@ -669,25 +678,33 @@ export function useAnchorContainer({
 	 */
 	const innerContainer = useMemo(() => {
 		if (aboveMobileBreakpoint) {
-			if (useContainer) {
-				return (
-					<Paper
-						{...anchorPaperProps}
-						pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
-					>
-						{inner}
-					</Paper>
-				);
-			} else {
-				return inner;
-			}
+			return (
+				<Box
+					data-app-builder-anchor={id}
+					data-app-builder-anchor-empty={empty ? true : undefined}
+					style={empty ? {display: "none"} : undefined}
+				>
+					{useContainer ? (
+						<Paper
+							{...anchorPaperProps}
+							pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
+						>
+							{inner}
+						</Paper>
+					) : (
+						inner
+					)}
+				</Box>
+			);
 		}
 		return null;
 	}, [
 		aboveMobileBreakpoint,
 		anchorPaperProps,
+		empty,
 		hasCloseIcon,
 		hasDragIcon,
+		id,
 		inner,
 		useContainer,
 	]);
@@ -745,7 +762,20 @@ export function useAnchorContainer({
 		const token = addAdditionalContainerContent(
 			// we know this is a standard container, as otherwise it wouldn't have passed the zod checks
 			mobileContainer as AppBuilderStandardContainerNameType,
-			inner,
+			// an anchor which renders nothing stays mounted (its components
+			// keep working) but hidden, and does not count as content of the
+			// standard container
+			empty ? (
+				<Box
+					key={inner.key}
+					style={{display: "none"}}
+					{...{[EMPTY_CONTENT_ATTRIBUTE]: true}}
+				>
+					{inner}
+				</Box>
+			) : (
+				inner
+			),
 			{
 				position: mobilePosition,
 				order: mobileOrder,
@@ -763,6 +793,7 @@ export function useAnchorContainer({
 		mobilePosition,
 		mobileOrder,
 		element,
+		empty,
 	]);
 
 	return {

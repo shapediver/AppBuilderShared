@@ -49,6 +49,36 @@ describe("AppBuilderAppShellTemplatePage hidden containers", () => {
 		).toBe("true");
 	});
 
+	it("keeps an empty navbar container live on mobile", () => {
+		// an empty container only holds components which work outside of it
+		// (e.g. interaction parameters presented in the toolbar)
+		mockMatchMedia(false);
+		render(
+			<MantineProvider>
+				<AppBuilderAppShellTemplatePage
+					left={{node: <LiveProbe />, empty: true}}
+				/>
+			</MantineProvider>,
+		);
+		const content = screen.getByText("container content", {hidden: true});
+		expect(content.getAttribute("data-live")).toBe("true");
+	});
+
+	it("hides an empty container", () => {
+		mockMatchMedia(true);
+		render(
+			<MantineProvider>
+				<AppBuilderAppShellTemplatePage
+					left={{node: <LiveProbe />, empty: true}}
+				/>
+			</MantineProvider>,
+		);
+		const wrapper = document.querySelector(
+			'[data-app-builder-container="left"]',
+		) as HTMLElement;
+		expect(getComputedStyle(wrapper).display).toBe("none");
+	});
+
 	it("idles navbar containers while the mobile drawer is closed", () => {
 		mockMatchMedia(false);
 
