@@ -119,7 +119,8 @@ export default function ParameterRectangleTransformComponent(
 		state,
 		sessionDependencies,
 		executing,
-		cancelPendingChange,
+		scheduleChange,
+		cancelScheduledChange,
 	} = useParameterComponentCommons<string>(props);
 
 	const {namespace} = props;
@@ -309,8 +310,9 @@ export default function ParameterRectangleTransformComponent(
 	useEffect(() => {
 		const parsed = parseTransformation(state.commitValue);
 		// A transformation still waiting for its automatic scene update was
-		// made on the scene before this commit, it is dropped.
-		if (automaticSceneUpdate) cancelPendingChange();
+		// made on the scene before this commit, it is dropped (an own update
+		// was sent already).
+		if (automaticSceneUpdate) cancelScheduledChange();
 		setParsedCommitValue(structuredClone(parsed));
 		setLastConfirmedValue(structuredClone(parsed));
 		setTransformedNodeNames(structuredClone(parsed));
@@ -373,10 +375,13 @@ export default function ParameterRectangleTransformComponent(
 				return;
 			}
 			sentValueRef.current = serializedValue;
-			handleChange(serializedValue, timeout);
+			// an automatic update is sent together with the pending updates of
+			// the other interaction parameters
+			if (automaticSceneUpdate) scheduleChange(serializedValue, timeout);
+			else handleChange(serializedValue, timeout);
 			if (!alwaysActive) setSelectedNodeNames([]);
 		},
-		[alwaysActive, state.uiValue],
+		[alwaysActive, automaticSceneUpdate, state.uiValue],
 	);
 
 	const restartAfterCancel = useCallback(() => {
@@ -462,7 +467,7 @@ export default function ParameterRectangleTransformComponent(
 	// Clear: the committed transformations are undone (the parameter is reset
 	// to its default value and executed), a pending transformation is dropped.
 	const clearTransformation = useCallback(() => {
-		if (automaticSceneUpdate) cancelPendingChange();
+		if (automaticSceneUpdate) cancelScheduledChange();
 		sentValueRef.current = undefined;
 		if (parsedCommitValue.length === 0) {
 			// nothing is committed: only the pending transformation is undone
@@ -477,7 +482,7 @@ export default function ParameterRectangleTransformComponent(
 	}, [
 		alwaysActive,
 		automaticSceneUpdate,
-		cancelPendingChange,
+		cancelScheduledChange,
 		parsedCommitValue,
 		resetToDefault,
 		_onCancelCallback,

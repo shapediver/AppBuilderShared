@@ -52,6 +52,13 @@ import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
+ * Idle timeout handed to the drawing tools with automatic scene updates: the
+ * tools report a change shortly after it ended, the configured timeout is
+ * awaited by the scheduler of the automatic scene updates.
+ */
+const DRAWING_TOOLS_CHANGE_REPORT_DELAY = 100;
+
+/**
  * Parse the value of a drawing parameter and extract the points data.
  * @param value
  * @returns
@@ -84,6 +91,8 @@ export default function ParameterDrawingComponent(
 		actions,
 		definition,
 		handleChange,
+		scheduleChange,
+		cancelScheduledChange,
 		onCancel,
 		disabled,
 		showReset,
@@ -155,9 +164,13 @@ export default function ParameterDrawingComponent(
 		enabled: automaticSceneUpdate,
 		timeout: automaticSceneUpdateTimeout,
 	} = resolveAutomaticSceneUpdate(drawingProps.behavior, alwaysActive);
-	// The drawing tools call onUpdate on their own after the idle timeout when
+	// The drawing tools call onUpdate on their own after an idle timeout when
 	// behavior.automaticSceneUpdate is set. App Builder supports this for
-	// always active drawings only and provides the default timeout.
+	// always active drawings only. The drawing tools only report the end of a
+	// change (their timer defers an update while an insertion is in progress):
+	// the resolved timeout is awaited by the scheduler of the automatic scene
+	// updates, together with the pending updates of the other interaction
+	// parameters (see confirmDrawing).
 	const drawingToolsProps = useMemo(() => {
 		const behavior = drawingProps.behavior;
 		if (automaticSceneUpdate) {
@@ -166,7 +179,8 @@ export default function ParameterDrawingComponent(
 				behavior: {
 					...behavior,
 					automaticSceneUpdate: true,
-					automaticSceneUpdateTimeout,
+					automaticSceneUpdateTimeout:
+						DRAWING_TOOLS_CHANGE_REPORT_DELAY,
 				},
 			};
 		}
@@ -179,7 +193,7 @@ export default function ParameterDrawingComponent(
 			...rest
 		} = behavior;
 		return {...drawingProps, behavior: rest};
-	}, [automaticSceneUpdate, automaticSceneUpdateTimeout, drawingProps]);
+	}, [automaticSceneUpdate, drawingProps]);
 	// a closing point of a closed drawing is not reported by the drawing tools
 	const closedDrawing =
 		drawingProps.geometry?.close === true ||
@@ -241,9 +255,13 @@ export default function ParameterDrawingComponent(
 	 * Callback function to change the value of the parameter.
 	 * This function is called when the drawing is confirmed.
 	 * It also ends the drawing process.
+	 *
+	 * With automatic scene updates the value is scheduled (sent after the
+	 * idle timeout together with the pending updates of the other interaction
+	 * parameters) unless `immediate` is set.
 	 */
 	const confirmDrawing = useCallback(
-		(pointsData?: PointsData) => {
+		(pointsData?: PointsData, immediate = false) => {
 			const confirmedPoints = pointsData ?? emptyPointsData;
 			if (!alwaysActive) setDrawingActive(false);
 			// if the value is already the same, do not change it
@@ -256,9 +274,16 @@ export default function ParameterDrawingComponent(
 					: confirmedPoints,
 			);
 			if (value === serializedValue) return;
-			handleChange(serializedValue, 0);
+			if (automaticSceneUpdate && !immediate)
+				scheduleChange(serializedValue, automaticSceneUpdateTimeout);
+			else handleChange(serializedValue, 0);
 		},
-		[alwaysActive, value],
+		[
+			alwaysActive,
+			automaticSceneUpdate,
+			automaticSceneUpdateTimeout,
+			value,
+		],
 	);
 
 	/**
@@ -287,7 +312,7 @@ export default function ParameterDrawingComponent(
 		// the user drew the minimum number of points again.
 		const minPoints = drawingProps.geometry?.minPoints;
 		if (automaticSceneUpdate && (minPoints === undefined || minPoints <= 0))
-			confirmDrawing([]);
+			confirmDrawing([], true);
 	}, [
 		automaticSceneUpdate,
 		confirmDrawing,
@@ -335,6 +360,9 @@ export default function ParameterDrawingComponent(
 	// an execution (see the "resetValue" setting), the committed value differs
 	// from the executed value and the drawing is reset to the committed value.
 	useEffect(() => {
+		// a drawing still waiting for its automatic scene update was made
+		// before this commit, it is dropped (an own update was sent already)
+		if (automaticSceneUpdate) cancelScheduledChange();
 		if (state.commitValue === state.execValue) return;
 		resetDrawingToCommittedRef.current();
 	}, [state.commitValue, state.commitRevision]);

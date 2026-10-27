@@ -8,6 +8,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
+import {automaticSceneUpdateScheduler} from "./automaticSceneUpdateScheduler";
 import {useParameter} from "./useParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
@@ -238,6 +239,52 @@ export function useParameterComponentCommons<T>(
 		],
 	);
 
+	/**
+	 * Schedule an automatic scene update of the value: it is sent together
+	 * with the pending automatic updates of all other parameters once the
+	 * longest of their timeouts elapsed without a further change (see
+	 * {@link automaticSceneUpdateScheduler}). Unlike {@link handleChange} the
+	 * pending value survives an unmount of the component. In accept/reject
+	 * mode the value is registered like any other debounced change.
+	 */
+	const scheduleChange = useCallback(
+		(curval: T | string, timeout: number) => {
+			if (acceptRejectMode) {
+				handleChange(curval, timeout);
+				return;
+			}
+			cancelPendingChange();
+			setValue(curval);
+			const value = actions.stringify?.(curval) ?? `${curval}`;
+			automaticSceneUpdateScheduler.schedule({
+				namespace,
+				parameterId: definition.id,
+				value,
+				timeout,
+				afterSend:
+					delegates.length > 0
+						? () => Promise.all(executeDelegates(curval, true))
+						: undefined,
+			});
+		},
+		[
+			acceptRejectMode,
+			actions,
+			cancelPendingChange,
+			definition.id,
+			delegates.length,
+			executeDelegates,
+			handleChange,
+			namespace,
+		],
+	);
+
+	/** Drop the value of this parameter scheduled by {@link scheduleChange}. */
+	const cancelScheduledChange = useCallback(
+		() => automaticSceneUpdateScheduler.cancel(namespace, definition.id),
+		[namespace, definition.id],
+	);
+
 	useEffect(() => {
 		if (reactive) {
 			setValue(state.uiValue);
@@ -350,6 +397,8 @@ export function useParameterComponentCommons<T>(
 		setValue,
 		handleChange,
 		cancelPendingChange,
+		scheduleChange,
+		cancelScheduledChange,
 		setOnCancelCallback,
 		onCancel,
 		disabled,
