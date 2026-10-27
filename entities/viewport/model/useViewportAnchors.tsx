@@ -1,3 +1,5 @@
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import type {IAppBuilderWidget} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilder,
@@ -7,6 +9,10 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {collectActionTargetedAnchorIdsFromContainers} from "@AppBuilderLib/features/appbuilder/lib/collectActionTargetedAnchorIds";
+import {
+	isContainerEmpty,
+	type ParameterDefinitionLookup,
+} from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useContext, useEffect, useState} from "react";
 
@@ -53,10 +59,39 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 	const [anchors, setAnchors] = useState<JSX.Element[]>([]);
 
 	const componentContext = useContext(ComponentContext);
+	// the parameter definitions decide whether an anchor renders anything
+	const parameterStores = useShapeDiverStoreParameters(
+		(state) => state.parameterStores,
+	);
 
 	useEffect(() => {
 		const ContainerComponent = componentContext.containerComponent;
 		const anchors: JSX.Element[] = [];
+		// a parameter referenced by a controls widget, like the widget renders it
+		const getParameterDefinition: ParameterDefinitionLookup = (
+			parameterNamespace,
+			parameterId,
+		) =>
+			useShapeDiverStoreParameters
+				.getState()
+				.getParameter(parameterNamespace, parameterId)
+				?.getState().definition;
+
+		const skipEmptyAnchor = (container: {
+			props: {id: string};
+			tabs?: unknown[];
+			widgets?: IAppBuilderWidget[];
+		}) => {
+			// an anchor which renders nothing (e.g. only an interaction
+			// parameter presented in the toolbar) is not created at all: a
+			// selection or action opening it would show an empty panel
+			if (!isContainerEmpty(container, namespace, getParameterDefinition))
+				return false;
+			Logger.debug(
+				`Anchor ${container.props.id} renders no content and is not shown.`,
+			);
+			return true;
+		};
 
 		const existingIds = new Set<string>();
 		const actionTargetedAnchorIds =
@@ -67,6 +102,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
+				if (skipEmptyAnchor(container)) return;
 				// check if there are anchors with the same id
 				if (existingIds.has(container.props.id)) {
 					Logger.warn(
@@ -132,6 +168,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {
+				if (skipEmptyAnchor(container)) return;
 				// check if there are anchors with the same id
 				if (existingIds.has(container.props.id)) {
 					Logger.warn(
@@ -200,7 +237,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 			}
 		});
 		setAnchors(anchors);
-	}, [componentContext, containers, actionSlots, namespace]);
+	}, [componentContext, containers, actionSlots, namespace, parameterStores]);
 
 	return anchors;
 }

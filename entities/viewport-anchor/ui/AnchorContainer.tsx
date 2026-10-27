@@ -612,6 +612,7 @@ export function useAnchorContainer({
 		<Stack
 			gap={0}
 			key={id}
+			data-app-builder-anchor={id}
 			{...anchorStackProps}
 			p={useContainer ? undefined : appBuilderPanelSpacing}
 		>

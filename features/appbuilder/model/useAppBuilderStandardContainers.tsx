@@ -1,12 +1,17 @@
 import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
 import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
 import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useViewportAnchors} from "@AppBuilderLib/entities/viewport/model/useViewportAnchors";
 import {
 	additionalWithMobileFallbackInjections,
 	defaultsWithoutHiddenOriginals,
 	planMobileFallbacks,
 } from "@AppBuilderLib/features/appbuilder/lib/applyMobileFallbacks";
+import {
+	isContainerEmpty,
+	type ParameterDefinitionLookup,
+} from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
 import {mergeAllStandardContainers} from "@AppBuilderLib/features/appbuilder/lib/mergeStandardContainerContent";
 import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {
@@ -242,6 +247,11 @@ export function useAppBuilderStandardContainers(props: Props) {
 		FallbackContainerComponent,
 	]);
 
+	// the parameter definitions decide whether a container renders anything
+	const parameterStores = useShapeDiverStoreParameters(
+		(state) => state.parameterStores,
+	);
+
 	//create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = useMemo(() => {
 		const result: IAppBuilderTemplatePageProps = {
@@ -250,10 +260,23 @@ export function useAppBuilderStandardContainers(props: Props) {
 			left: undefined,
 			right: undefined,
 		};
+		// a parameter referenced by a controls widget, like the widget renders it
+		const getParameterDefinition: ParameterDefinitionLookup = (
+			parameterNamespace,
+			parameterId,
+		) =>
+			useShapeDiverStoreParameters
+				.getState()
+				.getParameter(parameterNamespace, parameterId)
+				?.getState().definition;
 
+		// a container which renders nothing (e.g. only interaction parameters
+		// presented in the toolbar) is omitted like a closed one
 		const mergedContainerArray = Object.values(layoutContainers).filter(
 			(container): container is IAppBuilderStandardContainer =>
-				!!container && containerOpen[container.name],
+				!!container &&
+				containerOpen[container.name] &&
+				!isContainerEmpty(container, namespace, getParameterDefinition),
 		);
 
 		if (mergedContainerArray.length === 0) {
@@ -284,6 +307,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 		namespace,
 		fallbackContainer,
 		ContainerComponent,
+		parameterStores,
 	]);
 
 	return {containers, anchors};
