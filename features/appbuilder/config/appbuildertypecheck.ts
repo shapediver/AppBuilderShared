@@ -181,24 +181,16 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 });
 
 // Zod type definition for ISelectParameterSettings
-const ISelectParameterSettingsSchema = z
-	.object({
-		type: SelectComponentTypeSchema.optional(),
-		itemData: z
-			.record(z.string(), ISelectComponentItemDataTypeSchema)
-			.optional(),
-		searchable: z.boolean().optional(),
-		limit: z.int().positive().optional(),
-		height: z.string().optional(),
-		database: filterableDatabaseSettingsSchema.optional(),
-	})
-	.refine(
-		(s) => !s.database || s.type === "fullwidthcards" || s.type === "grid",
-		{
-			message:
-				'database requires selectSettings.type "fullwidthcards" or "grid"',
-		},
-	);
+const ISelectParameterSettingsSchema = z.object({
+	type: SelectComponentTypeSchema.optional(),
+	itemData: z
+		.record(z.string(), ISelectComponentItemDataTypeSchema)
+		.optional(),
+	searchable: z.boolean().optional(),
+	limit: z.int().positive().optional(),
+	height: z.string().optional(),
+	database: filterableDatabaseSettingsSchema.optional(),
+});
 
 export const validateSelectParameterSettings = (value: any) => {
 	return ISelectParameterSettingsSchema.safeParse(value);

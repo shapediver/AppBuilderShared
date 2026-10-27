@@ -236,7 +236,11 @@ export interface ISelectComponentItemDataType {
 export interface ISelectParameterSettings {
 	/** Type of select component to use. */
 	type?: SelectComponentType;
-	/** Record containing optional further item data per item name. */
+	/**
+	 * Record containing optional further item data per item name.
+	 * When `database` is set, an entry whose key matches a database row
+	 * overwrites that row field by field. `hidden` exists only here.
+	 */
 	itemData?: Record<string, ISelectComponentItemDataType>;
 	/** Enable search for string list inputs (only for type=="dropdown"). */
 	searchable?: boolean;
@@ -248,8 +252,12 @@ export interface ISelectParameterSettings {
 	 */
 	height?: string;
 	/**
-	 * Settings of the optional filterable database to fetch items from.
-	 * Currently supported for type "fullwidthcards" and "grid".
+	 * Optional catalog used to fetch items and item data.
+	 * Allowed for every {@link SelectComponentType}, including checklist widgets.
+	 * When `filters` is empty, no filter UI is shown.
+	 * `fullwidthcards` and `grid` page their results. Every other type renders
+	 * the filtered catalog in its own widget.
+	 * `itemData` patches matching rows field by field and does not add rows.
 	 */
 	database?: IFilterableDatabaseSettings;
 }
@@ -306,9 +314,9 @@ export interface IFilterableDatabaseSettings {
 		data?: Record<string, number>;
 	};
 	/**
-	 * Array of filter definitions, defining which filters are shown and how
-	 * they are applied to the data source, resulting in updates to the "items"
-	 * and "itemData" properties.
+	 * Filter definitions applied to the data source. The result updates
+	 * the "items" and "itemData" properties.
+	 * An empty array loads every row and renders no filter UI.
 	 */
 	filters: {
 		/** Index of the column to filter (option values and matching / selection keys). */
@@ -377,10 +385,8 @@ export interface IStringParameterSelectSettings extends ISelectParameterSettings
 	 */
 	source?: string;
 	/**
-	 * Settings of the optional "database" to fetch "items" and "itemData" from.
-	 * A filterable database component will be used to show the items and allow
-	 * the user to filter them.
-	 * Currently, this is only supported for type "fullwidthcards" and "grid".
+	 * Optional catalog. Same patch and filter rules as
+	 * {@link ISelectParameterSettings.database}.
 	 */
 	database?: IFilterableDatabaseSettings;
 }

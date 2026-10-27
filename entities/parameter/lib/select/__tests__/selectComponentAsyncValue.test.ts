@@ -1,4 +1,5 @@
 import {
+	emitSelectValue,
 	isValueInAvailableItems,
 	resolveDisplayValueForCards,
 } from "../selectComponentAsyncValue";
@@ -15,6 +16,22 @@ const itemsData = {
 };
 
 describe("selectComponentAsyncValue", () => {
+	it("emitSelectValue stores JSON data when emitValue is itemData", () => {
+		expect(emitSelectValue("b", "itemData", itemsData)).toBe(
+			JSON.stringify(itemsData.b.data),
+		);
+	});
+
+	it("emitSelectValue stores the item key when the row has no data", () => {
+		expect(
+			emitSelectValue("a", "itemData", {a: {displayname: "Alpha"}}),
+		).toBe("a");
+	});
+
+	it("emitSelectValue stores the item key when emitValue is itemKey", () => {
+		expect(emitSelectValue("b", "itemKey", itemsData)).toBe("b");
+	});
+
 	it("resolveDisplayValueForCards highlights when item key is visible", () => {
 		expect(resolveDisplayValueForCards("a", ["a", "b"], itemsData)).toBe(
 			"a",

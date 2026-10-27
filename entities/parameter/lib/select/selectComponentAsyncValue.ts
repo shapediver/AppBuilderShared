@@ -1,6 +1,22 @@
 import type {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 /**
+ * Value committed when an item is chosen.
+ * `itemData` stores `JSON.stringify(itemData.data)` when that object exists.
+ * Otherwise the item key is stored.
+ */
+export function emitSelectValue(
+	itemKey: string | null,
+	emitValue: "itemKey" | "itemData" | undefined,
+	itemData?: Record<string, ISelectComponentItemDataType>,
+): string | null {
+	if (emitValue === "itemData" && itemKey && itemData?.[itemKey]?.data) {
+		return JSON.stringify(itemData[itemKey].data);
+	}
+	return itemKey;
+}
+
+/**
  * Whether the parameter value still matches a visible card after filters/search reload.
  * Cards use item keys; String+database parameters store `JSON.stringify(itemData.data)` —
  * both shapes must be recognized for card highlighting.

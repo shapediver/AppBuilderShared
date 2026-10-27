@@ -1,8 +1,10 @@
 import {
+	IFilterableDatabaseSettings,
 	ISelectComponentItemDataType,
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
+import {DatabaseSelectFrame} from "../select/DatabaseSelectFrame";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
 import SelectCarouselComponent from "../select/SelectCarouselComponent";
@@ -44,6 +46,11 @@ export interface MultiSelectComponentProps {
 	height?: string;
 	/** Type of select component to use. */
 	type?: SelectComponentType;
+	/**
+	 * Optional catalog. Same file and patch rules as a single-select database.
+	 * Checklist widgets render the filtered catalog directly.
+	 */
+	database?: IFilterableDatabaseSettings;
 	/** Enable search (only used by dropdown type). */
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
@@ -59,35 +66,65 @@ export type UniversalMultiSelectComponentProps =
  * Multiple items can be selected at a time.
  */
 export default function MultiSelectComponent(props: MultiSelectComponentProps) {
-	const {type, ...rest} = props;
+	const {type, database, itemData, items, ...rest} = props;
+
+	if (database) {
+		return (
+			<DatabaseSelectFrame
+				database={database}
+				itemData={itemData}
+				limit={rest.limit}
+			>
+				{({catalog}) => (
+					<MultiSelectComponent
+						{...rest}
+						type={type}
+						items={catalog?.items ?? []}
+						itemData={catalog?.itemData}
+					/>
+				)}
+			</DatabaseSelectFrame>
+		);
+	}
+
+	const widgetProps = {...rest, items, itemData};
 
 	if (type === "multiselect-checkboxes") {
-		return <MultiSelectCheckboxesComponent {...rest} />;
+		return <MultiSelectCheckboxesComponent {...widgetProps} />;
 	}
 
 	if (type === "buttonflex") {
-		return <SelectButtonFlexComponent {...rest} multiselect={true} />;
+		return (
+			<SelectButtonFlexComponent {...widgetProps} multiselect={true} />
+		);
 	}
 
 	if (type === "buttongroup") {
-		return <SelectButtonGroupComponent {...rest} multiselect={true} />;
+		return (
+			<SelectButtonGroupComponent {...widgetProps} multiselect={true} />
+		);
 	}
 
 	if (type === "chipgroup") {
-		return <SelectChipGroupComponent {...rest} multiselect={true} />;
+		return <SelectChipGroupComponent {...widgetProps} multiselect={true} />;
 	}
 
 	if (type === "fullwidthcards") {
-		return <SelectFullWidthCardsComponent {...rest} multiselect={true} />;
+		return (
+			<SelectFullWidthCardsComponent
+				{...widgetProps}
+				multiselect={true}
+			/>
+		);
 	}
 
 	if (type === "grid") {
-		return <SelectGridComponent {...rest} multiselect={true} />;
+		return <SelectGridComponent {...widgetProps} multiselect={true} />;
 	}
 
 	if (type === "carousel") {
-		return <SelectCarouselComponent {...rest} multiselect={true} />;
+		return <SelectCarouselComponent {...widgetProps} multiselect={true} />;
 	}
 
-	return <SelectDropDownComponent {...rest} multiselect={true} />;
+	return <SelectDropDownComponent {...widgetProps} multiselect={true} />;
 }
