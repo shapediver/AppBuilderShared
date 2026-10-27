@@ -370,10 +370,10 @@ export default function ParameterDrawingComponent(
 		// before a foreign commit (reset value, undo, model state), it is
 		// dropped. The commit of an own update keeps a newer scheduled
 		// drawing, and the mount keeps a drawing scheduled before the
-		// component was unmounted.
-		// an own commit of an older drawing may arrive while a newer drawing is
-		// sent or scheduled (the user kept drawing during the request)
-		const {own: ownCommit} = sentValuesRef.current.takeCommit(
+		// component was unmounted. An own commit of an older drawing may
+		// arrive while a newer drawing is sent or scheduled (the user kept
+		// drawing during the request): the newer drawing is kept.
+		const {own: ownCommit, newerPending} = sentValuesRef.current.takeCommit(
 			state.commitValue,
 		);
 		if (
@@ -383,6 +383,7 @@ export default function ParameterDrawingComponent(
 		)
 			cancelScheduledChange();
 		commitEffectMountedRef.current = true;
+		if (newerPending) return;
 		if (state.commitValue === state.execValue) return;
 		resetDrawingToCommittedRef.current();
 	}, [state.commitValue, state.commitRevision]);
@@ -397,9 +398,15 @@ export default function ParameterDrawingComponent(
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
-		// a newer drawing waits for its automatic scene update: the value of an
-		// earlier update (sent meanwhile) must not replace it
-		if (automaticSceneUpdate && isScheduledChangePending()) return;
+		// a newer drawing waits for its automatic scene update, or was sent
+		// and waits for its commit: the value of an earlier own update must
+		// not replace it
+		if (
+			automaticSceneUpdate &&
+			(isScheduledChangePending() ||
+				sentValuesRef.current.isSuperseded(state.uiValue))
+		)
+			return;
 		const parsed = parsePointsData(state.uiValue);
 		setParsedUiValue((previous) =>
 			JSON.stringify(previous) === JSON.stringify(parsed)

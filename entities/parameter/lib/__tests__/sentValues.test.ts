@@ -36,6 +36,28 @@ describe("SentValues", () => {
 		expect(sent.takeCommit("b")).toEqual({own: false, newerPending: false});
 	});
 
+	it("matches a value sent twice in the order of sending", () => {
+		const sent = new SentValues();
+		sent.record("a");
+		sent.record("b");
+		sent.record("a");
+		// the first commit of "a" is the oldest send, "b" and "a" are newer
+		expect(sent.takeCommit("a")).toEqual({own: true, newerPending: true});
+		expect(sent.takeCommit("b")).toEqual({own: true, newerPending: true});
+		expect(sent.takeCommit("a")).toEqual({own: true, newerPending: false});
+	});
+
+	it("tells a superseded own value", () => {
+		const sent = new SentValues();
+		sent.record("a");
+		sent.record("b");
+		expect(sent.isSuperseded("a")).toBe(true);
+		expect(sent.isSuperseded("b")).toBe(false);
+		expect(sent.isSuperseded("foreign")).toBe(false);
+		sent.takeCommit("a");
+		expect(sent.isSuperseded("b")).toBe(false);
+	});
+
 	it("forgets all sent values on clear", () => {
 		const sent = new SentValues();
 		sent.record("a");

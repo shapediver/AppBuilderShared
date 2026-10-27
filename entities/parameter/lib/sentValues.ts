@@ -23,15 +23,26 @@ export class SentValues {
 	}
 
 	/**
-	 * Match a commit against the sent values. An own commit removes the
-	 * committed value and all older ones; a foreign commit removes all values.
+	 * Whether a value was sent by the component and a newer sent value is
+	 * still waiting for its commit (the scene shows that newer state).
+	 */
+	isSuperseded(value: string): boolean {
+		const index = this.#values.indexOf(value);
+		return index >= 0 && index < this.#values.length - 1;
+	}
+
+	/**
+	 * Match a commit against the sent values. The oldest matching value is
+	 * the committed one (commits arrive in the order of sending, the same
+	 * value may be sent again later). An own commit removes the committed
+	 * value and all older ones; a foreign commit removes all values.
 	 *
 	 * @returns `own`: the committed value was sent by the component;
 	 * `newerPending`: a newer value sent by the component is still waiting for
 	 * its commit (the scene shows that newer state).
 	 */
 	takeCommit(commitValue: string): {own: boolean; newerPending: boolean} {
-		const index = this.#values.lastIndexOf(commitValue);
+		const index = this.#values.indexOf(commitValue);
 		if (index < 0) {
 			this.#values = [];
 			return {own: false, newerPending: false};
