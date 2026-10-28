@@ -66,6 +66,26 @@ describe("selectComponentAsyncValue", () => {
 		).toBe(false);
 	});
 
+	it("matches a stored JSON value whose keys are in another order", () => {
+		// the model may return the data mapping with reordered keys after a
+		// computation: the stored value still belongs to the same row
+		const reordered = JSON.stringify({color: "Red", category: "Fabric"});
+		expect(isValueInAvailableItems(reordered, ["a", "b"], itemsData)).toBe(
+			true,
+		);
+		expect(
+			resolveDisplayValueForCards(reordered, ["a", "b"], itemsData),
+		).toBe("a");
+	});
+
+	it("does not match a JSON value with other content in another order", () => {
+		const other = JSON.stringify({color: "Blue", category: "Fabric"});
+		expect(isValueInAvailableItems(other, ["a"], itemsData)).toBe(false);
+		expect(isValueInAvailableItems("not json", ["a"], itemsData)).toBe(
+			false,
+		);
+	});
+
 	describe("e-commerce itemKey path (source scrolling API)", () => {
 		const ecommerceItems = ["Option 000", "Option 001", "Option 002"];
 

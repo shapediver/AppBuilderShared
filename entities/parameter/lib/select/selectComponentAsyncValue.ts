@@ -16,6 +16,49 @@ export function emitSelectValue(
 	return itemKey;
 }
 
+/** Deep equality of JSON values, independent of the order of object keys. */
+function jsonEqual(a: unknown, b: unknown): boolean {
+	if (a === b) return true;
+	if (
+		typeof a !== "object" ||
+		typeof b !== "object" ||
+		a === null ||
+		b === null ||
+		Array.isArray(a) !== Array.isArray(b)
+	)
+		return false;
+	if (Array.isArray(a) && Array.isArray(b))
+		return (
+			a.length === b.length && a.every((item, i) => jsonEqual(item, b[i]))
+		);
+	const aKeys = Object.keys(a);
+	const bRecord = b as Record<string, unknown>;
+	return (
+		aKeys.length === Object.keys(b).length &&
+		aKeys.every(
+			(key) =>
+				key in bRecord &&
+				jsonEqual((a as Record<string, unknown>)[key], bRecord[key]),
+		)
+	);
+}
+
+/**
+ * Whether a stored parameter value is the serialized `data` of an item. The
+ * comparison ignores the order of the keys: the settings travel through the
+ * model, which may return the `data` mapping with its keys in another order
+ * after a computation than when the value was stored.
+ */
+function isItemDataValue(data: unknown, value: string): boolean {
+	if (data === undefined) return false;
+	if (JSON.stringify(data) === value) return true;
+	try {
+		return jsonEqual(data, JSON.parse(value));
+	} catch {
+		return false;
+	}
+}
+
 /**
  * Whether the parameter value still matches a visible card after filters/search reload.
  * Cards use item keys; String+database parameters store `JSON.stringify(itemData.data)` —
@@ -35,8 +78,7 @@ export function isValueInAvailableItems(
 	}
 
 	return items.some((key) => {
-		const data = itemsData[key]?.data;
-		return data !== undefined && JSON.stringify(data) === value;
+		return isItemDataValue(itemsData[key]?.data, value);
 	});
 }
 
@@ -59,8 +101,7 @@ export function resolveItemKeyForValue(
 	}
 
 	const match = items.find((key) => {
-		const data = itemsData[key]?.data;
-		return data !== undefined && JSON.stringify(data) === value;
+		return isItemDataValue(itemsData[key]?.data, value);
 	});
 
 	return match ?? value;
