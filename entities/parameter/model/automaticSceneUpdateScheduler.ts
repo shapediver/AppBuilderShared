@@ -45,9 +45,22 @@ export class AutomaticSceneUpdateScheduler {
 	/** Pointers pressed in a viewport: the countdown waits for their release. */
 	readonly #heldPointers = new Set<number>();
 	readonly #flush: AutomaticSceneUpdateFlush;
+	/** Receives the release events of held pointers (the window). */
+	readonly #releaseTarget: EventTarget | undefined;
 
-	constructor(flush: AutomaticSceneUpdateFlush) {
+	/**
+	 * @param flush Sends the pending values.
+	 * @param releaseTarget Receives the release events of held pointers
+	 * (`pointerup`, `pointercancel`, `blur`), the window by default.
+	 */
+	constructor(
+		flush: AutomaticSceneUpdateFlush,
+		releaseTarget: EventTarget | undefined = typeof window === "undefined"
+			? undefined
+			: window,
+	) {
 		this.#flush = flush;
+		this.#releaseTarget = releaseTarget;
 	}
 
 	/**
@@ -71,8 +84,14 @@ export class AutomaticSceneUpdateScheduler {
 	 * until the pointer is released, then restarts with the longest timeout of
 	 * the pending values. Otherwise a pending value of an earlier move could be
 	 * sent in the middle of the new move.
+	 *
+	 * The scheduler observes the release itself: the press may unmount the
+	 * component which reported it (e.g. a click into the scene closes the
+	 * container of the parameter), its listeners would miss the release and
+	 * the countdown would never restart.
 	 */
 	holdPointer(pointerId: number): void {
+		if (this.#heldPointers.size === 0) this.#observeRelease(true);
 		this.#heldPointers.add(pointerId);
 		this.#clearTimer();
 	}
@@ -80,14 +99,16 @@ export class AutomaticSceneUpdateScheduler {
 	/** A pointer pressed in a viewport was released (see {@link holdPointer}). */
 	releasePointer(pointerId: number): void {
 		if (!this.#heldPointers.delete(pointerId)) return;
-		if (this.#heldPointers.size === 0 && this.#pending.size > 0)
-			this.#restart();
+		if (this.#heldPointers.size > 0) return;
+		this.#observeRelease(false);
+		if (this.#pending.size > 0) this.#restart();
 	}
 
 	/** Release all held pointers (e.g. the window lost the focus). */
 	releaseAllPointers(): void {
 		if (this.#heldPointers.size === 0) return;
 		this.#heldPointers.clear();
+		this.#observeRelease(false);
 		if (this.#pending.size > 0) this.#restart();
 	}
 
@@ -140,6 +161,25 @@ export class AutomaticSceneUpdateScheduler {
 		this.#clearTimer();
 		this.#pending.clear();
 		this.#heldPointers.clear();
+		this.#observeRelease(false);
+	}
+
+	readonly #onPointerRelease = (event: Event) =>
+		this.releasePointer((event as PointerEvent).pointerId);
+
+	readonly #onBlur = () => this.releaseAllPointers();
+
+	/** Add or remove the listeners for the release of held pointers. */
+	#observeRelease(observe: boolean): void {
+		const target = this.#releaseTarget;
+		if (!target) return;
+		const method = observe ? "addEventListener" : "removeEventListener";
+		// the pointer may be released outside of the viewport
+		target[method]("pointerup", this.#onPointerRelease, {capture: true});
+		target[method]("pointercancel", this.#onPointerRelease, {
+			capture: true,
+		});
+		target[method]("blur", this.#onBlur);
 	}
 
 	#restart(): void {
