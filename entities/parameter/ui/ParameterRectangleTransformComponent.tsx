@@ -7,6 +7,7 @@ import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {hasLocalTransformationDelta} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
+import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
@@ -197,6 +198,8 @@ export default function ParameterRectangleTransformComponent(
 		TransformedNode[]
 	>([]);
 	const {viewportId} = useViewportId();
+	// a new move pauses the countdown of earlier automatic updates
+	useAutomaticSceneUpdatePointerHold(viewportId, automaticSceneUpdate);
 	const interactionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 
 	// get the transformed nodes and the selected nodes

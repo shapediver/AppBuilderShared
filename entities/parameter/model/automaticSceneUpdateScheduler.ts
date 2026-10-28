@@ -42,6 +42,8 @@ export type AutomaticSceneUpdateFlush = (
 export class AutomaticSceneUpdateScheduler {
 	readonly #pending = new Map<string, IScheduledAutomaticSceneUpdate>();
 	#timer: ReturnType<typeof setTimeout> | undefined;
+	/** Pointers pressed in a viewport: the countdown waits for their release. */
+	readonly #heldPointers = new Set<number>();
 	readonly #flush: AutomaticSceneUpdateFlush;
 
 	constructor(flush: AutomaticSceneUpdateFlush) {
@@ -60,7 +62,33 @@ export class AutomaticSceneUpdateScheduler {
 			),
 			update,
 		);
-		this.#restart();
+		if (this.#heldPointers.size === 0) this.#restart();
+	}
+
+	/**
+	 * A pointer was pressed in a viewport (the user starts a new move, e.g. of
+	 * another object controlled by another parameter): the countdown pauses
+	 * until the pointer is released, then restarts with the longest timeout of
+	 * the pending values. Otherwise a pending value of an earlier move could be
+	 * sent in the middle of the new move.
+	 */
+	holdPointer(pointerId: number): void {
+		this.#heldPointers.add(pointerId);
+		this.#clearTimer();
+	}
+
+	/** A pointer pressed in a viewport was released (see {@link holdPointer}). */
+	releasePointer(pointerId: number): void {
+		if (!this.#heldPointers.delete(pointerId)) return;
+		if (this.#heldPointers.size === 0 && this.#pending.size > 0)
+			this.#restart();
+	}
+
+	/** Release all held pointers (e.g. the window lost the focus). */
+	releaseAllPointers(): void {
+		if (this.#heldPointers.size === 0) return;
+		this.#heldPointers.clear();
+		if (this.#pending.size > 0) this.#restart();
 	}
 
 	/**
@@ -111,6 +139,7 @@ export class AutomaticSceneUpdateScheduler {
 	reset(): void {
 		this.#clearTimer();
 		this.#pending.clear();
+		this.#heldPointers.clear();
 	}
 
 	#restart(): void {

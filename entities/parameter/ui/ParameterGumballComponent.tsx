@@ -1,5 +1,6 @@
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
+import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
 	createToolbarCheckboxItem,
@@ -191,6 +192,8 @@ export default function ParameterGumballComponent(
 		TransformedNode[]
 	>([]);
 	const {viewportId} = useViewportId();
+	// a new move pauses the countdown of earlier automatic updates
+	useAutomaticSceneUpdatePointerHold(viewportId, automaticSceneUpdate);
 	const interactionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 
 	// get the transformed nodes and the selected nods
