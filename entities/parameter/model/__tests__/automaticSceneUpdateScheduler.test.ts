@@ -89,6 +89,60 @@ describe("AutomaticSceneUpdateScheduler", () => {
 		expect(flush).not.toHaveBeenCalled();
 	});
 
+	it("pauses the countdown while a pointer is pressed", () => {
+		schedule("A", "a1", 3000);
+		jest.advanceTimersByTime(2000);
+		// a new move starts: the earlier value must not be sent during it
+		scheduler.holdPointer(1);
+		jest.advanceTimersByTime(5000);
+		expect(flush).not.toHaveBeenCalled();
+		// the move ends: the countdown restarts with the full timeout
+		scheduler.releasePointer(1);
+		jest.advanceTimersByTime(2999);
+		expect(flush).not.toHaveBeenCalled();
+		jest.advanceTimersByTime(1);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("starts no countdown for a value scheduled while a pointer is pressed", () => {
+		scheduler.holdPointer(1);
+		schedule("A", "a1", 500);
+		schedule("B", "b1", 500);
+		jest.advanceTimersByTime(1000);
+		expect(flush).not.toHaveBeenCalled();
+		scheduler.releasePointer(1);
+		jest.advanceTimersByTime(500);
+		expect(flush).toHaveBeenCalledWith({s_appbuilder: {A: "a1", B: "b1"}});
+	});
+
+	it("waits for the release of all pressed pointers", () => {
+		schedule("A", "a1", 500);
+		scheduler.holdPointer(1);
+		scheduler.holdPointer(2);
+		scheduler.releasePointer(1);
+		jest.advanceTimersByTime(1000);
+		expect(flush).not.toHaveBeenCalled();
+		scheduler.releasePointer(2);
+		jest.advanceTimersByTime(500);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("ignores the release of a pointer which was not pressed", () => {
+		schedule("A", "a1", 500);
+		jest.advanceTimersByTime(300);
+		scheduler.releasePointer(7);
+		jest.advanceTimersByTime(200);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("releases all pointers at once", () => {
+		schedule("A", "a1", 500);
+		scheduler.holdPointer(1);
+		scheduler.releaseAllPointers();
+		jest.advanceTimersByTime(500);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
 	it("groups the values by namespace", () => {
 		schedule("A", "a1", 500);
 		scheduler.schedule({

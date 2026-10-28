@@ -1,4 +1,5 @@
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
+import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
@@ -166,6 +167,8 @@ export default function ParameterDrawingComponent(
 		enabled: automaticSceneUpdate,
 		timeout: automaticSceneUpdateTimeout,
 	} = resolveAutomaticSceneUpdate(drawingProps.behavior, alwaysActive);
+	// a new move pauses the countdown of earlier automatic updates
+	useAutomaticSceneUpdatePointerHold(viewportId, automaticSceneUpdate);
 	// The drawing tools call onUpdate on their own after an idle timeout when
 	// behavior.automaticSceneUpdate is set. App Builder supports this for
 	// always active drawings only. The drawing tools only report the end of a
