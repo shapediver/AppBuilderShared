@@ -10,7 +10,9 @@ import {automaticSceneUpdateScheduler} from "./automaticSceneUpdateScheduler";
  * with the full timeout once the pointer is released.
  *
  * Several components may register for the same viewport, the scheduler
- * tracks the pressed pointers by id.
+ * tracks the pressed pointers by id. The scheduler observes the release
+ * itself: the press may unmount the component (e.g. a click into the scene
+ * closes the container of the parameter).
  *
  * @param viewportId The viewport whose canvas is observed.
  * @param enabled Whether the component uses automatic scene updates.
@@ -25,26 +27,11 @@ export function useAutomaticSceneUpdatePointerHold(
 		if (!enabled || !canvas) return;
 		const onPointerDown = (event: PointerEvent) =>
 			automaticSceneUpdateScheduler.holdPointer(event.pointerId);
-		// the pointer may be released outside of the canvas
-		const onPointerUp = (event: PointerEvent) =>
-			automaticSceneUpdateScheduler.releasePointer(event.pointerId);
-		const onBlur = () => automaticSceneUpdateScheduler.releaseAllPointers();
 
 		canvas.addEventListener("pointerdown", onPointerDown, {capture: true});
-		window.addEventListener("pointerup", onPointerUp, {capture: true});
-		window.addEventListener("pointercancel", onPointerUp, {capture: true});
-		window.addEventListener("blur", onBlur);
-		return () => {
+		return () =>
 			canvas.removeEventListener("pointerdown", onPointerDown, {
 				capture: true,
 			});
-			window.removeEventListener("pointerup", onPointerUp, {
-				capture: true,
-			});
-			window.removeEventListener("pointercancel", onPointerUp, {
-				capture: true,
-			});
-			window.removeEventListener("blur", onBlur);
-		};
 	}, [canvas, enabled]);
 }
