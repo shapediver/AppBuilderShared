@@ -20,14 +20,14 @@ validateAppBuilderSettingsJson  (appbuildertypecheck.ts)
 
 **Related code outside this folder:**
 
-| Location                                                           | Role                                                                              |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `features/appbuilder/config/themeComponentDefaultPropsRegistry.ts` | Maps theme component keys → Zod schema                                            |
-| `features/appbuilder/config/validateThemeComponentsRecord.ts`      | Deep validation of nested `containerThemeOverrides`                               |
-| `features/appbuilder/config/appbuildertypecheck.ts`                | Top-level settings schema + `superRefine`                                         |
+| Location                                                           | Role                                                                 |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `features/appbuilder/config/themeComponentDefaultPropsRegistry.ts` | Maps theme component keys → Zod schema                               |
+| `features/appbuilder/config/validateThemeComponentsRecord.ts`      | Deep validation of nested `containerThemeOverrides`                  |
+| `features/appbuilder/config/appbuildertypecheck.ts`                | Top-level settings schema + `superRefine`                            |
 | `features/appbuilder/config/jsonValue.ts`                          | `JsonValue` / `JsonValueSchema` — opaque JSON (not in mantine-props) |
-| `pages/config/*Container.types.ts`, widget `*.theme.types.ts`      | Re-export or extend `Mantine*Props` / compose schemas                             |
-| `shared/mantine-props/assert-mantine-subset.test-d.ts`             | Compile-time `MantinePropsSubset` vs `@mantine/core`                              |
+| `pages/config/*Container.types.ts`, widget `*.theme.types.ts`      | Re-export or extend `Mantine*Props` / compose schemas                |
+| `shared/mantine-props/assert-mantine-subset.test-d.ts`             | Compile-time `MantinePropsSubset` vs `@mantine/core`                 |
 
 **Repo split:** code here lives in **`src/shared` submodule**; `generate:mantine-props-zod` script and `ts-to-zod` devDependency live in the **parent repo** `package.json`.
 

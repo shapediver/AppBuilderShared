@@ -35,9 +35,7 @@ describe("AppBuilderIframeWidgetComponent", () => {
 			<AppBuilderIframeWidgetComponent url="javascript:alert(1)" />,
 		);
 		await waitFor(() => {
-			expect(
-				screen.queryByRole("status", {name: "Loading"}),
-			).toBeNull();
+			expect(screen.queryByRole("status", {name: "Loading"})).toBeNull();
 		});
 		expect(container.querySelector("iframe")).toBeNull();
 	});

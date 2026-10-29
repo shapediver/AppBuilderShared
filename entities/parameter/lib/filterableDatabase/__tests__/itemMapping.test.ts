@@ -19,7 +19,10 @@ it("maps rows to items and itemData", () => {
 });
 
 it("skips rows with empty value column", () => {
-	const rows = [["", "X"], ["SKU2", "Y"]];
+	const rows = [
+		["", "X"],
+		["SKU2", "Y"],
+	];
 	const {items} = mapRowsToSelectItems(rows, {value: 0});
 	expect(items).toEqual(["SKU2"]);
 });

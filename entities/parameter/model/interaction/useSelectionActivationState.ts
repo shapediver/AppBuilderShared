@@ -10,9 +10,13 @@ export const useSelectionActivationState = ({
 	alwaysActive,
 	automaticallyActivated,
 }: UseSelectionActivationStateOptions) => {
-	const [selectionActive, setSelectionActive] = useState(automaticallyActivated);
+	const [selectionActive, setSelectionActive] = useState(
+		automaticallyActivated,
+	);
 	const [suspended, setSuspended] = useState(false);
-	const [ownershipBlocked, setOwnershipBlocked] = useState(automaticallyActivated);
+	const [ownershipBlocked, setOwnershipBlocked] = useState(
+		automaticallyActivated,
+	);
 
 	const effectiveSelectionActive =
 		!suspended && !ownershipBlocked && (alwaysActive || selectionActive);

@@ -146,15 +146,17 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 		};
 
 		store.getState().addSession(session as any, false);
-		await store.getState().batchParameterValueUpdate(
-			{[session.id]: {p1: "updated"}},
-			true,
-			true,
-		);
+		await store
+			.getState()
+			.batchParameterValueUpdate(
+				{[session.id]: {p1: "updated"}},
+				true,
+				true,
+			);
 
 		expect(session.customize).toHaveBeenCalledTimes(1);
-		expect(new URL(window.location.href).searchParams.get("modelStateId")).toBe(
-			"initial-state",
-		);
+		expect(
+			new URL(window.location.href).searchParams.get("modelStateId"),
+		).toBe("initial-state");
 	});
 });

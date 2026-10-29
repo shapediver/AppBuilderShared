@@ -7,4 +7,5 @@
 export const resolveInteractionPresentation = (
 	presentation: "widget" | "toolbar" | undefined,
 	alwaysActive: boolean,
-): "widget" | "toolbar" => presentation ?? (alwaysActive ? "toolbar" : "widget");
+): "widget" | "toolbar" =>
+	presentation ?? (alwaysActive ? "toolbar" : "widget");

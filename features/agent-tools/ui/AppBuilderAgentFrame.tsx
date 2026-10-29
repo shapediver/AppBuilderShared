@@ -7,8 +7,8 @@ import {
 	type PointerEvent,
 } from "react";
 import {sizeAfterHandleDrag} from "../lib/sizeAfterHandleDrag";
-import AppBuilderHostedAgentWidgetComponent from "./AppBuilderHostedAgentWidgetComponent";
 import classes from "./AppBuilderAgentFrame.module.css";
+import AppBuilderHostedAgentWidgetComponent from "./AppBuilderHostedAgentWidgetComponent";
 
 const MIN_WIDTH_PX = 256;
 const MIN_HEIGHT_PX = 192;

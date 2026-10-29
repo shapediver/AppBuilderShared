@@ -126,7 +126,8 @@ export const skillExamples = {
 											definition: {
 												type: "addToCart",
 												props: {
-													description: "Line item description",
+													description:
+														"Line item description",
 													tooltip: "Add item to cart",
 												},
 											},

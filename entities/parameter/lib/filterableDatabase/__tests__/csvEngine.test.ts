@@ -25,7 +25,9 @@ describe("csvEngine.parse", () => {
 	});
 
 	it("skips first row as header", () => {
-		const {rows} = csvEngine.parse("category,color\nShirts,Red\nPants,Blue\n");
+		const {rows} = csvEngine.parse(
+			"category,color\nShirts,Red\nPants,Blue\n",
+		);
 		expect(rows).toEqual([
 			["Shirts", "Red"],
 			["Pants", "Blue"],

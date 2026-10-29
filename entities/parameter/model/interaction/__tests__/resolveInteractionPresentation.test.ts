@@ -14,6 +14,8 @@ describe("resolveInteractionPresentation", () => {
 	});
 
 	it('returns explicit "toolbar" when alwaysActive is false', () => {
-		expect(resolveInteractionPresentation("toolbar", false)).toBe("toolbar");
+		expect(resolveInteractionPresentation("toolbar", false)).toBe(
+			"toolbar",
+		);
 	});
 });

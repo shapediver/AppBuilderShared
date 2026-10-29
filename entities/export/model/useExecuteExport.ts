@@ -41,7 +41,12 @@ export function useExecuteExport(
 			if (definition.type === EXPORT_TYPE.DOWNLOAD) {
 				if (response.content?.[0]?.href) {
 					const content = response.content[0];
-					if (!skipStargate && isStargate && isContentSupported && onExportFile) {
+					if (
+						!skipStargate &&
+						isStargate &&
+						isContentSupported &&
+						onExportFile
+					) {
 						if (!(await isContentSupported(content))) {
 							notifications.error({
 								title: "Unsupported content type",
@@ -53,7 +58,8 @@ export function useExecuteExport(
 						return true;
 					}
 
-					const baseFilename = response.filename || definition.name || definition.id;
+					const baseFilename =
+						response.filename || definition.name || definition.id;
 					const filename = baseFilename.endsWith(content.format)
 						? baseFilename
 						: `${baseFilename}.${content.format}`;
@@ -73,7 +79,8 @@ export function useExecuteExport(
 					return true;
 				}
 
-				const errorMessage = "Unexpected response for export of type download";
+				const errorMessage =
+					"Unexpected response for export of type download";
 				notifications.error({message: errorMessage});
 				errorReporting.captureException({
 					message: errorMessage,
@@ -100,7 +107,8 @@ export function useExecuteExport(
 					}
 				}
 
-				const errorMessage = "Unexpected response for export of type email";
+				const errorMessage =
+					"Unexpected response for export of type email";
 				notifications.error({message: errorMessage});
 				errorReporting.captureException({
 					message: errorMessage,

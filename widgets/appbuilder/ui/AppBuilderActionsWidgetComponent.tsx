@@ -1,7 +1,7 @@
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import type {IAppBuilderWidgetPropsActions} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {legacyActionToDefinition} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {legacyActionToDefinition} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import {
 	Group,

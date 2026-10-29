@@ -32,7 +32,9 @@ describe("prepareParameterStoreValue StringList", () => {
 
 		expect(result).toEqual({
 			success: false,
-			message: expect.stringContaining('Value 12 is not valid for parameter "Finish"'),
+			message: expect.stringContaining(
+				'Value 12 is not valid for parameter "Finish"',
+			),
 		});
 	});
 
