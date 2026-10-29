@@ -324,9 +324,10 @@ export default function Markdown(props: MarkdownProps) {
 		},
 	};
 
+	// react-markdown 10 no longer accepts className; render its former wrapper.
 	return (
-		<ReactMarkdown className={classes.markdownNormalize} {...config}>
-			{children}
-		</ReactMarkdown>
+		<div className={classes.markdownNormalize}>
+			<ReactMarkdown {...config}>{children}</ReactMarkdown>
+		</div>
 	);
 }

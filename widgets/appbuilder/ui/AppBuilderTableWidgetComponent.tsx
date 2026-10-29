@@ -22,14 +22,18 @@ import {
 	ColumnDef,
 	ColumnFiltersState,
 	FilterFn,
-	SortingFn,
+	SortFn,
 	SortingState,
+	columnFilteringFeature,
+	columnSizingFeature,
+	createFilteredRowModel,
+	createSortedRowModel,
 	flexRender,
-	getCoreRowModel,
-	getFilteredRowModel,
-	getSortedRowModel,
-	sortingFns,
-	useReactTable,
+	metaHelper,
+	rowSortingFeature,
+	sortFn_alphanumeric,
+	tableFeatures,
+	useTable,
 } from "@tanstack/react-table";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -50,24 +54,31 @@ function useElementHeight(ref: React.RefObject<HTMLElement | null>): number {
 	return height;
 }
 
-declare module "@tanstack/react-table" {
-	interface FilterFns {
-		fuzzy: FilterFn<unknown>;
-	}
-	interface FilterMeta {
-		itemRank: RankingInfo;
-	}
-}
-
 type RecordType = Record<string, unknown>;
 
-const fuzzyFilter: FilterFn<RecordType> = (row, columnId, value, addMeta) => {
+const features = tableFeatures({
+	columnFilteringFeature,
+	columnSizingFeature,
+	rowSortingFeature,
+	filterMeta: metaHelper<{itemRank: RankingInfo}>(),
+	filteredRowModel: createFilteredRowModel(),
+	sortedRowModel: createSortedRowModel(),
+});
+
+type Features = typeof features;
+
+const fuzzyFilter: FilterFn<Features, RecordType> = (
+	row,
+	columnId,
+	value,
+	addMeta,
+) => {
 	const itemRank = rankItem(row.getValue(columnId), value);
-	addMeta({itemRank});
+	addMeta?.({itemRank});
 	return itemRank.passed;
 };
 
-const fuzzySort: SortingFn<RecordType> = (rowA, rowB, columnId) => {
+const fuzzySort: SortFn<Features, RecordType> = (rowA, rowB, columnId) => {
 	let dir = 0;
 	if (rowA.columnFiltersMeta[columnId]) {
 		dir = compareItems(
@@ -75,14 +86,8 @@ const fuzzySort: SortingFn<RecordType> = (rowA, rowB, columnId) => {
 			rowB.columnFiltersMeta[columnId].itemRank,
 		);
 	}
-	return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir;
+	return dir === 0 ? sortFn_alphanumeric(rowA, rowB, columnId) : dir;
 };
-
-const FILTER_FNS = {fuzzy: fuzzyFilter} as const;
-
-const coreRowModel = getCoreRowModel<RecordType>();
-const filteredRowModel = getFilteredRowModel<RecordType>();
-const sortedRowModel = getSortedRowModel<RecordType>();
 
 /**
  * @docAttached
@@ -173,7 +178,7 @@ export default function AppBuilderTableWidgetComponent(
 		setColumnFilters(next);
 	}, [debouncedQueries]);
 
-	const columns = useMemo<ColumnDef<RecordType>[]>(
+	const columns = useMemo<ColumnDef<Features, RecordType>[]>(
 		() =>
 			columnDefs.map((col: IAppBuilderWidgetPropsTableColumn) => ({
 				id: col.accessor,
@@ -182,8 +187,8 @@ export default function AppBuilderTableWidgetComponent(
 				size: typeof col.width === "number" ? col.width : undefined,
 				enableSorting: col.sortable ?? false,
 				enableColumnFilter: col.searchable ?? false,
-				filterFn: "fuzzy" as const,
-				sortingFn: fuzzySort,
+				filterFn: fuzzyFilter,
+				sortFn: fuzzySort,
 			})),
 		[columnDefs],
 	);
@@ -191,16 +196,13 @@ export default function AppBuilderTableWidgetComponent(
 		() => ({sorting, columnFilters}),
 		[sorting, columnFilters],
 	);
-	const table = useReactTable<RecordType>({
+	const table = useTable<Features, RecordType>({
+		features,
 		data: allRecords,
 		columns,
 		state: tableState,
-		filterFns: FILTER_FNS,
 		onSortingChange: setSorting,
 		onColumnFiltersChange: setColumnFilters,
-		getCoreRowModel: coreRowModel,
-		getFilteredRowModel: filteredRowModel,
-		getSortedRowModel: sortedRowModel,
 	});
 	const {rows} = table.getRowModel();
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -342,7 +344,7 @@ export default function AppBuilderTableWidgetComponent(
 						const row = rows[virtualRow.index];
 						return (
 							<Table.Tr key={row.id}>
-								{row.getVisibleCells().map((cell) => (
+								{row.getAllCells().map((cell) => (
 									<Table.Td key={cell.id}>
 										{flexRender(
 											cell.column.columnDef.cell,
