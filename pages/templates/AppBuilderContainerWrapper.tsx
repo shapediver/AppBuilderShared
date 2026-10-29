@@ -4,6 +4,7 @@ import {
 	AppBuilderTemplateContext,
 } from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import type {AppBuilderContainerThemeDefaultProps} from "@AppBuilderLib/pages/config/AppBuilderContainer.types";
 import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
 import {
@@ -13,7 +14,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
-import type {AppBuilderContainerThemeDefaultProps} from "shared/pages/config/AppBuilderContainer.types";
 
 interface Props {
 	name: string;

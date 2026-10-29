@@ -1,11 +1,11 @@
 import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderTemplateContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderTemplateThemeId} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderTemplate";
+import type {AppBuilderTemplateSelectorThemeDefaultProps} from "@AppBuilderLib/pages/config/AppBuilderTemplateSelector.types";
 import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
 import {Button, MantineThemeComponent, useProps} from "@mantine/core";
 import {ReactElement, useState} from "react";
-import type {AppBuilderTemplateSelectorThemeDefaultProps} from "shared/pages/config/AppBuilderTemplateSelector.types";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderTemplateSelector.module.css";
 

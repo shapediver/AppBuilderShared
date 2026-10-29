@@ -18,11 +18,13 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {useDisclosure, useMediaQuery} from "@mantine/hooks";
 import React, {useEffect, useState, type ReactNode} from "react";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
+
+// Not exported from the @mantine/core entry point.
+type AppShellSize = NonNullable<AppShellResponsiveSize["base"]>;
 
 /**
  * @docAttached

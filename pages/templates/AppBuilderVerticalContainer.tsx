@@ -1,6 +1,6 @@
+import type {AppBuilderVerticalContainerThemeDefaultProps} from "@AppBuilderLib/pages/config/AppBuilderVerticalContainer.types";
 import {MantineThemeComponent, Stack, StyleProp, useProps} from "@mantine/core";
 import React from "react";
-import type {AppBuilderVerticalContainerThemeDefaultProps} from "shared/pages/config/AppBuilderVerticalContainer.types";
 
 interface Props {
 	children?: React.ReactNode;
