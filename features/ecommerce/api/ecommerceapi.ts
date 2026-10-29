@@ -390,17 +390,15 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 		return Promise.resolve({href: url.toString()});
 	}
 
-	scrollingApiSetParameters<
-		TItem,
-	>(/*data: IScrollingApiSetParametersData,*/): Promise<
-		IScrollingApiSetParametersReply<TItem>
-	> {
+	scrollingApiSetParameters<TItem>(
+		/*data: IScrollingApiSetParametersData,*/
+	): Promise<IScrollingApiSetParametersReply<TItem>> {
 		return Promise.resolve({hasNextPage: false, items: []});
 	}
 
-	scrollingApiLoadMore<TItem>(/*data: IScrollingApiLoadMoreData,*/): Promise<
-		IScrollingApiLoadMoreReply<TItem>
-	> {
+	scrollingApiLoadMore<TItem>(
+		/*data: IScrollingApiLoadMoreData,*/
+	): Promise<IScrollingApiLoadMoreReply<TItem>> {
 		return Promise.resolve({hasNextPage: false, items: []});
 	}
 

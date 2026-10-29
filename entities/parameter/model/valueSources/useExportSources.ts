@@ -111,11 +111,9 @@ export function useExportSources(props: {
 		() =>
 			exportMap.map((_, index) => ({
 				export: exportApiSelection[`export-${index}`] as
-					| IExportApi
-					| undefined,
+					IExportApi | undefined,
 				jwtToken: exportApiSelection[`jwtToken-${index}`] as
-					| string
-					| undefined,
+					string | undefined,
 			})),
 		[exportApiSelection, exportMap],
 	);

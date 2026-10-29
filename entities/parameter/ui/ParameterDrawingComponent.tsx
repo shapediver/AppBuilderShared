@@ -214,9 +214,7 @@ export default function ParameterDrawingComponent(
 	const showSettings =
 		(
 			drawingProps.general?.buttons as
-				| {clear?: boolean; settings?: boolean}
-				| null
-				| undefined
+				{clear?: boolean; settings?: boolean} | null | undefined
 		)?.settings ?? true;
 	// A drawing which is reset to an empty drawing after each execution (see
 	// the "resetValue" setting) has nothing to clear. Clear can also be turned

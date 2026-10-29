@@ -508,10 +508,7 @@ export interface IAppBuilderControl extends IAppBuilderNode {
 
 /** Types of controls */
 export type AppBuilderControlType =
-	| "parameter"
-	| "export"
-	| "action"
-	| "output";
+	"parameter" | "export" | "action" | "output";
 
 /**
  * Presentation of a control or toolbar panel (widget/button or toolbar icon).
@@ -743,10 +740,7 @@ export interface IAppBuilderParameterValueSourceDefinition {
 
 /** Type used for parameter value definitions */
 export type IAppBuilderParameterValueDefinition =
-	| string
-	| number
-	| boolean
-	| IAppBuilderParameterValueSourceDefinition;
+	string | number | boolean | IAppBuilderParameterValueSourceDefinition;
 
 /** assert parameter source */
 export function isParameterSource(
@@ -1265,7 +1259,9 @@ export interface IAppBuilderStandardContainerProps {
  * Omitted JSON and theme keeps previous behavior (container stays put).
  */
 export type IAppBuilderMobileFallbacks = {
-	[K in AppBuilderStandardContainerNameType]?: IAppBuilderStandardContainerMobileFallback;
+	[
+		K in AppBuilderStandardContainerNameType
+	]?: IAppBuilderStandardContainerMobileFallback;
 };
 
 /**
@@ -1356,10 +1352,7 @@ export type AppBuilderAnchor3dContainerProperties = {
 } & AppBuilderAnchorContainerProperties;
 
 export type AppBuilderToolbarItemType =
-	| AppBuilderControlType
-	| "actionMenu"
-	| "widgets"
-	| "tabs";
+	AppBuilderControlType | "actionMenu" | "widgets" | "tabs";
 
 export interface IAppBuilderToolbarItemBase<
 	TType extends AppBuilderToolbarItemType,

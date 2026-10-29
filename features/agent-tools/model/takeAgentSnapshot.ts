@@ -4,9 +4,7 @@ import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/a
 export const AGENT_SNAPSHOT_UNSET = "unset" as const;
 
 export type AgentSnapshot =
-	| IAppBuilderAgent
-	| undefined
-	| typeof AGENT_SNAPSHOT_UNSET;
+	IAppBuilderAgent | undefined | typeof AGENT_SNAPSHOT_UNSET;
 
 /** `agentId` when set; otherwise `agents[0]`. */
 export function resolveAgentConfig(

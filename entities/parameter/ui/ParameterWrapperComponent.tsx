@@ -12,9 +12,7 @@ interface Props {
 	children: React.ReactNode;
 	onCancel?: () => void;
 	component?:
-		| string
-		| React.ComponentType<any>
-		| keyof React.JSX.IntrinsicElements;
+		string | React.ComponentType<any> | keyof React.JSX.IntrinsicElements;
 	[key: string]: any;
 }
 /**

@@ -72,8 +72,7 @@ function selectionEventProps(
 	slot: IAppBuilderActionSlot,
 ): IAppBuilderActionSlotEventPropsSelection | undefined {
 	return getActionSlotEventProps(slot, "selection") as
-		| IAppBuilderActionSlotEventPropsSelection
-		| undefined;
+		IAppBuilderActionSlotEventPropsSelection | undefined;
 }
 
 function runSlot(

@@ -322,9 +322,9 @@ export type AppBuilderUiSlotHandlers = {
 
 /** React pointer/`click`/`contextmenu` props produced by {@link uiSlotDomProps}. */
 export type AppBuilderUiSlotDomProps = {
-	[K in (typeof APP_BUILDER_UI_EVENT_REACT_PROPS)[AppBuilderUiEvent]]?: (event?: {
-		preventDefault(): void;
-	}) => void;
+	[
+		K in (typeof APP_BUILDER_UI_EVENT_REACT_PROPS)[AppBuilderUiEvent]
+	]?: (event?: {preventDefault(): void}) => void;
 };
 
 /**

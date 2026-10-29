@@ -33,8 +33,7 @@ interface ResetValueReference {
  */
 const getOverrideResetValue = (ref: CollectedParameterRef): unknown => {
 	const settings = ref.overrides?.settings as
-		| IParameterResetValueSettings
-		| undefined;
+		IParameterResetValueSettings | undefined;
 	const resetValue = settings?.resetValue;
 
 	return resetValue === null ? undefined : resetValue;

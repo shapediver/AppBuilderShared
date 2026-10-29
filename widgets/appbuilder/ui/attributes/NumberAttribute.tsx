@@ -247,8 +247,7 @@ export default function NumberAttribute(
 		// Get the custom attribute data
 		const widgetData = customAttributeDataRef.current[widgetId];
 		const customValues = widgetData?.[name + "_" + attribute.type] as
-			| INumberAttributeCustomData
-			| undefined;
+			INumberAttributeCustomData | undefined;
 
 		// Set default values
 		if (attribute.customMin === undefined) {

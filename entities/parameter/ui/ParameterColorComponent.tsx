@@ -101,8 +101,7 @@ export default function ParameterColorComponent(
 					popoverProps={{
 						...((
 							formInputProps as
-								| {popoverProps?: object}
-								| undefined
+								{popoverProps?: object} | undefined
 						)?.popoverProps ?? {}),
 						withinPortal: false,
 					}}

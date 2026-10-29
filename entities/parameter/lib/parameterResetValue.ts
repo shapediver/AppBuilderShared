@@ -39,8 +39,7 @@ export function getResetValue(
 	definition: IShapeDiverParameterDefinition,
 ): unknown {
 	const settings = definition.settings as
-		| IParameterResetValueSettings
-		| undefined;
+		IParameterResetValueSettings | undefined;
 	const resetValue = settings?.resetValue;
 
 	return resetValue === null ? undefined : resetValue;

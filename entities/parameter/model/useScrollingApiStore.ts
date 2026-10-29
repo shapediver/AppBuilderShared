@@ -57,8 +57,7 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 					return scrollingApisSelect[source];
 
 				let newApi:
-					| IScrollingApi<IScrollingApiItemTypeSelect>
-					| undefined;
+					IScrollingApi<IScrollingApiItemTypeSelect> | undefined;
 				let isInitialized = false;
 
 				// if window.parent === window return a dummy api for testing

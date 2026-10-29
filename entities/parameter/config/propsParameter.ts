@@ -7,9 +7,7 @@ import {
 
 export interface PropsParameterWrapper {
 	readonly wrapperComponent?:
-		| string
-		| React.ComponentType<any>
-		| keyof React.JSX.IntrinsicElements;
+		string | React.ComponentType<any> | keyof React.JSX.IntrinsicElements;
 
 	readonly wrapperProps?: {[key: string]: any};
 }
@@ -87,8 +85,7 @@ export type PropsParameterWithForm = PropsParameter &
 	Partial<PropsParameterFormIntegration>;
 
 export type PropsParameterComponent = (
-	| PropsParameter
-	| PropsParameterWithForm
+	PropsParameter | PropsParameterWithForm
 ) &
 	(
 		| {

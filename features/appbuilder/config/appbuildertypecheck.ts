@@ -1835,8 +1835,7 @@ const IAppBuilderSettingsJsonSchemaBase = z.strictObject({
 const IAppBuilderSettingsJsonSchema =
 	IAppBuilderSettingsJsonSchemaBase.superRefine((data, ctx) => {
 		const components = data.themeOverrides?.components as
-			| Record<string, {defaultProps?: unknown}>
-			| undefined;
+			Record<string, {defaultProps?: unknown}> | undefined;
 		if (!components || typeof components !== "object") return;
 
 		validateThemeComponentsRecord(components, ctx, [

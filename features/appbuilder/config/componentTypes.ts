@@ -98,8 +98,7 @@ export const getParameterComponent = (
 	if (type === PARAMETER_TYPE.INTERACTION) {
 		component = (
 			component as
-				| {[key: string]: ParameterComponentMapValueType}
-				| undefined
+				{[key: string]: ParameterComponentMapValueType} | undefined
 		)?.[definition.settings.type];
 		if (!component)
 			component = (

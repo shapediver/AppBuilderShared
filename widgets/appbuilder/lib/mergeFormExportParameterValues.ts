@@ -33,8 +33,7 @@ export function createFormExportParameterValue(
  */
 export function mergeFormExportParameterValues(
 	exportParameterValues:
-		| IAppBuilderActionPropsSetParameterValue[]
-		| undefined,
+		IAppBuilderActionPropsSetParameterValue[] | undefined,
 	formParameterValues: FormWidgetParameterValue[],
 ): IAppBuilderActionPropsSetParameterValue[] {
 	const merged: IAppBuilderActionPropsSetParameterValue[] = [

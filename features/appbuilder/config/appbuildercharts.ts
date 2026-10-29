@@ -15,17 +15,11 @@ export type IAppBuilderAreaChartCurveType = IAppBuilderLineChartCurveType;
 
 /** How area series are stacked. */
 export type IAppBuilderAreaChartType =
-	| "default"
-	| "stacked"
-	| "percent"
-	| "split";
+	"default" | "stacked" | "percent" | "split";
 
 /** How bar series are stacked. */
 export type IAppBuilderBarChartType =
-	| "default"
-	| "stacked"
-	| "percent"
-	| "waterfall";
+	"default" | "stacked" | "percent" | "waterfall";
 
 /** A single slice of a pie or donut chart. */
 export interface IAppBuilderDonutChartCell {
