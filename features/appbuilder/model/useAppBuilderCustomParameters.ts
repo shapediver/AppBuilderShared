@@ -152,6 +152,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 			// value once the execution ended, but requests started meanwhile
 			// (e.g. by output actions processing the result of this execution)
 			// would send the value again: the model would apply it twice.
+			// This request carries the JSON built above (as the "AppBuilder"
+			// string or file, see the pre-execution hook).
 			const stores =
 				useShapeDiverStoreParameters.getState().parameterStores[
 					namespaceAppBuilder
@@ -257,9 +259,15 @@ export function useAppBuilderCustomParameters(props: Props) {
 				// if within the values that should be set, there is a AppBuilder parameter defined
 				// we don't use the custom values, but the values within that parameter
 				// as the custom values are stale in that case
+				// (they may already hold the reset values of the values sent, see the executor)
+				const fileValue = appBuilderFileParam
+					? values[appBuilderFileParam.definition.id]
+					: undefined;
 				let json;
 				if (appBuilderParam && values[appBuilderParam.definition.id]) {
 					json = values[appBuilderParam.definition.id];
+				} else if (fileValue instanceof Blob) {
+					json = await fileValue.text();
 				} else {
 					json = JSON.stringify(customValues);
 				}
