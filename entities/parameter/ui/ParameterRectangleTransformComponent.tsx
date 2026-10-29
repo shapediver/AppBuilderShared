@@ -4,7 +4,6 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib/automaticSceneUpdate";
-import {debugSceneUpdateLog} from "@AppBuilderLib/entities/parameter/lib/debugSceneUpdateLog";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {hasLocalTransformationDelta} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
@@ -320,14 +319,6 @@ export default function ParameterRectangleTransformComponent(
 		const {own: ownCommit, newerPending} = sentValuesRef.current.takeCommit(
 			state.commitValue,
 		);
-		debugSceneUpdateLog("rectangleTransform commit", {
-			parameter: definition.name,
-			commitValue: state.commitValue,
-			ownCommit,
-			newerPending,
-			executing,
-			mounted: commitEffectMountedRef.current,
-		});
 		// A transformation still waiting for its automatic scene update was
 		// made on the scene before a foreign commit (reset value, Clear, undo,
 		// model state), it is dropped. The commit of an own update keeps a
@@ -376,11 +367,6 @@ export default function ParameterRectangleTransformComponent(
 			JSON.stringify(parsed) !==
 			JSON.stringify(transformedNodeNamesRef.current)
 		) {
-			debugSceneUpdateLog("rectangleTransform definition reset", {
-				parameter: definition.name,
-				defval: definition.defval,
-				previous: transformedNodeNamesRef.current,
-			});
 			setParsedCommitValue(structuredClone(parsed));
 			setLastConfirmedValue(structuredClone(parsed));
 			setTransformedNodeNames(structuredClone(parsed));
@@ -407,15 +393,7 @@ export default function ParameterRectangleTransformComponent(
 			// if the value is already the same, do not change it
 			const serializedValue = JSON.stringify(parameterValue);
 			// compare with the store: the local value keeps a cancelled pending change
-			const skipped = state.uiValue === serializedValue;
-			debugSceneUpdateLog("rectangleTransform changeValue", {
-				parameter: definition.name,
-				value: serializedValue,
-				skippedSameAsUiValue: skipped,
-				timeout,
-				executing,
-			});
-			if (skipped) {
+			if (state.uiValue === serializedValue) {
 				if (!alwaysActive) setSelectedNodeNames([]);
 				return;
 			}
@@ -499,26 +477,12 @@ export default function ParameterRectangleTransformComponent(
 			return;
 		}
 		if (executing) {
-			if (moved) {
-				debugSceneUpdateLog(
-					"rectangleTransform moved while executing",
-					{
-						parameter: definition.name,
-						transformedNodeNames,
-					},
-				);
-				movedWhileExecutingRef.current = true;
-			}
+			if (moved) movedWhileExecutingRef.current = true;
 			return;
 		}
 		// the execution ended: only a move made during it is sent, a stale
 		// local transformation of a gizmo about to be recreated is not
 		if (!moved && !movedWhileExecutingRef.current) return;
-		debugSceneUpdateLog("rectangleTransform send move", {
-			parameter: definition.name,
-			movedWhileExecuting: movedWhileExecutingRef.current,
-			transformedNodeNames,
-		});
 		movedWhileExecutingRef.current = false;
 		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
 	}, [transformedNodeNames, executing]);

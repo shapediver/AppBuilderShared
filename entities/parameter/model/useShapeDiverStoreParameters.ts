@@ -6,7 +6,6 @@ import {
 	IShapeDiverOutput,
 	IShapeDiverOutputDefinition,
 } from "@AppBuilderLib/entities/output/config/output";
-import {debugSceneUpdateLog} from "@AppBuilderLib/entities/parameter/lib/debugSceneUpdateLog";
 import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {
 	EventActionEnum,
@@ -321,17 +320,6 @@ function createGenericParameterExecutorForSession(
 		// create a process manager for the session customization
 		const {resolve, reject} = registerInProcessManager(session);
 
-		// TEMPORARY (SS-10024): the changed values of every request, by name
-		debugSceneUpdateLog("session request", {
-			namespace,
-			values: Object.fromEntries(
-				Object.keys(values).map((id) => [
-					session.parameters[id]?.name ?? id,
-					values[id],
-				]),
-			),
-		});
-
 		try {
 			// set values and call customize
 			Object.keys(values).forEach(
@@ -374,11 +362,6 @@ function createGenericParameterExecutorForSession(
 			// cleanup url
 			if (!skipUrlUpdate) removeStatesFromUrl(true, true, true);
 
-			debugSceneUpdateLog("session request done", {
-				namespace,
-				duration: Math.round(performance.now() - start),
-			});
-
 			// report success
 			callbacks?.onSuccess({
 				namespace,
@@ -386,10 +369,6 @@ function createGenericParameterExecutorForSession(
 				action,
 			});
 		} catch (e: any) {
-			debugSceneUpdateLog("session request failed", {
-				namespace,
-				error: String(e),
-			});
 			// cancel process manager
 			reject();
 			// in case of an error, restore the previous values
@@ -1901,7 +1880,6 @@ export const useShapeDiverStoreParameters =
 					skipHistory?: boolean,
 					skipUrlUpdate?: boolean,
 				) {
-					debugSceneUpdateLog("batchParameterValueUpdate", state);
 					const {parameterStores} = get();
 
 					// update parameter values in all namespaces

@@ -3,7 +3,6 @@ import {
 	IGenericParameterCommitter,
 	IGenericParameterExecutor,
 } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import {debugSceneUpdateLog} from "@AppBuilderLib/entities/parameter/lib/debugSceneUpdateLog";
 import {useDefineGenericParameters} from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
 import {useParameterStateless} from "@AppBuilderLib/entities/parameter/model/useParameterStateless";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
@@ -129,8 +128,6 @@ export function useAppBuilderCustomParameters(props: Props) {
 	// executor function for changes of custom parameter values
 	const executor = useCallback<IGenericParameterExecutor>(
 		async (values: {[key: string]: any}, _, skipHistory) => {
-			// TEMPORARY (SS-10024): the changed custom parameter values
-			debugSceneUpdateLog("appbuilder custom parameters", values);
 			Object.keys(values).forEach(
 				(key) => (customParameterValues.current[key] = values[key]),
 			);
