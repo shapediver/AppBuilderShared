@@ -20,6 +20,7 @@ function createMockParameter(
 			setExecutedValue: () => true,
 			setCommittedValue: () => true,
 			setResetValue: () => undefined,
+			getResetValue: () => undefined,
 			execute: async () => "",
 			isValid: () => true,
 			isUiValueDifferent: () => false,

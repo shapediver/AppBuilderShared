@@ -148,6 +148,25 @@ export function useAppBuilderCustomParameters(props: Props) {
 			// accepted first (see IParameterChanges.priority).
 
 			const json = JSON.stringify(getCustomParameterValues());
+
+			// A value of a parameter with a reset value (see the "resetValue"
+			// setting) is sent once, e.g. a transformation the model applies to
+			// the placement of an object. The parameter store commits the reset
+			// value once the execution ended, but requests started meanwhile
+			// (e.g. by output actions processing the result of this execution)
+			// would send the value again: the model would apply it twice.
+			const stores =
+				useShapeDiverStoreParameters.getState().parameterStores[
+					namespaceAppBuilder
+				];
+			Object.keys(values).forEach((id) => {
+				const resetValue = stores?.[id]
+					?.getState()
+					.actions.getResetValue();
+				if (resetValue !== undefined)
+					customParameterValues.current[id] = resetValue;
+			});
+
 			if (
 				appBuilderParam &&
 				json.length <= appBuilderParam.definition.max!
@@ -222,7 +241,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 				);
 			}
 		},
-		[appBuilderParam, appBuilderFileParam],
+		[appBuilderParam, appBuilderFileParam, namespaceAppBuilder],
 	);
 
 	// values of custom parameters committed without a computation

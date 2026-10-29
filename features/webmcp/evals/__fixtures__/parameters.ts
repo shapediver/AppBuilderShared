@@ -30,6 +30,7 @@ function createMockParameter(
 			resetToDefaultValue: () => undefined,
 			resetToCommitValue: () => undefined,
 			setResetValue: () => undefined,
+			getResetValue: () => undefined,
 		},
 		acceptRejectMode: false,
 		...overrides,

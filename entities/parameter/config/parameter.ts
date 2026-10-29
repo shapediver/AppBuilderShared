@@ -202,6 +202,14 @@ export interface IShapeDiverParameterActions<T> {
 	setResetValue(value: unknown): void;
 
 	/**
+	 * The value the parameter is reset to after each execution: the override
+	 * (see setResetValue), or the "resetValue" setting of the definition.
+	 *
+	 * @returns the reset value, or undefined if the parameter is not reset.
+	 */
+	getResetValue(): T | string | undefined;
+
+	/**
 	 * Disable or enable other parameters of the same namespace.
 	 * This is useful for parameters like interaction parameters, where it is not possible to change multiple parameters at the same time.
 	 * @param disable true to disable other parameters, false to enable them
