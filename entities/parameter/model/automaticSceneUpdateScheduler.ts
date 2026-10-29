@@ -1,3 +1,4 @@
+import {debugSceneUpdateLog} from "@AppBuilderLib/entities/parameter/lib/debugSceneUpdateLog";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import type {ISessionsHistoryState} from "../config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
@@ -75,6 +76,13 @@ export class AutomaticSceneUpdateScheduler {
 			),
 			update,
 		);
+		debugSceneUpdateLog("scheduler.schedule", {
+			namespace: update.namespace,
+			parameterId: update.parameterId,
+			value: update.value,
+			timeout: update.timeout,
+			heldPointers: this.#heldPointers.size,
+		});
 		if (this.#heldPointers.size === 0) this.#restart();
 	}
 
@@ -93,12 +101,22 @@ export class AutomaticSceneUpdateScheduler {
 	holdPointer(pointerId: number): void {
 		if (this.#heldPointers.size === 0) this.#observeRelease(true);
 		this.#heldPointers.add(pointerId);
+		debugSceneUpdateLog("scheduler.holdPointer", {
+			pointerId,
+			pending: this.#pending.size,
+			countdownRunning: this.#timer !== undefined,
+		});
 		this.#clearTimer();
 	}
 
 	/** A pointer pressed in a viewport was released (see {@link holdPointer}). */
 	releasePointer(pointerId: number): void {
 		if (!this.#heldPointers.delete(pointerId)) return;
+		debugSceneUpdateLog("scheduler.releasePointer", {
+			pointerId,
+			stillHeld: this.#heldPointers.size,
+			pending: this.#pending.size,
+		});
 		if (this.#heldPointers.size > 0) return;
 		this.#observeRelease(false);
 		if (this.#pending.size > 0) this.#restart();
@@ -107,6 +125,9 @@ export class AutomaticSceneUpdateScheduler {
 	/** Release all held pointers (e.g. the window lost the focus). */
 	releaseAllPointers(): void {
 		if (this.#heldPointers.size === 0) return;
+		debugSceneUpdateLog("scheduler.releaseAllPointers", {
+			pending: this.#pending.size,
+		});
 		this.#heldPointers.clear();
 		this.#observeRelease(false);
 		if (this.#pending.size > 0) this.#restart();
@@ -117,6 +138,11 @@ export class AutomaticSceneUpdateScheduler {
 	 * pending values goes on.
 	 */
 	cancel(namespace: string, parameterId: string): void {
+		debugSceneUpdateLog("scheduler.cancel", {
+			namespace,
+			parameterId,
+			wasPending: this.isPending(namespace, parameterId),
+		});
 		this.#pending.delete(
 			AutomaticSceneUpdateScheduler.key(namespace, parameterId),
 		);
@@ -146,8 +172,10 @@ export class AutomaticSceneUpdateScheduler {
 		for (const {namespace, parameterId, value} of updates) {
 			(state[namespace] ??= {})[parameterId] = value;
 		}
+		debugSceneUpdateLog("scheduler.flush (send)", state);
 		try {
 			await this.#flush(state);
+			debugSceneUpdateLog("scheduler.flush done");
 			await Promise.all(
 				updates.map((update) => update.afterSend?.(update.value)),
 			);
@@ -187,6 +215,10 @@ export class AutomaticSceneUpdateScheduler {
 		const timeout = Math.max(
 			...[...this.#pending.values()].map((update) => update.timeout),
 		);
+		debugSceneUpdateLog("scheduler.countdown start", {
+			timeout,
+			pending: [...this.#pending.keys()],
+		});
 		this.#timer = setTimeout(() => {
 			this.#timer = undefined;
 			void this.flush();
