@@ -19,7 +19,7 @@ import classes from "./useSelectAsync.module.css";
 export const useSelectAsync = (
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
 ) => {
-	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const loadingMoreRef = useRef(false);
 	// Bumped after setSearchTerms so useMemo re-reads scrollingApi.items (API mutates in place).
 	const [searchRevision, setSearchRevision] = useState(0);

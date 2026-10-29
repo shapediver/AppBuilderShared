@@ -113,7 +113,7 @@ export function useInteractionOwnership(options: {
 				.join(","),
 		[candidateNodes],
 	);
-	const lastAutoSignatureRef = useRef<string>();
+	const lastAutoSignatureRef = useRef<string>(undefined);
 
 	useEffect(() => {
 		if (!automaticallyActivated || candidateNodes.length === 0) return;

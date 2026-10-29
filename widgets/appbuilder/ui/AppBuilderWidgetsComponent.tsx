@@ -1,10 +1,10 @@
+import AppBuilderHostedAgentWidgetComponent from "@AppBuilderLib/features/agent-tools/ui/AppBuilderHostedAgentWidgetComponent";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
 	IAppBuilderWidget,
 	isAccordionUiWidget,
 	isAccordionWidget,
 	isActionsWidget,
-	isHostedAgentWidget,
 	isAgentWidget,
 	isAreaChartWidget,
 	isBarChartWidget,
@@ -12,6 +12,7 @@ import {
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
 	isFormWidget,
+	isHostedAgentWidget,
 	isIframeWidget,
 	isImageWidget,
 	isLineChartWidget,
@@ -24,7 +25,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
-import AppBuilderHostedAgentWidgetComponent from "@AppBuilderLib/features/agent-tools/ui/AppBuilderHostedAgentWidgetComponent";
+import type {JSX} from "react";
 import React, {useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";

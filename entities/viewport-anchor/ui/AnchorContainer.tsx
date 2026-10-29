@@ -41,6 +41,7 @@ import type {
 	ISelectionParameterProps,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.shared.types";
+import type {JSX} from "react";
 import {
 	default as React,
 	useCallback,

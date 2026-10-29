@@ -19,7 +19,7 @@ export const cleanUnit = (
 export const updatePosition = (
 	x: string,
 	y: string,
-	portalRef: React.RefObject<HTMLDivElement>,
+	portalRef: React.RefObject<HTMLDivElement | null>,
 	position: React.MutableRefObject<{x: string; y: string}>,
 ) => {
 	if (!portalRef.current) return;

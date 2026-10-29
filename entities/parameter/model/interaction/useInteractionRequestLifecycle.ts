@@ -33,7 +33,7 @@ export const useInteractionRequestLifecycle = ({
 		addInteractionRequest,
 		removeInteractionRequest,
 	} = useShapeDiverStoreInteractionRequestManagement();
-	const tokenRef = useRef<string>();
+	const tokenRef = useRef<string>(undefined);
 	const callbacksRef = useRef({
 		onDisable,
 		onResume,

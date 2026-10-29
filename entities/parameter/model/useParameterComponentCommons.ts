@@ -135,7 +135,7 @@ export function useParameterComponentCommons<T>(
 	const [value, setValue] = useState(initializer(state));
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
-	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const delegatesInitializedRef = useRef(false);
 	const cancelPendingChange = useCallback(() => {
 		clearTimeout(debounceRef.current);

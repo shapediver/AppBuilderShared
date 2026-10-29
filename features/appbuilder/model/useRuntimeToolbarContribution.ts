@@ -38,7 +38,7 @@ export function useRuntimeToolbarContribution({
 	order,
 	menuVisibility,
 }: UseRuntimeToolbarContributionOptions) {
-	const registrationTokenRef = useRef<symbol>();
+	const registrationTokenRef = useRef<symbol>(undefined);
 	useEffect(() => {
 		if (!enabled) return;
 

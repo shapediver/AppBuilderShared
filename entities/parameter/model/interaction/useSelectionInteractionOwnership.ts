@@ -49,8 +49,8 @@ export const useSelectionInteractionOwnership = ({
 	const ownershipAlwaysActive = false;
 	const ownershipKeyRef = useRef(ownershipKey);
 	const claimedRef = useRef(false);
-	const deactivateRef = useRef<() => void>();
-	const lastAutomaticCandidateSignatureRef = useRef<string>();
+	const deactivateRef = useRef<() => void>(undefined);
+	const lastAutomaticCandidateSignatureRef = useRef<string>(undefined);
 	const [ownershipRevision, setOwnershipRevision] = useState(0);
 
 	useEffect(() => {

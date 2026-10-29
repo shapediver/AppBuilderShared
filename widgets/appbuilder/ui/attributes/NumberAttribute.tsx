@@ -17,6 +17,7 @@ import {
 	isNumberGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {Converter} from "@shapediver/viewer.session";
+import type {JSX} from "react";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import BaseAttribute from "./BaseAttribute";

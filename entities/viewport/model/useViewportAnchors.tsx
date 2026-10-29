@@ -14,6 +14,7 @@ import {
 	type ParameterDefinitionLookup,
 } from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import type {JSX} from "react";
 import {useContext, useEffect, useState} from "react";
 
 interface Props {
