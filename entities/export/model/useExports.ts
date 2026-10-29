@@ -13,25 +13,31 @@ import {IShapeDiverExport} from "../config/export";
  * @returns Array of exports with the same order as provided in props.exports
  */
 export function useExports(props: PropsExport[]) {
+	// Select the export state objects only. Their references are stable
+	// until the respective export store changes, which allows the shallow
+	// comparison to succeed. Creating wrapper objects inside the selector
+	// would return a new array on every call and cause an infinite render loop.
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			return props.map(({exportId, namespace, overrides}) => {
+			return props.map(({exportId, namespace}) => {
 				if (!state) return;
 				const _parameter = state.getExport(namespace, exportId);
 				if (!_parameter) return;
-				const parameter = _parameter.getState() as IShapeDiverExport;
-				return {parameter, overrides};
+				return _parameter.getState() as IShapeDiverExport;
 			});
 		}),
 	);
 
 	return useMemo(() => {
-		return parameters.map((p) => {
-			if (!p) return;
+		return parameters.map((parameter, index) => {
+			if (!parameter) return;
 			return {
-				...p.parameter,
-				definition: {...p.parameter.definition, ...p.overrides},
+				...parameter,
+				definition: {
+					...parameter.definition,
+					...props[index]?.overrides,
+				},
 			};
 		});
-	}, [parameters]);
+	}, [parameters, props]);
 }

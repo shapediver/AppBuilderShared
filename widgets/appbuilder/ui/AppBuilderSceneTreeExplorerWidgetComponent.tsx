@@ -28,6 +28,7 @@ import {
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 type StyleProps = {
 	paperProps?: Partial<PaperProps>;
@@ -92,10 +93,10 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 		useState<boolean>(true);
 
 	const {addSessionUpdateCallback, sessions} = useShapeDiverStoreSession(
-		(state) => ({
+		useShallow((state) => ({
 			addSessionUpdateCallback: state.addSessionUpdateCallback,
 			sessions: state.sessions,
-		}),
+		})),
 	);
 	const instances = useShapeDiverStoreInstances((state) => state.instances);
 

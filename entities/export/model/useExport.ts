@@ -1,8 +1,12 @@
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useMemo} from "react";
-import {useShallow} from "zustand/react/shallow";
+import {createStore, StoreApi, useStore} from "zustand";
 import {IShapeDiverExport} from "../config/export";
+
+const noExportStore = createStore<IShapeDiverExport | undefined>(
+	() => undefined,
+);
 
 /**
  * Hook providing a shortcut to abstracted exports managed by {@link useShapeDiverStoreParameters}.
@@ -15,14 +19,16 @@ import {IShapeDiverExport} from "../config/export";
  */
 export function useExport(props: PropsExport) {
 	const {namespace, exportId} = props;
-	const parameter = useShapeDiverStoreParameters(
-		useShallow((state) => {
-			const exportStore = state.getExport(namespace, exportId);
-
-			return exportStore
-				? exportStore((state) => state as IShapeDiverExport)
-				: undefined;
-		}),
+	// Select the export store first and subscribe to it outside of the
+	// selector: hooks must not be called inside a store selector. Until the
+	// export is registered, subscribe to a placeholder store instead, so the
+	// hook is called unconditionally.
+	const exportStore = useShapeDiverStoreParameters((state) =>
+		state.getExport(namespace, exportId),
+	);
+	const parameter = useStore(
+		(exportStore as StoreApi<IShapeDiverExport | undefined>) ??
+			noExportStore,
 	);
 
 	const memoizedParameter = useMemo(() => {

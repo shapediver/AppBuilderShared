@@ -28,6 +28,7 @@ import {
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -138,9 +139,11 @@ export default function ParameterDrawingComponent(
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 	// get the viewport from the store
-	const {viewport} = useShapeDiverStoreViewport((state) => ({
-		viewport: state.viewports[viewportId],
-	}));
+	const {viewport} = useShapeDiverStoreViewport(
+		useShallow((state) => ({
+			viewport: state.viewports[viewportId],
+		})),
+	);
 	// get the notification store
 	const notifications = useNotificationStore();
 

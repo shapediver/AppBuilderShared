@@ -50,6 +50,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import {useShallow} from "zustand/react/shallow";
 import {IAnchor2d, IAnchor3d} from "../config/shapediverStoreViewportAnchors";
 import {anchorPointerEvents} from "../lib/anchorPointerEvents";
 import {cleanUnit, toCanvasPixels} from "../lib/utils";
@@ -220,15 +221,20 @@ export function useAnchorContainer({
 		useState(0);
 
 	const {addAdditionalContainerContent, removeAdditionalContainerContent} =
-		useShapeDiverStoreStandardContainers((state) => ({
-			addAdditionalContainerContent: state.addAdditionalContainerContent,
-			removeAdditionalContainerContent:
-				state.removeAdditionalContainerContent,
-		}));
+		useShapeDiverStoreStandardContainers(
+			useShallow((state) => ({
+				addAdditionalContainerContent:
+					state.addAdditionalContainerContent,
+				removeAdditionalContainerContent:
+					state.removeAdditionalContainerContent,
+			})),
+		);
 
-	const {disabled} = useShapeDiverStoreParameters((state) => ({
-		disabled: state.isAnyParameterDisablingOthers(),
-	}));
+	const {disabled} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			disabled: state.isAnyParameterDisablingOthers(),
+		})),
+	);
 
 	/**
 	 * Get the styling properties for the anchor container.
@@ -336,31 +342,33 @@ export function useAnchorContainer({
 		(state) => state.viewports[viewportId],
 	);
 	const {addAnchor, removeAnchor, updateShowContent, showContent, zIndex} =
-		useShapeDiverStoreViewportAnchors((state) => ({
-			addAnchor: state.addAnchor,
-			removeAnchor: state.removeAnchor,
-			updateShowContent: state.updateShowContent,
-			showContent:
-				state.anchors[viewportId]?.find(
-					(a) => a.id === id && a.type === type,
-				)?.showContent ?? false,
-			zIndex: (() => {
-				const anchor = state.anchors[viewportId]?.find(
-					(a) =>
-						a.id === id &&
-						a.type === type &&
-						a.type === AppBuilderContainerNameType.Anchor3d,
-				);
-				if (
-					anchor &&
-					anchor.type === AppBuilderContainerNameType.Anchor3d &&
-					"zIndex" in anchor
-				) {
-					return (anchor as IAnchor3d).zIndex;
-				}
-				return undefined;
-			})(),
-		}));
+		useShapeDiverStoreViewportAnchors(
+			useShallow((state) => ({
+				addAnchor: state.addAnchor,
+				removeAnchor: state.removeAnchor,
+				updateShowContent: state.updateShowContent,
+				showContent:
+					state.anchors[viewportId]?.find(
+						(a) => a.id === id && a.type === type,
+					)?.showContent ?? false,
+				zIndex: (() => {
+					const anchor = state.anchors[viewportId]?.find(
+						(a) =>
+							a.id === id &&
+							a.type === type &&
+							a.type === AppBuilderContainerNameType.Anchor3d,
+					);
+					if (
+						anchor &&
+						anchor.type === AppBuilderContainerNameType.Anchor3d &&
+						"zIndex" in anchor
+					) {
+						return (anchor as IAnchor3d).zIndex;
+					}
+					return undefined;
+				})(),
+			})),
+		);
 	const {canvas, allowPointerEventsGlobal} = useCanvasPortalUtilities(
 		viewportId,
 		portalRef,

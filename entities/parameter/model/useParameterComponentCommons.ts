@@ -72,7 +72,7 @@ export function useParameterComponentCommons<T>(
 	const acceptRejectMode = propAcceptRejectMode ?? storeAcceptRejectMode;
 
 	const {executing, sessionDependencies} = useShapeDiverStoreParameters(
-		(state) => {
+		useShallow((state) => {
 			const sessionDependencies = state.sessionDependency[namespace];
 
 			return {
@@ -81,7 +81,7 @@ export function useParameterComponentCommons<T>(
 				),
 				sessionDependencies,
 			};
-		},
+		}),
 	);
 
 	const disabledByParameter = useShapeDiverStoreParameters((state) =>

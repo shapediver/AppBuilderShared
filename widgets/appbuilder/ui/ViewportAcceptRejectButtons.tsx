@@ -1,3 +1,4 @@
+import {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {
 	acceptGlobalParameterChanges,
 	getInlineAcceptRejectEpoch,
@@ -21,6 +22,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo, useSyncExternalStore} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 interface ViewportAcceptRejectButtonsIconStyleProps {
 	size?: string | number;
@@ -120,22 +122,34 @@ function ViewportAcceptRejectButtons(
 		getInlineAcceptRejectEpoch,
 	);
 
-	// Use a more selective selector that only re-renders when relevant changes occur
-	const parameterChanges = useShapeDiverStoreParameters(
-		useCallback(
-			(state) =>
-				Object.keys(state.parameterChanges)
-					.filter((id) =>
-						sessionIds ? sessionIds.includes(id) : true,
-					)
-					.map((id) => ({
-						namespace: id,
-						changes: state.parameterChanges[id],
-					}))
-					.sort((a, b) => a.changes.priority - b.changes.priority),
-			[sessionIds],
+	// Select a flat list of (namespace, parameter changes) pairs, which only
+	// changes when relevant changes occur. The change objects are stable store
+	// references, so the shallow comparison can match. Creating wrapper
+	// objects inside the selector would return a new array on every call and
+	// cause an infinite render loop.
+	const parameterChangesSelection = useShapeDiverStoreParameters(
+		useShallow((state) =>
+			Object.keys(state.parameterChanges)
+				.filter((id) => (sessionIds ? sessionIds.includes(id) : true))
+				.flatMap((id) => [id, state.parameterChanges[id]]),
 		),
 	);
+	const parameterChanges = useMemo(() => {
+		const parameterChanges: {
+			namespace: string;
+			changes: IParameterChanges;
+		}[] = [];
+		for (let i = 0; i < parameterChangesSelection.length; i += 2) {
+			parameterChanges.push({
+				namespace: parameterChangesSelection[i] as string,
+				changes: parameterChangesSelection[i + 1] as IParameterChanges,
+			});
+		}
+
+		return parameterChanges.sort(
+			(a, b) => a.changes.priority - b.changes.priority,
+		);
+	}, [parameterChangesSelection]);
 
 	const hasChanges = useMemo(
 		() =>

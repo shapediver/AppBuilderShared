@@ -14,26 +14,31 @@ import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
  * @returns Array of parameters in the same order as input
  */
 export function useParameters<T>(props: PropsParameter[]) {
+	// Select the parameter state objects only. Their references are stable
+	// until the respective parameter store changes, which allows the shallow
+	// comparison to succeed. Creating wrapper objects inside the selector
+	// would return a new array on every call and cause an infinite render loop.
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			return props.map(({parameterId, namespace, overrides}) => {
+			return props.map(({parameterId, namespace}) => {
 				if (!state) return;
 				const _parameter = state.getParameter(namespace, parameterId);
 				if (!_parameter) return;
-				const parameter =
-					_parameter.getState() as IShapeDiverParameter<T>;
-				return {parameter, overrides: overrides};
+				return _parameter.getState() as IShapeDiverParameter<T>;
 			});
 		}),
 	);
 
 	return useMemo(() => {
-		return parameters.map((p) => {
-			if (!p) return;
+		return parameters.map((parameter, index) => {
+			if (!parameter) return;
 			return {
-				...p.parameter,
-				definition: applyOverrides(p.parameter.definition, p.overrides),
+				...parameter,
+				definition: applyOverrides(
+					parameter.definition,
+					props[index]?.overrides,
+				),
 			};
 		});
-	}, [parameters]);
+	}, [parameters, props]);
 }
