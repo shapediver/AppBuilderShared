@@ -145,6 +145,27 @@ export function useAppBuilderCustomParameters(props: Props) {
 			// accepted first (see IParameterChanges.priority).
 
 			const json = JSON.stringify(getCustomParameterValues());
+
+			// A value of a parameter with a reset value (see the "resetValue"
+			// setting) is sent once, e.g. a transformation the model applies to
+			// the placement of an object. The parameter store commits the reset
+			// value once the execution ended, but requests started meanwhile
+			// (e.g. by output actions processing the result of this execution)
+			// would send the value again: the model would apply it twice.
+			// This request carries the JSON built above (as the "AppBuilder"
+			// string or file, see the pre-execution hook).
+			const stores =
+				useShapeDiverStoreParameters.getState().parameterStores[
+					namespaceAppBuilder
+				];
+			Object.keys(values).forEach((id) => {
+				const resetValue = stores?.[id]
+					?.getState()
+					.actions.getResetValue();
+				if (resetValue !== undefined)
+					customParameterValues.current[id] = resetValue;
+			});
+
 			if (
 				appBuilderParam &&
 				json.length <= appBuilderParam.definition.max!
@@ -179,19 +200,17 @@ export function useAppBuilderCustomParameters(props: Props) {
 					"application/json",
 				)
 			) {
-				if (
-					appBuilderFileParam.actions.setUiValue(
-						new Blob([json], {type: "application/json"}),
-					)
-				) {
+				const blob = new Blob([json], {type: "application/json"});
+				if (appBuilderFileParam.actions.setUiValue(blob)) {
 					if (appBuilderParam) {
 						// clear the appBuilderParam in case it exists
+						// (the state of appBuilderFileParam is the one of the
+						// latest render, it does not contain the blob yet)
 						await batchParameterValueUpdate(
 							{
 								[namespace]: {
 									[appBuilderParam?.definition.id]: "",
-									[appBuilderFileParam.definition.id]:
-										appBuilderFileParam.state.uiValue,
+									[appBuilderFileParam.definition.id]: blob,
 								},
 							},
 							true,
@@ -219,7 +238,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 				);
 			}
 		},
-		[appBuilderParam, appBuilderFileParam],
+		[appBuilderParam, appBuilderFileParam, namespaceAppBuilder],
 	);
 
 	// values of custom parameters committed without a computation
@@ -238,9 +257,15 @@ export function useAppBuilderCustomParameters(props: Props) {
 				// if within the values that should be set, there is a AppBuilder parameter defined
 				// we don't use the custom values, but the values within that parameter
 				// as the custom values are stale in that case
+				// (they may already hold the reset values of the values sent, see the executor)
+				const fileValue = appBuilderFileParam
+					? values[appBuilderFileParam.definition.id]
+					: undefined;
 				let json;
 				if (appBuilderParam && values[appBuilderParam.definition.id]) {
 					json = values[appBuilderParam.definition.id];
+				} else if (fileValue instanceof Blob) {
+					json = await fileValue.text();
 				} else {
 					json = JSON.stringify(customValues);
 				}

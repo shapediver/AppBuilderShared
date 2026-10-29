@@ -571,6 +571,39 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		warn.mockRestore();
 	});
 
+	it("exposes the reset value", () => {
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition({resetValue: "reset"}),
+				async () => {},
+				undefined,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+		expect(parameter.getState().actions.getResetValue()).toBe("reset");
+
+		parameter.getState().actions.setResetValue("override");
+		expect(parameter.getState().actions.getResetValue()).toBe("override");
+
+		store.getState().removeSession(genericNamespace);
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition(),
+				async () => {},
+				undefined,
+			);
+		expect(
+			getParameter(genericNamespace, "g1")
+				.getState()
+				.actions.getResetValue(),
+		).toBeUndefined();
+	});
+
 	it("discarding a pending change after a reset does not execute", async () => {
 		const executor = jest.fn(async () => undefined);
 		store

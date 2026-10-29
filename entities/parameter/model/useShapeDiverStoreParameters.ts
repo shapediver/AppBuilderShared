@@ -782,6 +782,9 @@ function createParameterStore<T>(
 							);
 							executor.commit?.(target);
 						},
+						getResetValue: function (): T | string | undefined {
+							return resolveResetValue();
+						},
 						// TODO add action to get the stringified value of the parameter
 					},
 				};
