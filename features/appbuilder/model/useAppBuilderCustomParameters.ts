@@ -200,19 +200,17 @@ export function useAppBuilderCustomParameters(props: Props) {
 					"application/json",
 				)
 			) {
-				if (
-					appBuilderFileParam.actions.setUiValue(
-						new Blob([json], {type: "application/json"}),
-					)
-				) {
+				const blob = new Blob([json], {type: "application/json"});
+				if (appBuilderFileParam.actions.setUiValue(blob)) {
 					if (appBuilderParam) {
 						// clear the appBuilderParam in case it exists
+						// (the state of appBuilderFileParam is the one of the
+						// latest render, it does not contain the blob yet)
 						await batchParameterValueUpdate(
 							{
 								[namespace]: {
 									[appBuilderParam?.definition.id]: "",
-									[appBuilderFileParam.definition.id]:
-										appBuilderFileParam.state.uiValue,
+									[appBuilderFileParam.definition.id]: blob,
 								},
 							},
 							true,
