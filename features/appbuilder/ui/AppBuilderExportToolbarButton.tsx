@@ -1,8 +1,10 @@
 import {IShapeDiverExport} from "@AppBuilderLib/entities/export/config/export";
+import {resolveExportParameterValues} from "@AppBuilderLib/entities/export/model/resolveExportParameterValues";
 import {useExecuteExport} from "@AppBuilderLib/entities/export/model/useExecuteExport";
 import type {
 	AppBuilderToolbarAlign,
 	AppBuilderToolbarSide,
+	IAppBuilderActionPropsSetParameterValue,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import AppBuilderToolbarIconButton, {
 	AppBuilderToolbarIconButtonThemeStyleProps,
@@ -12,6 +14,10 @@ import {useCallback, useState} from "react";
 
 type Props = {
 	exportData: IShapeDiverExport | undefined;
+	/** Session of the export, used to resolve value sources. */
+	namespace: string;
+	/** Parameter values (literal or value sources) sent with the export. */
+	parameterValues?: IAppBuilderActionPropsSetParameterValue[];
 	label: string;
 	tooltip: string;
 	iconType: IconType;
@@ -26,6 +32,8 @@ type Props = {
  */
 export default function AppBuilderExportToolbarButton({
 	exportData,
+	namespace,
+	parameterValues,
 	label,
 	tooltip,
 	iconType,
@@ -41,11 +49,16 @@ export default function AppBuilderExportToolbarButton({
 		if (disabled) return;
 		setLoading(true);
 		try {
-			await executeExport();
+			await executeExport({
+				parameterValues: await resolveExportParameterValues(
+					parameterValues,
+					namespace,
+				),
+			});
 		} finally {
 			setLoading(false);
 		}
-	}, [disabled, executeExport]);
+	}, [disabled, executeExport, parameterValues, namespace]);
 
 	if (!exportData || exportData.definition.hidden) return null;
 

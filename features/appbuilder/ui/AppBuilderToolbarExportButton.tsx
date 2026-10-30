@@ -51,6 +51,8 @@ export default function AppBuilderToolbarExportButton({
 	return (
 		<AppBuilderExportToolbarButton
 			exportData={exports[0]}
+			namespace={namespace}
+			parameterValues={item.props.parameterValues}
 			label={item.label}
 			tooltip={item.tooltip ?? item.label}
 			iconType={
