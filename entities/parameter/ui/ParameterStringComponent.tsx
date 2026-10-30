@@ -17,6 +17,7 @@ import {
 } from "../config/propsParameter";
 import {filterHiddenSelectItems} from "../lib/select/filterHiddenSelectItems";
 import {resolveStringSelectEmitValue} from "../lib/select/resolveStringSelectEmitValue";
+import {filterableDatabasePersistenceKey} from "../model/filterableDatabase/useFilterableDatabaseStateStore";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
@@ -290,6 +291,10 @@ export default function ParameterStringComponent(
 			}}
 			{...selectSettings}
 			items={visibleSelectItems}
+			persistenceKey={filterableDatabasePersistenceKey(
+				props.namespace,
+				props.parameterId,
+			)}
 		/>
 	) : null;
 

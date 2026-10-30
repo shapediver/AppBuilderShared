@@ -130,6 +130,11 @@ type SelectComponentPropsBase = Omit<SelectComponentProps, "scrollingApi"> & {
 	 */
 	source?: string;
 	database?: IFilterableDatabaseSettings;
+	/**
+	 * Keeps filter selection, loaded pages, and search text while this
+	 * control is unmounted or idle. Pass `namespace:parameterId`.
+	 */
+	persistenceKey?: string;
 };
 
 /** Type-specific props for each select component type */
@@ -158,7 +163,7 @@ export type SelectComponentPropsExt = SelectComponentPropsBase &
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, source, database, ...rest} = props;
+	const {type, source, database, persistenceKey, ...rest} = props;
 
 	// scrolling API
 	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
@@ -186,6 +191,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 				{...rest}
 				type={type}
 				database={database}
+				persistenceKey={persistenceKey}
 				multiselect={false}
 			/>
 		);

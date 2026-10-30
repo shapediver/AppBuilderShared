@@ -23,6 +23,16 @@ import type {
 	DatabaseTable,
 	FilterSelection,
 } from "../../lib/filterableDatabase/types";
+import {
+	committedFilterableSearchTerms,
+	filterableDatabaseSettingsKey,
+	readFilterableDatabaseTable,
+	readFilterableDatabaseView,
+	useFilterableDatabaseStateStore,
+	writeFilterableDatabaseTable,
+	type FilterableDatabaseViewPatch,
+	type FilterableDatabaseViewState,
+} from "./useFilterableDatabaseStateStore";
 
 export interface FilterTreeNode {
 	value: string;
@@ -44,6 +54,44 @@ export type FilterableDatabaseScrollingApi = ReturnType<
 
 const FILTER_TEXT_DEBOUNCE_MS = 300;
 
+/** Search and scroll state of the paged list, saved per parameter. */
+export interface FilterableDatabaseListPersistence {
+	read(): FilterableDatabaseViewState | undefined;
+	save(
+		patch: Pick<
+			FilterableDatabaseViewPatch,
+			"searchText" | "searchAnchors" | "scrollTop"
+		>,
+	): void;
+}
+
+function createScrollingApiForView(
+	table: DatabaseTable,
+	settings: IFilterableDatabaseSettings,
+	selection: FilterSelection,
+	view: FilterableDatabaseViewState | undefined,
+	pageSize: number,
+	itemData: Record<string, ISelectComponentItemDataType> | undefined,
+): FilterableDatabaseScrollingApi {
+	return createFilterableDatabaseScrollingApi({
+		table,
+		settings,
+		selection,
+		pageSize,
+		itemData,
+		searchTerms: committedFilterableSearchTerms(
+			view?.searchAnchors ?? [],
+			view?.searchText ?? "",
+		),
+		loadedCount: view?.loadedCount,
+	});
+}
+
+/** What the current table and scrolling API were built for. */
+function buildKey(settingsKey: string, pageSize: number, buildApi: boolean) {
+	return `${pageSize}|${buildApi}|${settingsKey}`;
+}
+
 export function useFilterableDatabase(
 	settings: IFilterableDatabaseSettings,
 	options?: {
@@ -55,38 +103,164 @@ export function useFilterableDatabase(
 		 * renders the full catalog list (dropdown, color, chips, checklist…).
 		 */
 		buildScrollingApi?: boolean;
+		/**
+		 * Keeps filters, loaded pages, search, and scroll offset while the
+		 * control is unmounted or idle. Pass `namespace:parameterId`.
+		 */
+		persistenceKey?: string;
 	},
 ) {
 	const pageSize = options?.pageSize ?? 20;
 	const buildApi = options?.buildScrollingApi ?? true;
-	const [loading, setLoading] = useState(true);
+	const persistenceKey = options?.persistenceKey;
+	const settingsKey = filterableDatabaseSettingsKey(settings);
+	const itemDataKey = JSON.stringify(options?.itemData ?? null);
+
+	// With a cached table the saved view is rebuilt during the first render,
+	// so a remount shows no loader and the list keeps its length.
+	const [initial] = useState(() => {
+		const view = readFilterableDatabaseView(persistenceKey, settingsKey);
+		const selection = view?.selection ?? {};
+		const table = readFilterableDatabaseTable(
+			persistenceKey,
+			settings,
+			settingsKey,
+		);
+		const scrollingApi =
+			table && buildApi
+				? createScrollingApiForView(
+						table,
+						settings,
+						selection,
+						view,
+						pageSize,
+						options?.itemData,
+					)
+				: undefined;
+
+		return {selection, table, scrollingApi};
+	});
+
+	const [loading, setLoading] = useState(!initial.table);
 	const [error, setError] = useState<Error | undefined>();
-	const [table, setTable] = useState<DatabaseTable | undefined>();
-	const [selection, setSelection] = useState<FilterSelection>({});
-	const scrollingApiRef = useRef<FilterableDatabaseScrollingApi | undefined>(
-		undefined,
+	const [table, setTable] = useState<DatabaseTable | undefined>(
+		initial.table,
+	);
+	const [selection, setSelection] = useState<FilterSelection>(
+		initial.selection,
+	);
+	const [scrollingApi, setScrollingApi] = useState<
+		FilterableDatabaseScrollingApi | undefined
+	>(initial.scrollingApi);
+	/** Bumped when a new table or scrolling API replaces the shown one. */
+	const [viewVersion, setViewVersion] = useState(0);
+	const scrollingApiRef = useRef(initial.scrollingApi);
+	const builtForRef = useRef<string | undefined>(
+		initial.table ? buildKey(settingsKey, pageSize, buildApi) : undefined,
 	);
 	const filterTextTimerRef = useRef<
 		ReturnType<typeof setTimeout> | undefined
 	>(undefined);
-	const [scrollingApi, setScrollingApi] = useState<
-		FilterableDatabaseScrollingApi | undefined
+	const pendingFilterTextRef = useRef<
+		{filterIndex: number; text: string} | undefined
 	>(undefined);
 
-	const {href, export: exportRef, format} = settings.dataSource;
-	const filtersKey = JSON.stringify(settings.filters);
-	const itemDataDefinitionKey = JSON.stringify(settings.itemDataDefinition);
 	const settingsRef = useRef(settings);
 	settingsRef.current = settings;
 	const selectionRef = useRef(selection);
 	selectionRef.current = selection;
 	const itemDataRef = useRef(options?.itemData);
 	itemDataRef.current = options?.itemData;
-	const itemDataKey = JSON.stringify(options?.itemData ?? null);
-	const appliedItemDataKeyRef = useRef<string | undefined>(undefined);
+	const appliedItemDataKeyRef = useRef<string | undefined>(
+		initial.scrollingApi ? itemDataKey : undefined,
+	);
+	const persistenceKeyRef = useRef(persistenceKey);
+	persistenceKeyRef.current = persistenceKey;
+	const settingsKeyRef = useRef(settingsKey);
+	settingsKeyRef.current = settingsKey;
+
+	/**
+	 * Save for the definition a value belongs to. Skipped once the definition
+	 * changed, so a late cleanup cannot write an old list into the new view.
+	 */
+	const saveView = useCallback(
+		(forSettingsKey: string, patch: FilterableDatabaseViewPatch) => {
+			const key = persistenceKeyRef.current;
+			if (!key || settingsKeyRef.current !== forSettingsKey) {
+				return;
+			}
+
+			useFilterableDatabaseStateStore
+				.getState()
+				.saveView(key, forSettingsKey, patch);
+		},
+		[],
+	);
+
+	const listPersistence = useMemo<
+		FilterableDatabaseListPersistence | undefined
+	>(
+		() =>
+			persistenceKey
+				? {
+						read: () =>
+							readFilterableDatabaseView(
+								persistenceKey,
+								settingsKey,
+							),
+						save: (patch) => saveView(settingsKey, patch),
+					}
+				: undefined,
+		[persistenceKey, settingsKey, saveView],
+	);
 
 	useEffect(() => {
+		const built = buildKey(settingsKey, pageSize, buildApi);
+		// Built during the first render, or kept while the control was idle.
+		if (builtForRef.current === built) {
+			return;
+		}
+
 		const currentSettings = settingsRef.current;
+		const view = readFilterableDatabaseView(persistenceKey, settingsKey);
+		const nextSelection = persistenceKey
+			? (view?.selection ?? {})
+			: selectionRef.current;
+
+		function show(parsed: DatabaseTable) {
+			const api = buildApi
+				? createScrollingApiForView(
+						parsed,
+						currentSettings,
+						nextSelection,
+						view,
+						pageSize,
+						itemDataRef.current,
+					)
+				: undefined;
+			appliedItemDataKeyRef.current = JSON.stringify(
+				itemDataRef.current ?? null,
+			);
+			builtForRef.current = built;
+			scrollingApiRef.current = api;
+			selectionRef.current = nextSelection;
+			setSelection(nextSelection);
+			setTable(parsed);
+			setScrollingApi(api);
+			setViewVersion((version) => version + 1);
+			setError(undefined);
+			setLoading(false);
+		}
+
+		const cachedTable = readFilterableDatabaseTable(
+			persistenceKey,
+			currentSettings,
+			settingsKey,
+		);
+		if (cachedTable) {
+			show(cachedTable);
+			return;
+		}
 
 		if (!hasDataSource(currentSettings)) {
 			setLoading(false);
@@ -109,26 +283,13 @@ export function useFilterableDatabase(
 					return;
 				}
 
-				setTable(parsed);
-
-				if (!buildApi) {
-					scrollingApiRef.current = undefined;
-					setScrollingApi(undefined);
-					return;
-				}
-
-				const api = createFilterableDatabaseScrollingApi({
-					table: parsed,
-					settings: currentSettings,
-					selection: selectionRef.current,
-					pageSize,
-					itemData: itemDataRef.current,
-				});
-				appliedItemDataKeyRef.current = JSON.stringify(
-					itemDataRef.current ?? null,
+				writeFilterableDatabaseTable(
+					persistenceKey,
+					currentSettings,
+					settingsKey,
+					parsed,
 				);
-				scrollingApiRef.current = api;
-				setScrollingApi(api);
+				show(parsed);
 			} catch (err) {
 				if (cancelled) {
 					return;
@@ -138,10 +299,7 @@ export function useFilterableDatabase(
 				setTable(undefined);
 				scrollingApiRef.current = undefined;
 				setScrollingApi(undefined);
-			} finally {
-				if (!cancelled) {
-					setLoading(false);
-				}
+				setLoading(false);
 			}
 		}
 
@@ -150,24 +308,45 @@ export function useFilterableDatabase(
 		return () => {
 			cancelled = true;
 		};
-	}, [
-		href,
-		exportRef?.name,
-		exportRef?.sessionId,
-		format,
-		filtersKey,
-		itemDataDefinitionKey,
-		pageSize,
-		buildApi,
-	]);
+	}, [settingsKey, pageSize, persistenceKey, buildApi]);
+
+	// Remember how many rows were shown when the control hides or unmounts.
+	useEffect(() => {
+		if (!scrollingApi) {
+			return;
+		}
+
+		const forSettingsKey = settingsKeyRef.current;
+		return () => {
+			saveView(forSettingsKey, {loadedCount: scrollingApi.items.length});
+		};
+	}, [scrollingApi, saveView]);
 
 	useEffect(() => {
 		return () => {
 			if (filterTextTimerRef.current) {
 				clearTimeout(filterTextTimerRef.current);
+				filterTextTimerRef.current = undefined;
 			}
+
+			// Commit a text filter that is still waiting for its debounce.
+			const pending = pendingFilterTextRef.current;
+			if (!pending) {
+				return;
+			}
+
+			pendingFilterTextRef.current = undefined;
+			const trimmed = pending.text.trim();
+			const next = {
+				...selectionRef.current,
+				[pending.filterIndex]: trimmed ? [trimmed] : [],
+			};
+			selectionRef.current = next;
+			scrollingApiRef.current?.updateSelection(next);
+			saveView(settingsKeyRef.current, {selection: next});
+			setSelection(next);
 		};
-	}, []);
+	}, [saveView]);
 
 	useEffect(() => {
 		const api = scrollingApiRef.current;
@@ -185,11 +364,13 @@ export function useFilterableDatabase(
 		(updater: (prev: FilterSelection) => FilterSelection) => {
 			setSelection((prev) => {
 				const next = updater(prev);
+				selectionRef.current = next;
 				scrollingApiRef.current?.updateSelection(next);
+				saveView(settingsKeyRef.current, {selection: next});
 				return next;
 			});
 		},
-		[],
+		[saveView],
 	);
 
 	const filterGroups = useMemo((): FilterTreeGroup[] => {
@@ -252,7 +433,9 @@ export function useFilterableDatabase(
 				clearTimeout(filterTextTimerRef.current);
 			}
 
+			pendingFilterTextRef.current = {filterIndex, text};
 			filterTextTimerRef.current = setTimeout(() => {
+				pendingFilterTextRef.current = undefined;
 				const trimmed = text.trim();
 				setFilterValue(filterIndex, trimmed ? [trimmed] : []);
 				filterTextTimerRef.current = undefined;
@@ -269,6 +452,7 @@ export function useFilterableDatabase(
 					clearTimeout(filterTextTimerRef.current);
 					filterTextTimerRef.current = undefined;
 				}
+				pendingFilterTextRef.current = undefined;
 			}
 
 			applySelection((prev) => {
@@ -327,5 +511,7 @@ export function useFilterableDatabase(
 		activeFilterTags,
 		filterGroups,
 		scrollingApi,
+		listPersistence,
+		viewVersion,
 	};
 }
