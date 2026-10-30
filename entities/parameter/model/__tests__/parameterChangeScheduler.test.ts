@@ -79,6 +79,8 @@ describe("ParameterChangeScheduler", () => {
 	it("sends all pending values right away for a timeout of 0", () => {
 		schedule("A", "a1", 3000);
 		schedule("B", "b1", 0);
+		// (the fake timers queue the microtasks)
+		jest.runAllTicks();
 		expect(flush).toHaveBeenCalledTimes(1);
 		expect(flush).toHaveBeenCalledWith({
 			s_appbuilder: {A: "a1", B: "b1"},
@@ -87,10 +89,45 @@ describe("ParameterChangeScheduler", () => {
 		expect(flush).toHaveBeenCalledTimes(1);
 	});
 
+	it("sends the values with a timeout of 0 of the same task in one request", () => {
+		schedule("A", "a1", 0);
+		schedule("B", "b1", 0);
+		// a value with a timeout of its own scheduled meanwhile goes along
+		schedule("C", "c1", 3000);
+		// (the fake timers queue the microtasks)
+		jest.runAllTicks();
+		expect(flush).toHaveBeenCalledTimes(1);
+		expect(flush).toHaveBeenCalledWith({
+			s_appbuilder: {A: "a1", B: "b1", C: "c1"},
+		});
+		jest.advanceTimersByTime(3000);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
 	it("sends right away for a timeout of 0 while a pointer is pressed", () => {
 		scheduler.holdPointer(1);
 		schedule("A", "a1", 0);
+		// (the fake timers queue the microtasks)
+		jest.runAllTicks();
 		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("notifies the listeners of changes of the pending values", () => {
+		const listener = jest.fn();
+		const unsubscribe = scheduler.subscribe(listener);
+		schedule("A", "a1", 500);
+		expect(listener).toHaveBeenCalledTimes(1);
+		expect(scheduler.hasPendingIn(["s_appbuilder"])).toBe(true);
+		expect(scheduler.hasPendingIn(["s"])).toBe(false);
+		scheduler.cancel("s_appbuilder", "B");
+		expect(listener).toHaveBeenCalledTimes(1);
+		jest.advanceTimersByTime(500);
+		// the values were taken to be sent
+		expect(listener).toHaveBeenCalledTimes(2);
+		expect(scheduler.hasPendingIn(["s_appbuilder"])).toBe(false);
+		unsubscribe();
+		schedule("A", "a2", 500);
+		expect(listener).toHaveBeenCalledTimes(2);
 	});
 
 	it("replaces the pending value of a parameter", () => {

@@ -25,7 +25,8 @@ export default function AppBuilderActionRedoComponent(props: Props) {
 	const canGoForward = useShapeDiverStoreParameters(
 		(state) => state.historyIndex < state.history.length - 1,
 	);
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	// (changes of the parameter components waiting to be sent: restores a state replacing them)
+	const hasPendingChanges = useHasPendingParameterChanges(namespace, false);
 	const resolvedDisabled = disabled || hasPendingChanges || !canGoForward;
 	const onClick = createActionClickHandler(() => runAppBuilderActionRedo(), {
 		disabled: resolvedDisabled,

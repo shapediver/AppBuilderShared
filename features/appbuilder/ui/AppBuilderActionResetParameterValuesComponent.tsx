@@ -25,7 +25,8 @@ export default function AppBuilderActionResetParameterValuesComponent(
 		toolbarButtonProps,
 	} = props;
 	const [loading, setLoading] = useState(false);
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	// (changes of the parameter components waiting to be sent: the default values replace them)
+	const hasPendingChanges = useHasPendingParameterChanges(namespace, false);
 	const resolvedDisabled = !namespace || !!disabled || hasPendingChanges;
 	const onClick = createActionClickHandler(
 		() => runAppBuilderActionResetParameterValues(namespace),

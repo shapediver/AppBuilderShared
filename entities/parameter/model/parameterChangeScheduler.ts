@@ -141,6 +141,10 @@ export class ParameterChangeScheduler {
 	#send: ParameterChangeSender | undefined;
 	/** Receives the release events of held pointers (the window). */
 	readonly #releaseTarget: EventTarget | undefined;
+	/** Notified when the pending changes change (see {@link subscribe}). */
+	readonly #listeners = new Set<() => void>();
+	/** A send of the changes with a timeout of 0 is queued (see {@link schedule}). */
+	#flushQueued = false;
 
 	/**
 	 * @param send Sends the pending changes, see {@link take}.
@@ -167,16 +171,38 @@ export class ParameterChangeScheduler {
 
 	/**
 	 * Schedule a change: it replaces a pending change of the parameter. A
-	 * timeout of 0 sends all pending changes right away, otherwise the
-	 * countdown restarts with the longest timeout of all pending changes.
+	 * timeout of 0 sends all pending changes right away (once the current
+	 * task scheduled its changes: changes with a timeout of 0 of the same
+	 * task are sent in one request), otherwise the countdown restarts with
+	 * the longest timeout of all pending changes.
 	 */
 	schedule(change: IScheduledParameterChange): void {
 		this.#pending.set(
 			ParameterChangeScheduler.key(change.namespace, change.parameterId),
 			change,
 		);
-		if (change.timeout <= 0) void this.flush();
-		else if (this.#heldPointers.size === 0) this.#restart();
+		this.#notify();
+		if (change.timeout <= 0) {
+			this.#clearTimer();
+			if (this.#flushQueued) return;
+			this.#flushQueued = true;
+			queueMicrotask(() => {
+				this.#flushQueued = false;
+				void this.flush();
+			});
+		} else if (this.#heldPointers.size === 0 && !this.#flushQueued)
+			this.#restart();
+	}
+
+	/**
+	 * Listen to changes of the pending changes (e.g. to show that a change
+	 * waits to be sent, see {@link hasPendingIn}).
+	 *
+	 * @returns a function removing the listener.
+	 */
+	subscribe(listener: () => void): () => void {
+		this.#listeners.add(listener);
+		return () => this.#listeners.delete(listener);
 	}
 
 	/**
@@ -218,10 +244,14 @@ export class ParameterChangeScheduler {
 	 * pending changes goes on.
 	 */
 	cancel(namespace: string, parameterId: string): void {
-		this.#pending.delete(
-			ParameterChangeScheduler.key(namespace, parameterId),
-		);
+		if (
+			!this.#pending.delete(
+				ParameterChangeScheduler.key(namespace, parameterId),
+			)
+		)
+			return;
 		if (this.#pending.size === 0) this.#clearTimer();
+		this.#notify();
 	}
 
 	/** Whether a change of the parameter is waiting to be sent. */
@@ -229,6 +259,13 @@ export class ParameterChangeScheduler {
 		return this.#pending.has(
 			ParameterChangeScheduler.key(namespace, parameterId),
 		);
+	}
+
+	/** Whether a change of a parameter of one of the namespaces is waiting. */
+	hasPendingIn(namespaces: readonly string[]): boolean {
+		for (const change of this.#pending.values())
+			if (namespaces.includes(change.namespace)) return true;
+		return false;
 	}
 
 	/**
@@ -269,6 +306,7 @@ export class ParameterChangeScheduler {
 		this.#clearTimer();
 		const changes = [...this.#pending.values()];
 		this.#pending.clear();
+		if (changes.length > 0) this.#notify();
 
 		return new ScheduledParameterChanges(changes);
 	}
@@ -289,6 +327,7 @@ export class ParameterChangeScheduler {
 			discarded.push(change);
 		}
 		if (this.#pending.size === 0) this.#clearTimer();
+		if (discarded.length > 0) this.#notify();
 		discarded.forEach((change) => change.onDiscard?.());
 	}
 
@@ -298,6 +337,11 @@ export class ParameterChangeScheduler {
 		this.#pending.clear();
 		this.#heldPointers.clear();
 		this.#observeRelease(false);
+		this.#notify();
+	}
+
+	#notify(): void {
+		this.#listeners.forEach((listener) => listener());
 	}
 
 	readonly #onPointerRelease = (event: Event) =>

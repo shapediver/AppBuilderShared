@@ -26,7 +26,8 @@ export default function AppBuilderActionImportParameterValuesComponent(
 		disabled,
 	} = props;
 	const [loading, setLoading] = useState(false);
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	// (changes of the parameter components waiting to be sent: the imported values replace them)
+	const hasPendingChanges = useHasPendingParameterChanges(namespace, false);
 	const resolvedDisabled = disabled || hasPendingChanges;
 	const onClick = createActionClickHandler(
 		() => runAppBuilderActionImportParameterValues(namespace),
