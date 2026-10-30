@@ -255,8 +255,8 @@ export function useParameterComponentCommons<T>(
 					// which applied the change to the scene restore it (e.g. a
 					// gizmo following its committed value), also an instance
 					// mounted again meanwhile. While an execution of the session
-					// runs, its end commits (a commit now would replace the value
-					// being executed).
+					// runs, the value is shown at its end (a commit now would
+					// replace the value being executed).
 					onDiscard: () => {
 						const store = useShapeDiverStoreParameters.getState();
 						const parameter = store.getParameter(
@@ -275,6 +275,7 @@ export function useParameterComponentCommons<T>(
 			}
 			debounceRef.current = setTimeout(
 				() => {
+					debounceRef.current = undefined;
 					if (actions.setUiValue(curval)) {
 						Promise.all([
 							actions.execute(
@@ -330,6 +331,19 @@ export function useParameterComponentCommons<T>(
 		// a commit (e.g. of a discarded change) shows the committed value, also
 		// when the ui value did not change
 	}, [state.uiValue, state.commitRevision, reactive]);
+
+	useEffect(() => {
+		// The end of an execution shows the value of the store: a change
+		// discarded during the execution (e.g. undo) changed neither the ui
+		// value nor the commit revision, and an instance mounted again after
+		// the change was scheduled was not reached by its discard callback.
+		// (a local change of a component with a timeout of its own, see
+		// debounceRef, is not in the store yet)
+		if (executing || !reactive || debounceRef.current) return;
+		if (parameterChangeScheduler.isPending(namespace, definition.id))
+			return;
+		setValue(state.uiValue);
+	}, [executing]);
 
 	useEffect(() => {
 		if (!reactive) {
