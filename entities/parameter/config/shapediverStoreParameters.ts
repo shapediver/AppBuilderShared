@@ -57,6 +57,29 @@ export type ISessionsHistoryState = {
 	[namespace: string]: ISingleSessionHistoryState;
 };
 
+/** Options of IShapeDiverStoreParameters.batchParameterValueUpdate. */
+export interface IBatchParameterValueUpdateOptions {
+	/**
+	 * What happens to the pending changes of the parameter components (see
+	 * `parameterChangeScheduler`): "include" sends them along (default),
+	 * "discard" drops them because the given state replaces them (e.g. undo,
+	 * a model state), "keep" leaves them pending (a request which is part of
+	 * another execution, e.g. of the custom parameters).
+	 */
+	scheduledChanges?: "include" | "discard" | "keep";
+	/**
+	 * Parameters executed even if their value equals the executed value,
+	 * per namespace.
+	 */
+	forceSameValue?: {[namespace: string]: string[]};
+	/**
+	 * Queued changes accepted by the request as well (e.g. confirmed changes
+	 * of parameters in accept/reject mode): the parameter ids per namespace,
+	 * undefined for all queued changes of the namespace.
+	 */
+	accept?: {[namespace: string]: string[] | undefined};
+}
+
 /** A state in the history for arbitrary sessions. */
 export interface IHistoryEntry {
 	/** The parameter values per session at the time of the history entry. */
@@ -84,6 +107,12 @@ export interface IParameterChanges {
 	 * because they might have been overridden by a pre-execution hook.
 	 */
 	wait: Promise<{[parameterId: string]: any}>;
+	/**
+	 * Wait for the change of one parameter: resolves once it was accepted
+	 * (see the `parameterIds` of accept, other changes may keep waiting for
+	 * their confirmation), at the latest with {@link wait}.
+	 */
+	waitFor: (parameterId: string) => Promise<{[parameterId: string]: any}>;
 	/**
 	 * Accept the changes, this resolves wait.
 	 * Resolves undefined in case the execution failed.
@@ -510,15 +539,20 @@ export interface IShapeDiverStoreParameters {
 	/**
 	 * Set the values of multiple parameters of a session at once,
 	 * execute and await the changes immediately.
+	 * The pending changes of the parameter components (see
+	 * `parameterChangeScheduler`) are sent along, unless
+	 * `options.scheduledChanges` is "discard".
 	 * @param state
 	 * @param skipHistory If true, skip the creation of a history entry after successful execution.
 	 * @param skipUrlUpdate If true, skip updating the URL after executing the changes.
+	 * @param options
 	 * @returns
 	 */
 	readonly batchParameterValueUpdate: (
 		state: ISessionsHistoryState,
 		skipHistory?: boolean,
 		skipUrlUpdate?: boolean,
+		options?: IBatchParameterValueUpdateOptions,
 	) => Promise<void>;
 
 	/**

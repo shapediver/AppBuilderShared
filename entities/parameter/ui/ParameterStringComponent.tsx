@@ -8,7 +8,7 @@ import {
 	TextInput,
 	useProps,
 } from "@mantine/core";
-import React, {useCallback, useEffect, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useRef} from "react";
 import {ParameterStringInputMode} from "../config/ParameterStringComponent.theme.types";
 import {
 	defaultPropsParameterWrapper,
@@ -194,9 +194,19 @@ export default function ParameterStringComponent(
 		[selectSettings?.items, selectSettings?.itemData],
 	);
 
-	// A timeout scheduled in debounce mode must not survive a switch to
-	// validate mode (or a change to the configured debounce duration).
+	// A change scheduled in debounce mode must not survive a switch to
+	// validate mode (or a change to the configured debounce duration). A
+	// change scheduled before the component was mounted is kept (e.g. the
+	// container of the parameter was closed and opened again).
+	const inputModeRef = useRef({resolvedMode, definitionDebounce});
 	useEffect(() => {
+		const previous = inputModeRef.current;
+		inputModeRef.current = {resolvedMode, definitionDebounce};
+		if (
+			previous.resolvedMode === resolvedMode &&
+			previous.definitionDebounce === definitionDebounce
+		)
+			return;
 		cancelPendingChange();
 	}, [resolvedMode, definitionDebounce, cancelPendingChange]);
 

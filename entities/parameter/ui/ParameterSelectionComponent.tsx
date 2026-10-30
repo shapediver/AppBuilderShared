@@ -39,6 +39,7 @@ import {parseSelectionNames as parseNames} from "../model/interaction/parseSelec
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
 import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
+import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {
 	clearPendingSelection,
@@ -114,6 +115,7 @@ export default function ParameterSelectionComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		busy,
 		showReset,
 		resetToDefault,
 		value,
@@ -223,6 +225,10 @@ export default function ParameterSelectionComponent(
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 	const selectionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
+
+	// editing is paused during a computation, like the other parameters: no
+	// selection change in the viewport, the selection is kept
+	useInteractionEnginePause(viewportId, busy);
 
 	// Parameters whose execution is managed elsewhere (e.g. by a form providing
 	// custom actions, non-reactive) are not backed by the parameter store.
