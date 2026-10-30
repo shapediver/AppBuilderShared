@@ -19,7 +19,7 @@ const VALUE_PROPS_RESOLVERS: {[typeKey: string]: ValuePropsResolver} = {
 		return {
 			type: ResParameterType.INTERACTION,
 			settings: {type: "selection"},
-			availableNodes: deps.getAvailableNodes(selection.nameFilter),
+			availableNodes: deps.getAvailableNodes(selection.nameFilter) ?? [],
 		};
 	},
 };

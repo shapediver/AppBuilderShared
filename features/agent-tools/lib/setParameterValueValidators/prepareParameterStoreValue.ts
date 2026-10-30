@@ -119,8 +119,11 @@ function prepareSelectionStoreValue(
 		};
 	}
 
-	if (names.length > 0 && context.getAvailableNodes) {
-		const selectable = context.getAvailableNodes(selection.nameFilter);
+	const selectable =
+		names.length > 0
+			? context.getAvailableNodes?.(selection.nameFilter)
+			: undefined;
+	if (selectable) {
 		const unknown = names.filter((n) => !selectable.includes(n));
 		if (unknown.length > 0) {
 			return {

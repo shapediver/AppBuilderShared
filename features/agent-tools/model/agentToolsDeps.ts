@@ -43,7 +43,11 @@ export type AgentToolsDeps = {
 		viewportId: string,
 		props?: IAppBuilderParameterValueSourcePropsScreenshot,
 	) => Promise<string | undefined>;
-	getAvailableNodes: (nameFilter: string[]) => string[];
+	/**
+	 * Names of the scene nodes currently matching a selection nameFilter,
+	 * or `undefined` when the host viewport cannot look up nodes.
+	 */
+	getAvailableNodes: (nameFilter: string[]) => string[] | undefined;
 	getOutputByName: (
 		namespace: string,
 		name: string,

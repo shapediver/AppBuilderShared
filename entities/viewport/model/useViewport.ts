@@ -1,3 +1,4 @@
+import {findNamedNodesByNameFilter} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {PROCESS_STATUS} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
@@ -140,6 +141,10 @@ export function useViewport(props: ViewportCreateDto) {
 					},
 					waitUntilReady: (signal) =>
 						waitUntilReady(_props.id, {signal}),
+					getAvailableNodes: (nameFilter) =>
+						findNamedNodesByNameFilter(nameFilter, true).map(
+							({name}) => name,
+						),
 				});
 		});
 

@@ -48,6 +48,15 @@ export interface IViewportAccessFunctions {
 	 */
 	getCamera?: () => ActiveCamera | undefined;
 
+	/**
+	 * Function to list the names of the scene nodes currently matching a
+	 * selection nameFilter. ShapeDiver `useViewport` registers it from
+	 * `entities/parameter/lib/findNodesByNameFilter`, so shared code on the
+	 * `AppBuilderPage` path (agent tools) does not depend on
+	 * `@shapediver/viewer.features.interaction`.
+	 */
+	getAvailableNodes?: (nameFilter: string[]) => string[];
+
 	/** Function to create a screenshot and return it as a data URL. */
 	getScreenshot?: (
 		props?: IAppBuilderParameterValueSourcePropsScreenshot,

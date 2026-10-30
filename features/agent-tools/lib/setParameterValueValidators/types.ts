@@ -7,6 +7,9 @@ export type ParameterValuePrepareResult =
 	{success: true; storeValue: unknown} | {success: false; message: string};
 
 export type ParameterValuePrepareContext = {
-	/** Names of the scene nodes currently matching a selection nameFilter. */
-	getAvailableNodes?: (nameFilter: string[]) => string[];
+	/**
+	 * Names of the scene nodes currently matching a selection nameFilter,
+	 * or `undefined` when the host viewport cannot look up nodes.
+	 */
+	getAvailableNodes?: (nameFilter: string[]) => string[] | undefined;
 };

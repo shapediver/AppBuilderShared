@@ -2,16 +2,21 @@ import {drawingPointsEqual} from "../drawingPoints";
 
 // The drawing-tools package of the Viewer is ESM only and not transformed by
 // jest; the module is mocked with a stand-in of removeClosingPoint that has
-// the same semantics (first and last point equal within 1e-7).
-jest.mock("@shapediver/viewer.features.drawing-tools", () => ({
-	removeClosingPoint: (points: readonly number[][]) =>
-		points.length > 1 &&
-		points[0].every(
-			(v, i) => Math.abs(v - points[points.length - 1][i]) < 1e-7,
-		)
-			? points.slice(0, -1)
-			: points,
-}));
+// the same semantics (first and last point equal within 1e-7). Virtual, so
+// the test also runs in hosts that do not install the package.
+jest.mock(
+	"@shapediver/viewer.features.drawing-tools",
+	() => ({
+		removeClosingPoint: (points: readonly number[][]) =>
+			points.length > 1 &&
+			points[0].every(
+				(v, i) => Math.abs(v - points[points.length - 1][i]) < 1e-7,
+			)
+				? points.slice(0, -1)
+				: points,
+	}),
+	{virtual: true},
+);
 
 const square = [
 	[0, 0, 0],
