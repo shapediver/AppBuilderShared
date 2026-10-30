@@ -7,18 +7,22 @@ import {
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
 
+/** A scene node matching a name filter, with the name used by interaction parameters. */
+export type NamedNode = {node: ITreeNode; name: string};
+
 /**
- * Collect nodes under `root` that match the given name-filter patterns.
+ * Collect nodes (and their interaction names) under `root` that match the
+ * given name-filter patterns.
  * Empty patterns select the root itself (same behavior as the find-nodes hooks).
  */
-export function collectNodesForPatternRoot(
+function collectNamedNodesForPatternRoot(
 	root: ITreeNode,
 	displayName: string,
 	patterns: NodeNameFilterPattern[],
 	strictNaming?: boolean,
-): ITreeNode[] {
+): NamedNode[] {
 	const availableNodes: {
-		[nodeId: string]: {node: ITreeNode; name: string};
+		[nodeId: string]: NamedNode;
 	} = {};
 
 	for (const pattern of patterns) {
@@ -41,17 +45,36 @@ export function collectNodesForPatternRoot(
 		}
 	}
 
-	return Object.values(availableNodes).map(
-		(availableNode) => availableNode.node,
-	);
+	return Object.values(availableNodes);
 }
 
 /**
- * One-shot lookup of scene nodes for a camera `zoomTo` nameFilter.
- * The corresponding hooks exist to subscribe to output updates over time;
- * executeActions only needs the nodes that are present now.
+ * Collect nodes under `root` that match the given name-filter patterns.
+ * Empty patterns select the root itself (same behavior as the find-nodes hooks).
  */
-export function findNodesByNameFilter(nameFilter?: string[]): ITreeNode[] {
+export function collectNodesForPatternRoot(
+	root: ITreeNode,
+	displayName: string,
+	patterns: NodeNameFilterPattern[],
+	strictNaming?: boolean,
+): ITreeNode[] {
+	return collectNamedNodesForPatternRoot(
+		root,
+		displayName,
+		patterns,
+		strictNaming,
+	).map((availableNode) => availableNode.node);
+}
+
+/**
+ * One-shot lookup of the scene nodes (with their interaction names) matching
+ * a nameFilter. The corresponding hooks exist to subscribe to output updates
+ * over time; this only returns the nodes that are present now.
+ */
+export function findNamedNodesByNameFilter(
+	nameFilter?: string[],
+	strictNaming?: boolean,
+): NamedNode[] {
 	if (!nameFilter?.length) return [];
 
 	const sessions = useShapeDiverStoreSession.getState().sessions;
@@ -61,7 +84,7 @@ export function findNodesByNameFilter(nameFilter?: string[]): ITreeNode[] {
 		instances,
 		nameFilter,
 	);
-	const nodes: ITreeNode[] = [];
+	const nodes: NamedNode[] = [];
 
 	if (outputPatterns) {
 		for (const [sessionId, byOutput] of Object.entries(outputPatterns)) {
@@ -72,7 +95,12 @@ export function findNodesByNameFilter(nameFilter?: string[]): ITreeNode[] {
 				const node = output?.node;
 				if (!node) continue;
 				nodes.push(
-					...collectNodesForPatternRoot(node, output.name, patterns),
+					...collectNamedNodesForPatternRoot(
+						node,
+						output.name,
+						patterns,
+						strictNaming,
+					),
 				);
 			}
 		}
@@ -83,14 +111,24 @@ export function findNodesByNameFilter(nameFilter?: string[]): ITreeNode[] {
 			const instance = instances[instanceId];
 			if (!instance) continue;
 			nodes.push(
-				...collectNodesForPatternRoot(
+				...collectNamedNodesForPatternRoot(
 					instance,
 					instance.name,
 					patterns,
+					strictNaming,
 				),
 			);
 		}
 	}
 
 	return nodes;
+}
+
+/**
+ * One-shot lookup of scene nodes for a camera `zoomTo` nameFilter.
+ * The corresponding hooks exist to subscribe to output updates over time;
+ * executeActions only needs the nodes that are present now.
+ */
+export function findNodesByNameFilter(nameFilter?: string[]): ITreeNode[] {
+	return findNamedNodesByNameFilter(nameFilter).map(({node}) => node);
 }

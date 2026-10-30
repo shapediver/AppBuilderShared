@@ -64,6 +64,7 @@ function createDeps(overrides: Partial<AgentToolsDeps> = {}): AgentToolsDeps {
 		setCamera: jest.fn().mockResolvedValue({success: true}),
 		getCamera: () => undefined,
 		getScreenshot: jest.fn().mockResolvedValue(undefined),
+		getAvailableNodes: () => [],
 		getOutputByName: () => undefined,
 		...overrides,
 	};

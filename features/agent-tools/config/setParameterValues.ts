@@ -13,7 +13,7 @@ const setParameterUpdateSchema = z.strictObject({
 		.optional()
 		.describe("Optional session namespace. Omit for the main model."),
 	value: parameterValueSchema.describe(
-		"New value. StringList: 0-based integer index (e.g. 1 for second choice), not the label text and not {index:N}.",
+		"New value. StringList: 0-based integer index (e.g. 1 for second choice), not the label text and not {index:N}. Selection: {names: [...]} with node names from props.availableNodes of get_parameter_values.",
 	),
 });
 

@@ -105,7 +105,7 @@ describe("bindAgentToolSources", () => {
 		expect(bound).toEqual({
 			ok: false,
 			message:
-				"agentTool path did not resolve to a single string, number, boolean, or color",
+				"agentTool path did not resolve to a single string, number, boolean, color, or selection value {names}",
 		});
 	});
 

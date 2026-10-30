@@ -3,17 +3,18 @@ import {
 	getParameterValuesInputSchema,
 	type GetParameterValueItem,
 } from "../../config/getParameterValues";
-import {findParameterByName} from "../../lib/findParameterByName";
 import type {NamespacedParameter} from "../../lib/filterParametersForAgent";
+import {findParameterByName} from "../../lib/findParameterByName";
 import {formatToolInputError} from "../../lib/formatToolInputError";
 import {mapParameterDefinition} from "../../lib/parameterDefinitionMapper";
+import {resolveParameterValueProps} from "../../lib/parameterValueProps";
 import type {AgentToolsDeps} from "../agentToolsDeps";
 import {collectFilteredParameters} from "../collectFilteredParameters";
 
-function toValueItem({
-	namespace,
-	parameter,
-}: NamespacedParameter): GetParameterValueItem {
+function toValueItem(
+	{namespace, parameter}: NamespacedParameter,
+	deps: AgentToolsDeps,
+): GetParameterValueItem {
 	const def = parameter.definition;
 	const mapped = mapParameterDefinition(parameter);
 	const item: GetParameterValueItem = {
@@ -24,6 +25,11 @@ function toValueItem({
 	};
 	if (def.displayname !== undefined) {
 		item.displayname = def.displayname;
+	}
+	// Live state, which is why it is not part of list_parameter_definitions.
+	const props = resolveParameterValueProps(parameter, deps);
+	if (props) {
+		item.props = props;
 	}
 	return item;
 }
@@ -46,7 +52,7 @@ export async function handleGetParameterValues(
 		);
 
 		if (!parsed.names) {
-			return {values: live.map(toValueItem)};
+			return {values: live.map((item) => toValueItem(item, deps))};
 		}
 
 		const parameters = live.map(({parameter}) => parameter);
@@ -61,7 +67,7 @@ export async function handleGetParameterValues(
 				});
 				continue;
 			}
-			values.push(toValueItem(live[parameters.indexOf(parameter)]));
+			values.push(toValueItem(live[parameters.indexOf(parameter)], deps));
 		}
 		return errors.length > 0 ? {values, errors} : {values};
 	} catch (e) {

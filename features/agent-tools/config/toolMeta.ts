@@ -13,8 +13,10 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Read configurator parameters before changing anything. " +
 			"Call with no arguments. Which parameters appear is agent settings, not a tool argument. " +
-			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max, currentValue, and description when the agent settings provide one. " +
+			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max, settings, currentValue, and description when the agent settings provide one. " +
 			"settable=false means read-only via set_parameter_values (unsupported type). " +
+			"Selection parameters have type Interaction and settings { type: 'selection', props: { minimumSelection, maximumSelection } } (number of nodes to select); values are {names: string[]}. " +
+			"Their selectable node names are not listed here: read props.availableNodes with get_parameter_values. " +
 			"Trust type over display name (e.g. name Color may still be StringList).",
 		annotations: {readOnlyHint: true},
 	},
@@ -24,7 +26,8 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Input: { names?: string[], namespace?: string }. " +
 			"Omit names to read all exposed parameters; names match id, name, or displayname. " +
 			"Omit namespace for no extra session filter (agent definition still applies). " +
-			"Returns { values: [{ id, name, displayname, namespace, currentValue }], errors?: [{ name, message }] }. " +
+			"Returns { values: [{ id, name, displayname, namespace, currentValue, props? }], errors?: [{ name, message }] }. " +
+			"props is type-specific live state, only for some types. Selection parameters: { type: 'Interaction', settings: { type: 'selection' }, availableNodes } with the node names that can currently be selected; they change with the model, so read them again after parameter changes. " +
 			"Unknown names are listed in errors; found names still appear in values. " +
 			"On invalid input, returns { values: [], errors: [{ name: '*', message }] }.",
 		annotations: {readOnlyHint: true},
@@ -35,7 +38,8 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Input shape: { updates: [{ name, value }] } — use updates and name, not parameters/id. " +
 			"Value rules: Bool=boolean; Int/Float/Even/Odd=number in range; String=text; " +
 			"StringList=0-based integer index only (1 = second choice), never the label and never {index:N}; " +
-			"Color={red,green,blue,alpha} 0-255. " +
+			"Color={red,green,blue,alpha} 0-255; " +
+			"selection (Interaction)={names:[...]} with unique node names from props.availableNodes of get_parameter_values, count within settings.props minimumSelection/maximumSelection ({names:[]} clears when minimumSelection is 0). " +
 			"Returns { applied: string[], errors: [{ name, message }] }. Valid updates still apply when others fail.",
 		annotations: {readOnlyHint: false},
 	},

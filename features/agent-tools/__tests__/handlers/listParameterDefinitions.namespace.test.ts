@@ -46,6 +46,7 @@ function createDeps(
 		setCamera: async () => ({success: true}),
 		getCamera: () => undefined,
 		getScreenshot: async () => undefined,
+		getAvailableNodes: () => [],
 		getOutputByName: () => undefined,
 	};
 }

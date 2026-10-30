@@ -43,6 +43,7 @@ export type AgentToolsDeps = {
 		viewportId: string,
 		props?: IAppBuilderParameterValueSourcePropsScreenshot,
 	) => Promise<string | undefined>;
+	getAvailableNodes: (nameFilter: string[]) => string[];
 	getOutputByName: (
 		namespace: string,
 		name: string,

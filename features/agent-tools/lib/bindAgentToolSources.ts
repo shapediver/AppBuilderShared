@@ -9,7 +9,7 @@ import {parameterValueSchema} from "../config/listParameterDefinitions";
 import {readInputPath} from "./readInputPath";
 
 const NOT_A_PARAMETER_VALUE =
-	"agentTool path did not resolve to a single string, number, boolean, or color";
+	"agentTool path did not resolve to a single string, number, boolean, color, or selection value {names}";
 
 type BindResult =
 	| {ok: true; action: IAppBuilderActionDefinition}

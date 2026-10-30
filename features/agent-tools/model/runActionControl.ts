@@ -59,6 +59,7 @@ async function runSetParameterAction(
 		isSetParameterValuesAction(definition)
 			? definition.props.updateMode
 			: undefined,
+		{getAvailableNodes: deps.getAvailableNodes},
 	);
 	if (result.errors.length > 0) {
 		return {success: false, message: result.errors[0].message};

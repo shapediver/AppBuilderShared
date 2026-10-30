@@ -6,6 +6,7 @@ import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/mo
 import {ISessionApi, ITreeNode} from "@shapediver/viewer.session";
 import {
 	collectNodesForPatternRoot,
+	findNamedNodesByNameFilter,
 	findNodesByNameFilter,
 } from "../findNodesByNameFilter";
 
@@ -98,6 +99,30 @@ describe("findNodesByNameFilter", () => {
 			}) as ReturnType<typeof originalInstancesGetState>;
 
 		expect(findNodesByNameFilter(["inst-1"])).toEqual([instance]);
+	});
+
+	it("returns the interaction names with the nodes", () => {
+		const node = treeNode("out-node", "Display");
+		const instance = treeNode("inst-1", "inst-1");
+		useShapeDiverStoreSession.getState = () =>
+			({
+				sessions: {
+					session: {
+						outputs: {
+							out1: {name: "Display", node},
+						},
+					} as unknown as ISessionApi,
+				},
+			}) as ReturnType<typeof originalSessionGetState>;
+		useShapeDiverStoreInstances.getState = () =>
+			({
+				instances: {"inst-1": instance},
+			}) as ReturnType<typeof originalInstancesGetState>;
+
+		expect(findNamedNodesByNameFilter(["Display", "inst-1"])).toEqual([
+			{node, name: "Display"},
+			{node: instance, name: "inst-1"},
+		]);
 	});
 });
 
