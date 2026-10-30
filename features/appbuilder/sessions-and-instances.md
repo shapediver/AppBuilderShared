@@ -43,7 +43,7 @@ Sessions cannot be positioned or repeated with `transformations` yet. This is pl
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Many variants are visible at once.                                                                  | No parameter UI and no exports.                                              |
 | All instances with the same `sessionId` share one session credit.                                   | To change values, the controller must recompute and return a new App output. |
-| Identical value sets are computed once. Copies and matrices are free.                               |                                                                              |
+| Identical value sets are requested once. Copies and matrices are free.                              |                                                                              |
 | `transformations` positions and repeats copies without Grasshopper.                                 |                                                                              |
 | Each instance's results flow back to the controller with `outputActions`, keyed by instance `name`. |                                                                              |
 
@@ -94,20 +94,22 @@ each with one result                 └── instances[3]               no nam
                                              └── <outputs>          copy of the black result
 ```
 
-Each session is its own root node, named by its `sessionId`, next to the controller. An edit replaces the outputs under that node. Instances are children of the controller's node, and their session's own node shows nothing, because its outputs are never loaded into it. An instance without `name` is named by its position in the `instances` array. Each matrix adds one `transformations[i]` child with another copy. The oak and black results are each computed once and copied everywhere else.
+Each session is its own root node, named by its `sessionId`, next to the controller. An edit replaces the outputs under that node. Instances are children of the controller's node, and their session's own node shows nothing, because its outputs are never loaded into it. An instance without `name` is named by its position in the `instances` array. Each matrix adds one `transformations[i]` child with another copy. The oak and black results are each requested once and copied everywhere else.
 
 ## Performance
 
-**A session** opens with its `initialParameterValues`, downloads its outputs, and shows its parameters. That is one computation and one result on screen. Each later edit recomputes the same session and replaces the geometry.
+The App Builder sends requests. The Geometry backend computes only if it has no cached result for those parameter values. Results for the default values are normally cached already.
+
+**A session** opens with its `initialParameterValues`, downloads its outputs, and shows its parameters. That is one request and one result on screen. Each later edit sends a new customization request and replaces the geometry.
 
 **An instance session** opens with the model's default values. Its parameters are hidden, and its own result is not shown directly. Only the instances are.
 
-- **Values equal to the defaults** reuse the result from opening. Nothing is computed again.
-- **Each other set of values** is computed once with `customizeParallel`. This does not change the session's own values, so several results can be visible at once.
+- **Values equal to the defaults** reuse the result from opening. No further request is sent.
+- **Each other set of values** is requested once with `customizeParallel`. This does not change the session's own values, so several results can be visible at once.
 - **A repeated set of values** is a copy of an existing result, and so is each entry in `transformations`. Neither sends a request to the server.
 
 A transformation is a 4×4 matrix written as 16 numbers in column-major order, the same layout as gl-matrix. A shift of one unit along X is `[1,0,0,0, 0,1,0,0, 0,0,1,0, 1,0,0,1]`.
 
-So ten oak chairs do not recompute when an eleventh chair is black. The tradeoff: if an instance's values are not the defaults, its first result waits for the session to open and then for the computation. A session with the same values in `initialParameterValues` needs only one computation.
+So ten oak chairs send no new request when an eleventh chair is black. The tradeoff: an instance with non-default values needs two requests, one after the other: opening the session, then the customization. A session with the same values in `initialParameterValues` needs one.
 
-Possible improvement: when a session id has only one instance, its `parameterValues` could be passed as `initialParameterValues` when the session opens. The open would then compute that instance directly, and the second computation would be skipped. This is not implemented yet.
+Possible improvement: when a session id has only one instance, its `parameterValues` could be passed as `initialParameterValues` when the session opens. The open would then return that instance's result directly, saving one request. This is not implemented yet.
