@@ -150,6 +150,15 @@ export function useFilterableDatabase(
 	>(initial.scrollingApi);
 	/** Bumped when a new table or scrolling API replaces the shown one. */
 	const [viewVersion, setViewVersion] = useState(0);
+	/**
+	 * Definition the shown table, selection, and list were built for. Lags
+	 * `settingsKey` while a changed definition loads; saves are bound to it so
+	 * the old list cannot write into the new definition's view.
+	 */
+	const [shownSettingsKey, setShownSettingsKey] = useState<
+		string | undefined
+	>(initial.table ? settingsKey : undefined);
+	const shownSettingsKeyRef = useRef(shownSettingsKey);
 	const scrollingApiRef = useRef(initial.scrollingApi);
 	const builtForRef = useRef<string | undefined>(
 		initial.table ? buildKey(settingsKey, pageSize, buildApi) : undefined,
@@ -176,13 +185,21 @@ export function useFilterableDatabase(
 	settingsKeyRef.current = settingsKey;
 
 	/**
-	 * Save for the definition a value belongs to. Skipped once the definition
-	 * changed, so a late cleanup cannot write an old list into the new view.
+	 * Save for the definition a value belongs to (the shown one). Skipped
+	 * while a changed definition loads and for late cleanups of an old list,
+	 * so old filters, search, rows, or scroll never seed the new view.
 	 */
 	const saveView = useCallback(
-		(forSettingsKey: string, patch: FilterableDatabaseViewPatch) => {
+		(
+			forSettingsKey: string | undefined,
+			patch: FilterableDatabaseViewPatch,
+		) => {
 			const key = persistenceKeyRef.current;
-			if (!key || settingsKeyRef.current !== forSettingsKey) {
+			if (
+				!key ||
+				!forSettingsKey ||
+				settingsKeyRef.current !== forSettingsKey
+			) {
 				return;
 			}
 
@@ -197,17 +214,17 @@ export function useFilterableDatabase(
 		FilterableDatabaseListPersistence | undefined
 	>(
 		() =>
-			persistenceKey
+			persistenceKey && shownSettingsKey
 				? {
 						read: () =>
 							readFilterableDatabaseView(
 								persistenceKey,
-								settingsKey,
+								shownSettingsKey,
 							),
-						save: (patch) => saveView(settingsKey, patch),
+						save: (patch) => saveView(shownSettingsKey, patch),
 					}
 				: undefined,
-		[persistenceKey, settingsKey, saveView],
+		[persistenceKey, shownSettingsKey, saveView],
 	);
 
 	useEffect(() => {
@@ -215,6 +232,16 @@ export function useFilterableDatabase(
 		// Built during the first render, or kept while the control was idle.
 		if (builtForRef.current === built) {
 			return;
+		}
+
+		// A text filter typed for the old definition must not land in the new one.
+		if (
+			shownSettingsKeyRef.current !== undefined &&
+			shownSettingsKeyRef.current !== settingsKey
+		) {
+			clearTimeout(filterTextTimerRef.current);
+			filterTextTimerRef.current = undefined;
+			pendingFilterTextRef.current = undefined;
 		}
 
 		const currentSettings = settingsRef.current;
@@ -238,6 +265,8 @@ export function useFilterableDatabase(
 				itemDataRef.current ?? null,
 			);
 			builtForRef.current = built;
+			shownSettingsKeyRef.current = settingsKey;
+			setShownSettingsKey(settingsKey);
 			scrollingApiRef.current = api;
 			selectionRef.current = nextSelection;
 			setSelection(nextSelection);
@@ -312,7 +341,7 @@ export function useFilterableDatabase(
 			return;
 		}
 
-		const forSettingsKey = settingsKeyRef.current;
+		const forSettingsKey = shownSettingsKeyRef.current;
 		return () => {
 			saveView(forSettingsKey, {loadedCount: scrollingApi.items.length});
 		};
@@ -339,7 +368,7 @@ export function useFilterableDatabase(
 			};
 			selectionRef.current = next;
 			scrollingApiRef.current?.updateSelection(next);
-			saveView(settingsKeyRef.current, {selection: next});
+			saveView(shownSettingsKeyRef.current, {selection: next});
 			setSelection(next);
 		};
 	}, [saveView]);
@@ -362,7 +391,7 @@ export function useFilterableDatabase(
 				const next = updater(prev);
 				selectionRef.current = next;
 				scrollingApiRef.current?.updateSelection(next);
-				saveView(settingsKeyRef.current, {selection: next});
+				saveView(shownSettingsKeyRef.current, {selection: next});
 				return next;
 			});
 		},

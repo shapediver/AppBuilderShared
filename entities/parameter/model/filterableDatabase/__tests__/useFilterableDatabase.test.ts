@@ -486,4 +486,63 @@ describe("useFilterableDatabase filter groups", () => {
 		expect(saved.loadedCount).toBe(2);
 		expect(saved.selection).toEqual({});
 	});
+
+	it("keeps writes of the old list out of a changed definition while it loads", async () => {
+		mockFetchRawText.mockResolvedValue(fourRows);
+		const persistenceKey = "session:elements_select";
+		const textSettings = {
+			...colorSettings,
+			filters: [{column: 1, type: "text" as const}],
+		};
+		const changedSettings = {
+			...textSettings,
+			filters: [{column: 1, type: "text" as const, label: "Name"}],
+		};
+
+		const view = renderHook(
+			({settings}) =>
+				useFilterableDatabase(settings, {persistenceKey, pageSize: 2}),
+			{initialProps: {settings: textSettings}},
+		);
+		await waitFor(() => {
+			expect(view.result.current.loading).toBe(false);
+		});
+
+		// A text filter still waits for its debounce when the definition changes.
+		act(() => {
+			view.result.current.setFilterText(0, "A");
+		});
+		let resolveFetch: (raw: string) => void = () => undefined;
+		mockFetchRawText.mockImplementationOnce(
+			() => new Promise<string>((resolve) => (resolveFetch = resolve)),
+		);
+		view.rerender({settings: changedSettings});
+
+		// While the new definition loads, the old list keeps writing.
+		act(() => {
+			view.result.current.listPersistence?.save({
+				scrollTop: 99,
+				searchText: "old",
+			});
+			view.result.current.setFilterValue(0, ["B"]);
+		});
+		await act(async () => {
+			// Past the text filter debounce (300 ms).
+			await new Promise((resolve) => setTimeout(resolve, 400));
+		});
+		await act(async () => {
+			resolveFetch(fourRows);
+		});
+		await waitFor(() => {
+			expect(view.result.current.viewVersion).toBe(2);
+		});
+
+		expect(view.result.current.selection).toEqual({});
+		const saved =
+			useFilterableDatabaseStateStore.getState().views[persistenceKey];
+		expect(saved?.settingsKey).not.toBe(
+			filterableDatabaseSettingsKey(changedSettings),
+		);
+		expect(view.result.current.listPersistence?.read()).toBeUndefined();
+	});
 });
