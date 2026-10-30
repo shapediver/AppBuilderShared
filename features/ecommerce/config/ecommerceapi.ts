@@ -364,8 +364,7 @@ export type ITriggerActionData =
 	| {
 			type: "importModelState";
 			props:
-				| IImportModelStateData
-				| IAppBuilderActionPropsImportModelState;
+				IImportModelStateData | IAppBuilderActionPropsImportModelState;
 	  }
 	| {
 			type: "setParameterValue";

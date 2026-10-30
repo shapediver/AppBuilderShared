@@ -56,8 +56,7 @@ function shouldRunComputationSlot(
 	controllerSessionId: string,
 ): boolean {
 	const eventProps = getActionSlotEventProps(slot, "session") as
-		| {sessionId?: string}
-		| undefined;
+		{sessionId?: string} | undefined;
 	return matchesSessionFilter(
 		sessionId,
 		eventProps?.sessionId,
@@ -73,8 +72,7 @@ function shouldRunExportSlot(
 	controllerSessionId: string,
 ): boolean {
 	const eventProps = getActionSlotEventProps(slot, "export") as
-		| {sessionId?: string; name?: string}
-		| undefined;
+		{sessionId?: string; name?: string} | undefined;
 	if (
 		!matchesSessionFilter(
 			sessionId,

@@ -103,8 +103,10 @@ import {
 	mergeThemeOverrides,
 	v8CssVariablesResolver,
 } from "@mantine/core";
-import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {useContext, useEffect} from "react";
+
+// Not exported from the @mantine/core entry point.
+type AppShellSize = NonNullable<AppShellResponsiveSize["base"]>;
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate

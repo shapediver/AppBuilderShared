@@ -25,6 +25,7 @@ import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuil
 import {Box, useMantineTheme} from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
 import {useContext, useEffect, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilder,
@@ -117,15 +118,17 @@ export function useAppBuilderStandardContainers(props: Props) {
 		containerOpen,
 		resetDefaultContainers,
 		setDefaultContainers,
-	} = useShapeDiverStoreStandardContainers((state) => ({
-		mergedContainers: state.mergedContainers,
-		defaultContainers: state.defaultContainers,
-		additionalContainerContent: state.additionalContainerContent,
-		activeTabIndices: state.activeTabIndices,
-		containerOpen: state.containerOpen,
-		resetDefaultContainers: state.resetDefaultContainers,
-		setDefaultContainers: state.setDefaultContainers,
-	}));
+	} = useShapeDiverStoreStandardContainers(
+		useShallow((state) => ({
+			mergedContainers: state.mergedContainers,
+			defaultContainers: state.defaultContainers,
+			additionalContainerContent: state.additionalContainerContent,
+			activeTabIndices: state.activeTabIndices,
+			containerOpen: state.containerOpen,
+			resetDefaultContainers: state.resetDefaultContainers,
+			setDefaultContainers: state.setDefaultContainers,
+		})),
+	);
 
 	const {mobileBreakpoint, mobileFallbacks} =
 		useAppBuilderMobileLayoutTheme();

@@ -16,8 +16,8 @@ import {
 	MESSAGE_TYPE_GET_SESSION_INFO,
 	MESSAGE_TYPE_GET_THEME,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
-	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_LIST_TOOLS,
+	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
@@ -128,8 +128,9 @@ export class ToolsApiConnector implements IToolsApiConnector {
 			),
 		);
 		this.#listenerCancels.push(
-			crossWindowApi.on(MESSAGE_TYPE_GET_THEME, async () =>
-				useResolvedThemeStore.getState().theme,
+			crossWindowApi.on(
+				MESSAGE_TYPE_GET_THEME,
+				async () => useResolvedThemeStore.getState().theme,
 			),
 		);
 		this.#listenerCancels.push(

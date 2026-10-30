@@ -96,7 +96,9 @@ export function useSelection(
 	);
 
 	// store the select manager in a ref
-	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>();
+	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>(
+		undefined,
+	);
 	useEffect(() => {
 		selectManagerRef.current = selectManager;
 	}, [selectManager]);

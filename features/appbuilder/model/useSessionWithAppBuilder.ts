@@ -181,15 +181,12 @@ export function useSessionWithAppBuilder(
 		(newNode?: ITreeNode) => {
 			const api = (
 				newNode?.data.find((d) => d instanceof OutputApiData) as
-					| OutputApiData
-					| undefined
+					OutputApiData | undefined
 			)?.api;
 			setOutputApi(api);
 
 			const outputData = api?.content?.[0]?.data as
-				| IAppBuilder
-				| string
-				| undefined;
+				IAppBuilder | string | undefined;
 			const parsedData = validationResult(outputData);
 			const appBuilderData =
 				parsedData instanceof Error ? undefined : parsedData;

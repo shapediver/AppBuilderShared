@@ -6,6 +6,7 @@ import {
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {cleanUnit, simplifyCalc, updatePosition} from "../lib/utils";
 import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {useViewportAnchorTriggerRegistry} from "../model/useViewportAnchorTriggerRegistry";
@@ -50,10 +51,10 @@ export default function ViewportAnchor2d(
 
 	const {viewportId} = useViewportId();
 	const {dragOffset, updateDragOffset} = useShapeDiverStoreViewportAnchors(
-		(state) => ({
+		useShallow((state) => ({
 			dragOffset: state.dragOffsetMap[viewportId]?.[props.id],
 			updateDragOffset: state.updateDragOffset,
-		}),
+		})),
 	);
 
 	/**

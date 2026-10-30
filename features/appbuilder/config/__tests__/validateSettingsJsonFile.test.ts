@@ -33,6 +33,7 @@ describe("validateSettingsJsonFile CLI", () => {
 			} catch (error) {
 				throw new Error(
 					`Invalid JSON in ${settingsFile}: ${error instanceof Error ? error.message : String(error)}`,
+					{cause: error},
 				);
 			}
 

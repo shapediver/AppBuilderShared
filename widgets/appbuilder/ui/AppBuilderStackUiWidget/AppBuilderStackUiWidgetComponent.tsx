@@ -63,7 +63,7 @@ function AppBuilderStackUiWidgetComponent({
 	fallbackScrolls = false,
 }: Props) {
 	const liveStack = findStackUiWidgetByPath(liveWidgets, stackPath);
-	const snapshotRef = useRef<IAppBuilderWidgetPropsStackUi>();
+	const snapshotRef = useRef<IAppBuilderWidgetPropsStackUi>(undefined);
 	// Snapshot: if liveWidgets is not yet available (e.g. container loading) but the
 	// path is non-empty, keep rendering the last-known props rather than showing blank.
 	// Cleared when the path empties so a stale widget list is never shown on re-open.

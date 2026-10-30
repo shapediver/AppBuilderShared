@@ -31,11 +31,11 @@ import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/mod
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
-import {useHostedAgentFrameStore} from "../useHostedAgentFrameStore";
 import {MantineProvider} from "@mantine/core";
 import {act, renderHook} from "@testing-library/react";
 import type {ReactNode} from "react";
 import {useAppBuilderAgentHost} from "../useAppBuilderAgentHost";
+import {useHostedAgentFrameStore} from "../useHostedAgentFrameStore";
 
 const sampleAgent: IAppBuilderAgent = {
 	id: "configurator",
@@ -472,10 +472,7 @@ describe("useAppBuilderAgentHost", () => {
 				},
 			],
 		};
-		renderHost(
-			{namespace: "ns", sessionInfo, appBuilderData},
-			"window",
-		);
+		renderHost({namespace: "ns", sessionInfo, appBuilderData}, "window");
 		expect(window.open).not.toHaveBeenCalled();
 		expect(
 			useShapeDiverStoreToolbars

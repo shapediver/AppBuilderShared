@@ -1550,7 +1550,7 @@ export const useShapeDiverStoreParameters =
 					definitions.forEach((def) => {
 						def = addValidator(def);
 						const paramId = def.definition.id;
-						let setExecutedValue = false;
+						let setExecutedValue: boolean;
 						// check if a matching parameter store already exists
 						if (
 							paramId in existingParameterStores &&

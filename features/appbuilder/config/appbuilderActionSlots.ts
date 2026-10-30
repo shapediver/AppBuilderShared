@@ -12,9 +12,7 @@ import type {IAppBuilderActionDefinition} from "./appbuilder";
 
 /** Types of action-slot event filters. */
 export type AppBuilderActionSlotEventPropsType =
-	| "session"
-	| "export"
-	| "selection";
+	"session" | "export" | "selection";
 
 /** Properties for session-scoped events (`computation*`). */
 export interface IAppBuilderActionSlotEventPropsSession {
@@ -126,24 +124,19 @@ export type IAppBuilderActionSlot =
 
 /** One slot or several for the same event (typically different `eventProps`). */
 export type IAppBuilderActionSlotList =
-	| IAppBuilderActionSlot
-	| IAppBuilderActionSlot[];
+	IAppBuilderActionSlot | IAppBuilderActionSlot[];
 
 type PlainActionSlotList =
-	| IAppBuilderPlainActionSlot
-	| IAppBuilderPlainActionSlot[];
+	IAppBuilderPlainActionSlot | IAppBuilderPlainActionSlot[];
 
 type SessionActionSlotList =
-	| IAppBuilderSessionActionSlot
-	| IAppBuilderSessionActionSlot[];
+	IAppBuilderSessionActionSlot | IAppBuilderSessionActionSlot[];
 
 type ExportActionSlotList =
-	| IAppBuilderExportActionSlot
-	| IAppBuilderExportActionSlot[];
+	IAppBuilderExportActionSlot | IAppBuilderExportActionSlot[];
 
 type SelectionActionSlotList =
-	| IAppBuilderSelectionActionSlot
-	| IAppBuilderSelectionActionSlot[];
+	IAppBuilderSelectionActionSlot | IAppBuilderSelectionActionSlot[];
 
 /**
  * DOM interaction events (extensible). Names match the DOM event, no `on` prefix.
@@ -166,10 +159,7 @@ export type AppBuilderUiEvent =
  * `EVENTTYPE_INTERACTION.SELECT_ON` and `MULTI_SELECT_ON`.
  */
 export type AppBuilderInteractionEvent =
-	| "selecton"
-	| "selectoff"
-	| "hoveron"
-	| "hoveroff";
+	"selecton" | "selectoff" | "hoveron" | "hoveroff";
 
 /**
  * Initial application events (extensible). Allowed on the root `IAppBuilder`
@@ -199,8 +189,7 @@ export const APP_BUILDER_CUSTOM_EVENT_PATTERN =
 	/^custom:[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export type AppBuilderKnownEvent =
-	| AppBuilderUiEvent
-	| AppBuilderApplicationEvent;
+	AppBuilderUiEvent | AppBuilderApplicationEvent;
 
 /**
  * Slots on widgets, tabs, containers, controls, and toolbar items.

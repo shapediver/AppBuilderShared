@@ -7,6 +7,7 @@ import {
 	AppBuilderStandardContainerNames,
 	AppBuilderStandardContainerNameType,
 } from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+import type {JSX} from "react";
 import type {
 	AdditionalContainerContentMap,
 	StandardContainersMap,

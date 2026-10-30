@@ -68,7 +68,7 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 	const [fallbackPosition, setFallbackPosition] = useState(
 		isOpen ? "-100%" : "0",
 	);
-	const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+	const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const rafStartRef = useRef<number | null>(null);
 	const rafEndRef = useRef<number | null>(null);
 	/** Tracks open/close edges so live widget updates do not restart the forward animation. */

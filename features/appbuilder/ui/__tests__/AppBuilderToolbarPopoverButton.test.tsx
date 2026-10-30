@@ -143,13 +143,18 @@ describe("AppBuilderToolbarPopoverButton", () => {
 			</MantineProvider>,
 		);
 
-		await waitFor(() => {
-			const menuAction = screen.getByRole("button", {
-				name: "Activate menu action",
-				hidden: true,
-			});
-			expect(menuAction.getAttribute("data-live")).toBe("false");
-		});
+		// Hidden activity effects are cleaned up at idle priority, which can
+		// take longer than waitFor's 1s default when the test run is under load.
+		await waitFor(
+			() => {
+				const menuAction = screen.getByRole("button", {
+					name: "Activate menu action",
+					hidden: true,
+				});
+				expect(menuAction.getAttribute("data-live")).toBe("false");
+			},
+			{timeout: 10_000},
+		);
 	});
 
 	it("does not close a popover while an interaction request is active", () => {

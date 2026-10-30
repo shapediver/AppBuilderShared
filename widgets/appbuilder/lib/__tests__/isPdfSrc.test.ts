@@ -21,9 +21,9 @@ describe("isPdfSrc", () => {
 	});
 
 	it("returns true for blob URL with application/pdf contentType", () => {
-		expect(
-			isPdfSrc("blob:http://localhost/abc", "application/pdf"),
-		).toBe(true);
+		expect(isPdfSrc("blob:http://localhost/abc", "application/pdf")).toBe(
+			true,
+		);
 	});
 
 	it("returns false for blob URL without contentType", () => {

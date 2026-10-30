@@ -246,7 +246,10 @@ describe("filterParametersForAgent", () => {
 	});
 
 	it("matches uiRefs by displayname and sessionId", () => {
-		const hiddenName = param("id-1", {name: "internal", displayname: "Width"});
+		const hiddenName = param("id-1", {
+			name: "internal",
+			displayname: "Width",
+		});
 		const result = filterParametersForAgent({
 			parameters: [ns(hiddenName), ns(param("id-2"))],
 			controllerNamespace: "c",
@@ -339,7 +342,9 @@ describe("collectUiParameterRefs", () => {
 														type: "accordion",
 														props: {
 															parameters: [
-																{name: "tabbed"},
+																{
+																	name: "tabbed",
+																},
 															],
 														},
 													},

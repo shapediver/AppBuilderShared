@@ -45,10 +45,7 @@ export default function AppBuilderAgentOverlay({
 			const toolbarRect = toolbar.getBoundingClientRect();
 			const next = {
 				right: Math.max(0, viewportRect.right - toolbarRect.right),
-				bottom: Math.max(
-					0,
-					viewportRect.bottom - toolbarRect.top + 8,
-				),
+				bottom: Math.max(0, viewportRect.bottom - toolbarRect.top + 8),
 			};
 			setInsets((current) =>
 				current &&

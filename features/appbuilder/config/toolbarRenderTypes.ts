@@ -109,9 +109,7 @@ export type ToolbarCheckboxItem = ToolbarItemBase<
 >;
 
 export type ToolbarMenuItem =
-	| ToolbarActionItem
-	| ToolbarCommandItem
-	| ToolbarCheckboxItem;
+	ToolbarActionItem | ToolbarCommandItem | ToolbarCheckboxItem;
 
 export type ToolbarMenuSection = {
 	id: string;
@@ -144,9 +142,7 @@ export type ToolbarPopoverItem =
 
 /** Every resolved item rendered by the standard toolbar button component. */
 export type ToolbarButtonItem =
-	| ToolbarActionItem
-	| ToolbarExportItem
-	| ToolbarPopoverItem;
+	ToolbarActionItem | ToolbarExportItem | ToolbarPopoverItem;
 
 /** Every resolved item rendered in a toolbar group. */
 export type ToolbarRenderItem =

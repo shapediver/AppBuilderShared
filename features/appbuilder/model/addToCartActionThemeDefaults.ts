@@ -43,8 +43,7 @@ export function applyAddToCartActionThemeDefaults(props: {
 		screenshotProps:
 			props.screenshotProps ??
 			(theme.screenshotProps as
-				| IAppBuilderActionPropsAddToCart["screenshotProps"]
-				| undefined),
+				IAppBuilderActionPropsAddToCart["screenshotProps"] | undefined),
 		successMessage: props.successMessage ?? theme.successMessage,
 		errorMessage: props.errorMessage ?? theme.errorMessage,
 	};

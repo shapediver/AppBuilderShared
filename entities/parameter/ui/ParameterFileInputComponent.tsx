@@ -197,13 +197,16 @@ export default function ParameterFileInputComponent(
 	}, [status, stargateColorProps]);
 
 	// Get getFilename from the session store (IFileParameterApi method)
-	const getFilename = useShapeDiverStoreSession((state) => {
+	const fileParameter = useShapeDiverStoreSession((state) => {
 		const param =
 			state.sessions[props.namespace]?.parameters[definition.id];
-		return param && isFileParameterApi(param)
-			? param.getFilename.bind(param)
-			: undefined;
+		return param && isFileParameterApi(param) ? param : undefined;
 	});
+	// bind outside the selector, a new function per selector call loops useSyncExternalStore
+	const getFilename = useMemo(
+		() => fileParameter?.getFilename.bind(fileParameter),
+		[fileParameter],
+	);
 
 	// create the file endings from all the formats that are specified in the parameter
 	const fileEndings = useMemo(() => {

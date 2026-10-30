@@ -28,7 +28,7 @@ import {useEffect, useState} from "react";
  */
 export function useCanvasPortalUtilities(
 	viewportId: string,
-	portalRef: React.RefObject<HTMLDivElement>,
+	portalRef: React.RefObject<HTMLDivElement | null>,
 	portalUpdate: number,
 ): {
 	canvas: HTMLCanvasElement | null;

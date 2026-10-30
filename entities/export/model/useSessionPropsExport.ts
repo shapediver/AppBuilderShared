@@ -1,6 +1,8 @@
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ResExportDefinition} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 /**
  * Hook providing a shortcut to create export props for the {@link ParametersAndExportsAccordionComponent}
@@ -15,19 +17,30 @@ export function useSessionPropsExport(
 ): PropsExport[] {
 	const _filter = filter || (() => true);
 
-	const propsExports = useShapeDiverStoreParameters((state) =>
-		(Array.isArray(namespace) ? namespace : [namespace]).flatMap(
-			(namespace) =>
-				Object.values(state.getExports(namespace))
-					.filter((store) => _filter(store.getState().definition))
-					.map((store) => {
-						return {
-							namespace,
-							exportId: store.getState().definition.id,
-						};
-					}),
+	// Select a flat list of (namespace, export id) pairs, which the shallow
+	// comparison can match. Creating the props objects inside the selector
+	// would return a new array on every call and cause an infinite render loop.
+	const selection = useShapeDiverStoreParameters(
+		useShallow((state) =>
+			(Array.isArray(namespace) ? namespace : [namespace]).flatMap(
+				(namespace) =>
+					Object.values(state.exportStores[namespace] ?? {})
+						.map((store) => store.getState().definition)
+						.filter((definition) => _filter(definition))
+						.flatMap((definition) => [namespace, definition.id]),
+			),
 		),
-	); // <-- TODO SS-8052 review how to avoid unnecessary re-renders
+	);
 
-	return propsExports;
+	return useMemo(() => {
+		const propsExports: PropsExport[] = [];
+		for (let i = 0; i < selection.length; i += 2) {
+			propsExports.push({
+				namespace: selection[i],
+				exportId: selection[i + 1],
+			});
+		}
+
+		return propsExports;
+	}, [selection]);
 }

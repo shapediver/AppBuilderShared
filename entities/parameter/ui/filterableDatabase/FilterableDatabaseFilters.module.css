@@ -21,9 +21,7 @@
 
 .filterOptionChildren {
 	/* Indent under header select-all checkbox; keep Stack gap between rows */
-	padding-left: calc(
-		var(--mantine-spacing-sm) + var(--checkbox-size, 1rem)
-	);
+	padding-left: calc(var(--mantine-spacing-sm) + var(--checkbox-size, 1rem));
 }
 
 /* Mantine `variant="separated"`: item gap is margin-top on siblings (default md ≈ 16px) */

@@ -77,7 +77,7 @@ describe("SelectImageDropDownComponent", () => {
 		expect(images.length).toBeGreaterThan(0);
 		for (const img of images) {
 			expect((img as HTMLImageElement).style.width).toBe("100%");
-			expect((img as HTMLImageElement).style.flex).toBe("1");
+			expect((img as HTMLImageElement).style.flexGrow).toBe("1");
 		}
 	});
 

@@ -7,6 +7,7 @@ import {
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef} from "react";
+import {useShallow} from "zustand/react/shallow";
 import type {Mat4Array} from "../../config/common";
 import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
@@ -62,9 +63,11 @@ export function useDragging(
 	) => void;
 } {
 	// get the session API
-	const sessionApis = useShapeDiverStoreSession((state) => {
-		return sessionIds.map((id) => state.sessions[id]);
-	});
+	const sessionApis = useShapeDiverStoreSession(
+		useShallow((state) => {
+			return sessionIds.map((id) => state.sessions[id]);
+		}),
+	);
 	// create a unique component ID
 	const componentId = useId();
 

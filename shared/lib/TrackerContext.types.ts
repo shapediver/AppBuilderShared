@@ -14,9 +14,7 @@ export interface ITrackerEventOptions {
 }
 
 export type TrackerMetricType =
-	| "Web vitals"
-	| "Time savings"
-	| "Net Promoter Score";
+	"Web vitals" | "Time savings" | "Net Promoter Score";
 
 export interface IDelayedTrackerPropsAwaiter {
 	/**

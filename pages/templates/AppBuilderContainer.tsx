@@ -5,6 +5,7 @@ import {
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import {usePropsAppBuilder} from "@AppBuilderLib/features/appbuilder/model/usePropsAppBuilder";
+import type {AppBuilderContainerThemeDefaultProps} from "@AppBuilderLib/pages/config/AppBuilderContainer.types";
 import AppBuilderHorizontalContainer, {
 	AppBuilderHorizontalContainerThemePropsType,
 } from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
@@ -13,7 +14,6 @@ import AppBuilderVerticalContainer, {
 } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {MantineThemeComponent, StyleProp} from "@mantine/core";
 import React, {CSSProperties, useContext} from "react";
-import type {AppBuilderContainerThemeDefaultProps} from "shared/pages/config/AppBuilderContainer.types";
 
 interface Props {
 	children?: React.ReactNode;

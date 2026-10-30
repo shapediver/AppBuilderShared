@@ -72,7 +72,7 @@ export function useParameterComponentCommons<T>(
 	const acceptRejectMode = propAcceptRejectMode ?? storeAcceptRejectMode;
 
 	const {executing, sessionDependencies} = useShapeDiverStoreParameters(
-		(state) => {
+		useShallow((state) => {
 			const sessionDependencies = state.sessionDependency[namespace];
 
 			return {
@@ -81,7 +81,7 @@ export function useParameterComponentCommons<T>(
 				),
 				sessionDependencies,
 			};
-		},
+		}),
 	);
 
 	const disabledByParameter = useShapeDiverStoreParameters((state) =>
@@ -135,7 +135,7 @@ export function useParameterComponentCommons<T>(
 	const [value, setValue] = useState(initializer(state));
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
-	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const delegatesInitializedRef = useRef(false);
 	const cancelPendingChange = useCallback(() => {
 		clearTimeout(debounceRef.current);

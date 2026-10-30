@@ -52,7 +52,9 @@ export function AppBuilderPdfEmbedThemeProps(
 	};
 }
 
-function radiusToCssVar(radius: string | number | undefined): string | undefined {
+function radiusToCssVar(
+	radius: string | number | undefined,
+): string | undefined {
 	if (radius === undefined) return undefined;
 	if (typeof radius === "number") return `${radius}px`;
 	return `var(--mantine-radius-${radius})`;

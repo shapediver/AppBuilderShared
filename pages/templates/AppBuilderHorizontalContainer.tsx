@@ -1,6 +1,6 @@
+import type {AppBuilderHorizontalContainerThemeDefaultProps} from "@AppBuilderLib/pages/config/AppBuilderHorizontalContainer.types";
 import {Group, MantineThemeComponent, StyleProp, useProps} from "@mantine/core";
 import React from "react";
-import type {AppBuilderHorizontalContainerThemeDefaultProps} from "shared/pages/config/AppBuilderHorizontalContainer.types";
 
 interface Props {
 	children?: React.ReactNode;

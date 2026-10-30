@@ -35,8 +35,7 @@ export default function DefaultAttribute(props: Props) {
 		// Get the custom attribute data
 		const widgetData = customAttributeData[widgetId];
 		const customValues = widgetData?.[name + "_" + attribute.type] as
-			| IDefaultAttributeExtended
-			| undefined;
+			IDefaultAttributeExtended | undefined;
 
 		if (attribute.customColor === undefined)
 			attribute.customColor =

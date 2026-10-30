@@ -2,8 +2,8 @@ import {Center, Loader} from "@mantine/core";
 import {lazy, Suspense} from "react";
 import type {AppBuilderIframeWidgetComponentProps} from "./AppBuilderIframeWidgetView";
 
-export type {AppBuilderIframeWidgetComponentProps};
 export {frameHeight} from "./AppBuilderIframeWidgetView";
+export type {AppBuilderIframeWidgetComponentProps};
 
 const AppBuilderIframeWidgetView = lazy(
 	() => import("./AppBuilderIframeWidgetView"),

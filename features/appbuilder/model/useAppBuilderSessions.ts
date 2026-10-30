@@ -252,8 +252,7 @@ export function useAppBuilderSessions(props: Props) {
 					if (liveSlugsRef.current.get(dto.id) === slug) continue;
 
 					let api:
-						| Awaited<ReturnType<typeof createSession>>
-						| undefined;
+						Awaited<ReturnType<typeof createSession>> | undefined;
 					try {
 						api = await createSession(
 							{throwOnCustomizationError: true, ...dto},

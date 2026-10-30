@@ -3,9 +3,9 @@ import {getParameterValuesInputSchema} from "../getParameterValues";
 describe("getParameterValuesInputSchema", () => {
 	it("accepts omitted namespace and optional names", () => {
 		expect(getParameterValuesInputSchema.parse({})).toEqual({});
-		expect(
-			getParameterValuesInputSchema.parse({names: ["width"]}),
-		).toEqual({names: ["width"]});
+		expect(getParameterValuesInputSchema.parse({names: ["width"]})).toEqual(
+			{names: ["width"]},
+		);
 	});
 
 	it("accepts optional namespace", () => {

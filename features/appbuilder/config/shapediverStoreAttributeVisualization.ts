@@ -41,8 +41,7 @@ export interface IShapeDiverStoreAttributeVisualization {
 	customAttributeData: {
 		[widgetId: string]: {
 			[attributeId: string]:
-				| INumberAttributeCustomData
-				| IDefaultAttributeCustomData;
+				INumberAttributeCustomData | IDefaultAttributeCustomData;
 		};
 	};
 

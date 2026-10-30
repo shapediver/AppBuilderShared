@@ -15,8 +15,7 @@ export const APP_BUILDER_CONTAINER_ORIENTATIONS = [
 	AppBuilderContainerOrientation.Vertical,
 ] as const;
 
-export type AppBuilderContainerOrientationType =
-	AppBuilderContainerOrientation;
+export type AppBuilderContainerOrientationType = AppBuilderContainerOrientation;
 
 export const appBuilderContainerOrientationSchema = z.enum(
 	APP_BUILDER_CONTAINER_ORIENTATIONS,

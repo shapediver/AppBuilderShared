@@ -16,7 +16,9 @@ function data(agents?: IAppBuilderAgent[]): IAppBuilder {
 
 describe("takeAgentSnapshot", () => {
 	it("stays unset while App Builder data is still loading", () => {
-		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, undefined)).toBe("unset");
+		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, undefined)).toBe(
+			"unset",
+		);
 		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, undefined, false)).toBe(
 			"unset",
 		);
@@ -24,12 +26,16 @@ describe("takeAgentSnapshot", () => {
 
 	it("freezes agents[0] on first loaded IAppBuilder", () => {
 		const first = agent("first");
-		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, data([first]))).toBe(first);
+		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, data([first]))).toBe(
+			first,
+		);
 	});
 
 	it("freezes undefined agent when loaded data has no agents (defaults)", () => {
 		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, data())).toBeUndefined();
-		expect(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, data([]))).toBeUndefined();
+		expect(
+			takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, data([])),
+		).toBeUndefined();
 	});
 
 	it("ignores later agents once a snapshot is taken", () => {

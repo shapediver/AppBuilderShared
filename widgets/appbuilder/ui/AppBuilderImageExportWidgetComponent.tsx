@@ -50,7 +50,9 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 					const res = await actions.fetch(href);
 					const blob = await res.blob();
 					// blob: URLs have no .pdf suffix — need MIME for isPdfSrc
-					setContentType(responseContentType || blob.type || undefined);
+					setContentType(
+						responseContentType || blob.type || undefined,
+					);
 					objectUrl.current = URL.createObjectURL(blob);
 				}
 				setImageSrc(objectUrl.current);

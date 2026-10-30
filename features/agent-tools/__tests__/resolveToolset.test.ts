@@ -66,11 +66,10 @@ describe("resolveToolset", () => {
 			name: "A",
 			message: "hi",
 			useGenericToolDefaults: false,
-			genericTools: [
-				{name: "ask_user_question"},
-				{name: "get_metric"},
-			],
+			genericTools: [{name: "ask_user_question"}, {name: "get_metric"}],
 		};
-		expect(resolveToolset(agent).map((t) => t.name)).toEqual(["get_metric"]);
+		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
+			"get_metric",
+		]);
 	});
 });

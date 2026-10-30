@@ -13,10 +13,7 @@ import {
 } from "../config/importModelState";
 
 export type ImportModelStateNotificationType =
-	| "error"
-	| "success"
-	| "info"
-	| "warning";
+	"error" | "success" | "info" | "warning";
 
 export interface ImportModelStateNotification {
 	type: ImportModelStateNotificationType;

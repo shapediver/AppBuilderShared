@@ -9,7 +9,7 @@ export const useStackContext = (
 ) => {
 	const [stackPath, setStackPath] = useState<string[]>([]);
 	const [isTransitioning, setIsTransitioning] = useState(false);
-	const popTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+	const popTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const push = useCallback(
 		(name: string) => {
 			if (isTransitioning) {

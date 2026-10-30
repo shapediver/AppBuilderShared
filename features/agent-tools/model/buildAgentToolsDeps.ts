@@ -210,8 +210,7 @@ export function buildAgentToolsDeps(
 		},
 		importModelState: async (
 			props:
-				| IImportModelStateData
-				| IAppBuilderActionPropsImportModelState,
+				IImportModelStateData | IAppBuilderActionPropsImportModelState,
 		) => {
 			try {
 				const result = await importModelStateFromStore(

@@ -68,9 +68,11 @@ export interface IShapeDiverStoreViewportAnchors {
 	showContentMap: {
 		[viewportId: string]: {
 			[anchorId: string]: {
-				[K in
-					| AppBuilderContainerNameType.Anchor2d
-					| AppBuilderContainerNameType.Anchor3d]?: boolean;
+				[
+					K in
+						| AppBuilderContainerNameType.Anchor2d
+						| AppBuilderContainerNameType.Anchor3d
+				]?: boolean;
 			};
 		};
 	};

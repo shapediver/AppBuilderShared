@@ -28,11 +28,9 @@ export function useRuntimeToolbarControls() {
 			target: ToolbarRuntimeTarget,
 			controls: IAppBuilderToolbarControlItem[],
 		) => {
-			const token =
-				useShapeDiverStoreToolbars.getState().addRuntimeToolbarControls(
-					target,
-					controls,
-				);
+			const token = useShapeDiverStoreToolbars
+				.getState()
+				.addRuntimeToolbarControls(target, controls);
 			if (token) {
 				tokensRef.current.push(token);
 			}
@@ -41,7 +39,9 @@ export function useRuntimeToolbarControls() {
 		// Explicit removal for callers that want to clear a runtime contribution
 		// before the owner unmounts.
 		removeToken: (token: string) => {
-			useShapeDiverStoreToolbars.getState().removeRuntimeToolbarToken(token);
+			useShapeDiverStoreToolbars
+				.getState()
+				.removeRuntimeToolbarToken(token);
 			tokensRef.current = tokensRef.current.filter((t) => t !== token);
 		},
 	};

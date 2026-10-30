@@ -1,6 +1,5 @@
 import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
 import {useMemo} from "react";
-import {useShallow} from "zustand/react/shallow";
 import {IShapeDiverParameter} from "../config/parameter";
 import {PropsParameter} from "../config/propsParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
@@ -17,13 +16,13 @@ import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
  */
 export function useParameter<T>(props: PropsParameter) {
 	const {namespace, parameterId} = props;
-	const parameter = useShapeDiverStoreParameters(
-		useShallow((state) => {
-			const parameter = state.getParameter(namespace, parameterId)!(
-				(state) => state as IShapeDiverParameter<T>,
-			);
-			return parameter;
-		}),
+	// Select the parameter store first and subscribe to it outside of the
+	// selector: hooks must not be called inside a store selector.
+	const parameterStore = useShapeDiverStoreParameters((state) =>
+		state.getParameter(namespace, parameterId)!,
+	);
+	const parameter = parameterStore(
+		(state) => state as IShapeDiverParameter<T>,
 	);
 
 	const memoizedParameter = useMemo(() => {

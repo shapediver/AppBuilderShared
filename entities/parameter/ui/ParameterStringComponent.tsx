@@ -140,8 +140,7 @@ export default function ParameterStringComponent(
 		useMemo(() => {
 			let definitionLines: number | undefined;
 			let definitionSelectSettings:
-				| IStringParameterSelectSettings
-				| undefined;
+				IStringParameterSelectSettings | undefined;
 			let definitionMode: ParameterStringInputMode | undefined;
 			let definitionDebounce: number | undefined;
 

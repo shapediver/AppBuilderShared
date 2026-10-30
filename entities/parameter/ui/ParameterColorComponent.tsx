@@ -1,10 +1,10 @@
+import type {ParameterColorComponentThemeDefaultProps} from "@AppBuilderLib/entities/parameter/config/ParameterColorComponent.types";
 import {
 	convertFromSdColor,
 	convertToSdColor,
 } from "@AppBuilderLib/shared/lib/colors";
 import {ColorInput, MantineThemeComponent, useProps} from "@mantine/core";
 import {useCallback, useEffect, useState} from "react";
-import type {ParameterColorComponentThemeDefaultProps} from "shared/entities/parameter/config/ParameterColorComponent.types";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
@@ -101,8 +101,7 @@ export default function ParameterColorComponent(
 					popoverProps={{
 						...((
 							formInputProps as
-								| {popoverProps?: object}
-								| undefined
+								{popoverProps?: object} | undefined
 						)?.popoverProps ?? {}),
 						withinPortal: false,
 					}}

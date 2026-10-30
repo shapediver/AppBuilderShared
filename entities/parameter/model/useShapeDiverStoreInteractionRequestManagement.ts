@@ -119,7 +119,11 @@ export const useShapeDiverStoreInteractionRequestManagement =
 						requests.passiveRequests.forEach((request) =>
 							request.enable(),
 						);
-						set({interactionRequests}, false, "activatePassiveInteraction");
+						set(
+							{interactionRequests},
+							false,
+							"activatePassiveInteraction",
+						);
 						return;
 					}
 				},

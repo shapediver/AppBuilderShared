@@ -355,8 +355,7 @@ export interface IShapeDiverStoreParameters {
 		namespace: string,
 		acceptRejectMode: boolean | IAcceptRejectModeSelector,
 		definitions:
-			| IGenericParameterDefinition
-			| IGenericParameterDefinition[],
+			IGenericParameterDefinition | IGenericParameterDefinition[],
 		executor: IGenericParameterExecutor,
 		dependsOnSessions: string[] | string | undefined,
 		commit?: IGenericParameterCommitter,
@@ -375,8 +374,7 @@ export interface IShapeDiverStoreParameters {
 		namespace: string,
 		acceptRejectMode: boolean | IAcceptRejectModeSelector,
 		definitions:
-			| IGenericParameterDefinition
-			| IGenericParameterDefinition[],
+			IGenericParameterDefinition | IGenericParameterDefinition[],
 		executor: IGenericParameterExecutor,
 		dependsOnSessions: string[] | string | undefined,
 		commit?: IGenericParameterCommitter,

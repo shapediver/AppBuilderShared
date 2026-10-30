@@ -175,8 +175,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 		},
 		updateItemData(
 			nextItemData:
-				| Record<string, ISelectComponentItemDataType>
-				| undefined,
+				Record<string, ISelectComponentItemDataType> | undefined,
 		) {
 			itemDataPatch = nextItemData;
 			applyPaging();

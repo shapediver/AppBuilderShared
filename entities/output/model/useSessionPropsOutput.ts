@@ -1,5 +1,7 @@
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {IShapeDiverOutputDefinition} from "../config/output";
 
 /**
@@ -15,21 +17,30 @@ export function useSessionPropsOutput(
 ): PropsOutput[] {
 	const _filter = filter || (() => true);
 
-	const propsOutputs = useShapeDiverStoreParameters((state) =>
-		(Array.isArray(namespace) ? namespace : [namespace]).flatMap(
-			(namespace) =>
-				Object.values(state.getOutputs(namespace))
-					.filter((store) => _filter(store.getState().definition))
-					.map((store) => {
-						const state = store.getState();
-
-						return {
-							namespace,
-							outputId: state.definition.id,
-						};
-					}),
+	// Select a flat list of (namespace, output id) pairs, which the shallow
+	// comparison can match. Creating the props objects inside the selector
+	// would return a new array on every call and cause an infinite render loop.
+	const selection = useShapeDiverStoreParameters(
+		useShallow((state) =>
+			(Array.isArray(namespace) ? namespace : [namespace]).flatMap(
+				(namespace) =>
+					Object.values(state.outputStores[namespace] ?? {})
+						.map((store) => store.getState().definition)
+						.filter((definition) => _filter(definition))
+						.flatMap((definition) => [namespace, definition.id]),
+			),
 		),
-	); // <-- TODO SS-8052 review how to avoid unnecessary re-renders
+	);
 
-	return propsOutputs;
+	return useMemo(() => {
+		const propsOutputs: PropsOutput[] = [];
+		for (let i = 0; i < selection.length; i += 2) {
+			propsOutputs.push({
+				namespace: selection[i],
+				outputId: selection[i + 1],
+			});
+		}
+
+		return propsOutputs;
+	}, [selection]);
 }
