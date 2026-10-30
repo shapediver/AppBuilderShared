@@ -233,6 +233,11 @@ export function useFilterableDatabase(
 		if (builtForRef.current === built) {
 			return;
 		}
+		// The load (or error) below replaces what is shown. If it is cancelled
+		// or fails and the definition changes back, the old build must not
+		// count as current: that would skip `show()` and leave the loader or
+		// the error on screen.
+		builtForRef.current = undefined;
 
 		// A text filter typed for the old definition must not land in the new one.
 		if (
