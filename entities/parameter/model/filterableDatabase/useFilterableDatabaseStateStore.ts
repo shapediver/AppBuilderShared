@@ -47,6 +47,11 @@ export interface FilterableDatabaseViewState {
 	/** Text in the search field, not yet an anchor. */
 	searchText: string;
 	searchAnchors: string[];
+	/**
+	 * Search terms applied to the list. Not always anchors + field text:
+	 * adding or removing an anchor applies only the anchors.
+	 */
+	appliedSearchTerms: string[];
 	/** Offset of the list's own scroll container (only when `height` is set). */
 	scrollTop: number;
 }
@@ -63,8 +68,14 @@ interface FilterableDatabaseStateStore {
 		settingsKey: string,
 		patch: FilterableDatabaseViewPatch,
 	) => void;
-	/** Drop every view of one session. */
+	/**
+	 * Drop every view of one session. Saves for it are ignored until
+	 * `openNamespace`, so controls that unmount after the session was
+	 * removed cannot write their view back.
+	 */
 	removeNamespace: (namespace: string) => void;
+	/** Accept saves for a session again (it was added back). */
+	openNamespace: (namespace: string) => void;
 }
 
 function blankView(settingsKey: string): FilterableDatabaseViewState {
@@ -74,6 +85,7 @@ function blankView(settingsKey: string): FilterableDatabaseViewState {
 		loadedCount: 0,
 		searchText: "",
 		searchAnchors: [],
+		appliedSearchTerms: [],
 		scrollTop: 0,
 	};
 }
@@ -88,8 +100,20 @@ const hrefTables = new Map<
 	{settingsKey: string; table: DatabaseTable}
 >();
 
+/** Sessions removed and not added back yet. */
+const closedNamespaces = new Set<string>();
+
 function isInNamespace(key: string, namespace: string): boolean {
 	return key.startsWith(`${namespace}${KEY_SEPARATOR}`);
+}
+
+function isClosed(key: string): boolean {
+	for (const namespace of closedNamespaces) {
+		if (isInNamespace(key, namespace)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 export const useFilterableDatabaseStateStore =
@@ -99,6 +123,10 @@ export const useFilterableDatabaseStateStore =
 				views: {},
 
 				saveView: (key, settingsKey, patch) => {
+					if (isClosed(key)) {
+						return;
+					}
+
 					const prev = get().views[key];
 					const base =
 						prev?.settingsKey === settingsKey
@@ -113,6 +141,7 @@ export const useFilterableDatabaseStateStore =
 				},
 
 				removeNamespace: (namespace) => {
+					closedNamespaces.add(namespace);
 					for (const key of [...hrefTables.keys()]) {
 						if (isInNamespace(key, namespace)) {
 							hrefTables.delete(key);
@@ -134,6 +163,10 @@ export const useFilterableDatabaseStateStore =
 						false,
 						"filterableDatabase/removeNamespace",
 					);
+				},
+
+				openNamespace: (namespace) => {
+					closedNamespaces.delete(namespace);
 				},
 			}),
 			{...devtoolsSettings, name: "AppBuilder | Filterable database"},
@@ -173,7 +206,7 @@ export function writeFilterableDatabaseTable(
 	settingsKey: string,
 	table: DatabaseTable,
 ) {
-	if (!key || !settings.dataSource.href) {
+	if (!key || !settings.dataSource.href || isClosed(key)) {
 		return;
 	}
 
@@ -183,15 +216,6 @@ export function writeFilterableDatabaseTable(
 /** Test helper: forget every saved view and cached table. */
 export function resetFilterableDatabaseState() {
 	hrefTables.clear();
+	closedNamespaces.clear();
 	useFilterableDatabaseStateStore.setState({views: {}});
-}
-
-/** Search terms the list applies for the current field and anchors. */
-export function committedFilterableSearchTerms(
-	searchAnchors: string[],
-	searchText: string,
-): string[] {
-	return searchText.length > 0
-		? [...searchAnchors, searchText]
-		: [...searchAnchors];
 }

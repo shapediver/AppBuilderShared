@@ -33,6 +33,7 @@ function fakePersistence(): FilterableDatabaseListPersistence {
 		loadedCount: 0,
 		searchText: "",
 		searchAnchors: [],
+		appliedSearchTerms: [],
 		scrollTop: 0,
 	};
 
@@ -86,6 +87,28 @@ describe("SelectComponentAsync search persistence", () => {
 		expect(
 			(screen.getByPlaceholderText("Search") as HTMLInputElement).value,
 		).toBe("oak");
+	});
+
+	it("saves only the anchors as applied when an anchor is added", () => {
+		const api = fakeScrollingApi();
+		api.items = [{item: "search:oak", data: {displayname: "oak"}}];
+		const persistence = fakePersistence();
+
+		renderGrid(api, persistence);
+		fireEvent.change(screen.getByPlaceholderText("Search"), {
+			target: {value: "x"},
+		});
+		fireEvent.click(screen.getByText("oak"));
+		act(() => {
+			jest.runAllTimers();
+		});
+
+		expect(persistence.read()).toMatchObject({
+			searchText: "x",
+			searchAnchors: ["oak"],
+			appliedSearchTerms: ["oak"],
+		});
+		expect(api.setSearchTerms).toHaveBeenLastCalledWith(["oak"]);
 	});
 
 	it("applies a search that was still debouncing when the list unmounted", () => {

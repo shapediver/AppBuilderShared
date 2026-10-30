@@ -76,13 +76,28 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 	);
 	const [searchText, setSearchText] = useState(restored?.searchText ?? "");
 
-	const publishSearch = useCallback(
-		(anchors: string[], text: string) => {
+	/**
+	 * Show anchors and field text, and apply `applied` to the list.
+	 * Saves what the list applies, which is not always anchors + text,
+	 * so a remount rebuilds exactly the list the user saw.
+	 */
+	const applySearch = useCallback(
+		(
+			anchors: string[],
+			text: string,
+			applied: string[],
+			timeout?: number,
+		) => {
 			setSearchTerms(anchors);
 			setSearchText(text);
-			persistence?.save({searchText: text, searchAnchors: anchors});
+			persistence?.save({
+				searchText: text,
+				searchAnchors: anchors,
+				appliedSearchTerms: applied,
+			});
+			debouncedOnSearch(applied, timeout);
 		},
-		[persistence],
+		[persistence, debouncedOnSearch],
 	);
 
 	const saveScrollTop = useCallback(
@@ -103,21 +118,12 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 			if (v?.startsWith(SEARCH_PREFIX)) {
 				const term = v.substring(SEARCH_PREFIX.length);
 				const anchors = [...searchTerms, term];
-				publishSearch(anchors, searchText);
-				debouncedOnSearch([...searchTerms, term], 0);
+				applySearch(anchors, searchText, anchors, 0);
 			} else {
 				onChange(emitSelectValue(v, emitValue, itemsData));
 			}
 		},
-		[
-			onChange,
-			itemsData,
-			debouncedOnSearch,
-			searchTerms,
-			searchText,
-			emitValue,
-			publishSearch,
-		],
+		[onChange, itemsData, searchTerms, searchText, emitValue, applySearch],
 	);
 
 	// show stack of search terms and allow to remove them
@@ -131,8 +137,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 							key={index}
 							onClick={() => {
 								const terms = searchTerms.slice(0, index);
-								publishSearch(terms, searchText);
-								debouncedOnSearch(terms, 0);
+								applySearch(terms, searchText, terms, 0);
 							}}
 						>
 							{term}
@@ -154,8 +159,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				}
 				topSection={topSection}
 				onSearch={(s) => {
-					publishSearch(searchTerms, s);
-					debouncedOnSearch([...searchTerms, s]);
+					applySearch(searchTerms, s, [...searchTerms, s]);
 				}}
 				searchValue={searchText}
 				items={items}
@@ -176,8 +180,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				}
 				topSection={topSection}
 				onSearch={(s) => {
-					publishSearch(searchTerms, s);
-					debouncedOnSearch([...searchTerms, s]);
+					applySearch(searchTerms, s, [...searchTerms, s]);
 				}}
 				searchValue={searchText}
 				items={items}
