@@ -84,7 +84,16 @@ describe("useParameterComponentCommons discarded pending change", () => {
 		store.getState().removeSession(sessionId);
 	});
 
-	it("shows the committed value when the change is discarded during an execution", async () => {
+	/**
+	 * Schedule a change of p1, mount the component again, and discard the
+	 * change by a restored state (without p1: nothing commits it again) while
+	 * an execution of p2 runs. The execution ends after beforeEnd.
+	 */
+	const discardDuringExecution = async (
+		beforeEnd: (
+			component: ReturnType<typeof renderComponent>,
+		) => void = () => {},
+	) => {
 		const first = renderComponent();
 		act(() => first.result.current.handleChange("b", 10000));
 		first.unmount();
@@ -101,9 +110,8 @@ describe("useParameterComponentCommons discarded pending change", () => {
 			execution = actions.execute(true, true);
 		});
 		await waitFor(() => expect(second.result.current.executing).toBe(true));
+		const revision = getParameter("p1").getState().state.commitRevision;
 
-		// a restored state replaces the pending change while it runs (the
-		// state does not contain the parameter: nothing commits it again)
 		let restore: Promise<void> = Promise.resolve();
 		act(() => {
 			restore = store
@@ -116,15 +124,42 @@ describe("useParameterComponentCommons discarded pending change", () => {
 				);
 		});
 		expect(parameterChangeScheduler.isPending(sessionId, "p1")).toBe(false);
+		// a commit now would replace the value being executed
+		expect(getParameter("p1").getState().state.commitRevision).toBe(
+			revision,
+		);
 
+		act(() => beforeEnd(second));
 		await act(async () => {
 			finishCustomization();
 			await Promise.all([execution, restore]);
 		});
-
 		await waitFor(() =>
 			expect(second.result.current.executing).toBe(false),
 		);
-		expect(second.result.current.value).toBe("a");
+		return {component: second, revision};
+	};
+
+	it("commits the value at the end of the execution", async () => {
+		const {component, revision} = await discardDuringExecution();
+
+		// components which applied the change to the scene restore it (e.g. a
+		// gizmo following its committed value)
+		const {state} = getParameter("p1").getState();
+		expect(state.commitRevision).toBe(revision + 1);
+		expect(state.commitValue).toBe("a");
+		expect(component.result.current.value).toBe("a");
+	});
+
+	it("does not commit a parameter with a new change", async () => {
+		const {component, revision} = await discardDuringExecution(
+			(component) => component.result.current.handleChange("e", 10000),
+		);
+
+		expect(getParameter("p1").getState().state.commitRevision).toBe(
+			revision,
+		);
+		expect(parameterChangeScheduler.isPending(sessionId, "p1")).toBe(true);
+		expect(component.result.current.value).toBe("e");
 	});
 });
