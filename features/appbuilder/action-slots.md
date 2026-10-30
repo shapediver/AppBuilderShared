@@ -20,6 +20,8 @@ Here you can see a table of all slots that are allowed on App Builder nodes. Wid
 
 Here you can see all action slots that are allowed on the App Builder definition root. Type: `IAppBuilderRootActionSlots`.
 
+The flows behind these events: [App Builder load](appready-flow.md) for `appready`, [Session customization](computation-flow.md) for the computation slots, and [Export request](export-flow.md) for the export slots.
+
 _Note: Pointer and click slots here attach to the viewport host, because the viewport is not its own JSON node. In the future, we might support viewport nodes, if we support multiple viewports. I don't see any backwards compatibility issues if that is the case._
 
 | Slot                | When it runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Optional `eventProps`                                                                                                                                                                                                                                                            |
@@ -103,7 +105,7 @@ Example: Let's say on the root, we want to define multiple slots for selection. 
 	{
 		"eventProps": {
 			"type": "selection",
-A			"props": { "nameFilter": ["A"] }
+			"props": { "nameFilter": ["A"] }
 		},
 		"action": { "type": "..." }
 	},
