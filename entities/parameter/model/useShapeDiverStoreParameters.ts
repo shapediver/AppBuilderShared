@@ -41,6 +41,7 @@ import {
 } from "../config/parameter";
 import {
 	IAcceptRejectModeSelector,
+	IBatchParameterValueUpdateOptions,
 	IExportResponse,
 	IExportStore,
 	IExportStores,
@@ -63,6 +64,7 @@ import {
 } from "../config/shapediverStoreParameters";
 import {getResetValue} from "../lib/parameterResetValue";
 import {addValidator} from "../lib/parameterValidation";
+import {parameterChangeScheduler} from "./parameterChangeScheduler";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -121,7 +123,7 @@ function createParameterExecutor<T>(
 							acceptAll ? undefined : [paramId],
 							skipUrlUpdate,
 						)
-					: await changes.wait;
+					: await changes.waitFor(paramId);
 				// the execution failed
 				if (values === undefined) return undefined;
 				const value = paramId in values ? values[paramId] : uiValue;
@@ -1041,11 +1043,47 @@ export const useShapeDiverStoreParameters =
 					if (parameterChanges[namespace])
 						return parameterChanges[namespace];
 
+					// whether `wait` of the changes is resolved or rejected
+					let waitSettled = false;
+					// the executions waiting for the change of a parameter (waitFor)
+					const waiters = new Map<
+						string,
+						{
+							resolve: (values: {
+								[parameterId: string]: any;
+							}) => void;
+							reject: (reason?: unknown) => void;
+						}[]
+					>();
+					const settleWaiters = (
+						parameterIds: string[],
+						settle: (waiter: {
+							resolve: (values: {
+								[parameterId: string]: any;
+							}) => void;
+							reject: (reason?: unknown) => void;
+						}) => void,
+					) =>
+						parameterIds.forEach((id) => {
+							waiters.get(id)?.forEach(settle);
+							waiters.delete(id);
+						});
 					const changes: IParameterChanges = {
 						values: {},
 						accept: () => Promise.resolve({}),
 						reject: () => undefined,
 						wait: Promise.resolve({}),
+						waitFor: (parameterId) =>
+							new Promise((resolve, reject) => {
+								const list = waiters.get(parameterId) ?? [];
+								list.push({resolve, reject});
+								waiters.set(parameterId, list);
+								// at the latest with all changes, unless they were settled
+								// already (a failed partial accept rejects them, the changes
+								// object stays for the remaining queued changes)
+								if (!waitSettled)
+									changes.wait.then(resolve, reject);
+							}),
 						executing: false,
 						priority,
 						addValueChange(id: string, value: any) {
@@ -1107,6 +1145,7 @@ export const useShapeDiverStoreParameters =
 							const values = parameterChanges[namespace].values;
 							const store = parameterStores[namespace];
 							let allChangesAccepted = true;
+							let acceptedIds: string[] = [];
 							try {
 								// filter changed values by optional parameterIds
 								const changedValues = parameterIds
@@ -1123,6 +1162,7 @@ export const useShapeDiverStoreParameters =
 												{} as {[key: string]: any},
 											)
 									: values;
+								acceptedIds = Object.keys(changedValues);
 								// check if there are changes left
 								allChangesAccepted =
 									Object.keys(values).length ===
@@ -1198,8 +1238,20 @@ export const useShapeDiverStoreParameters =
 										),
 									);
 								}
+								// the executions of the accepted changes end
+								settleWaiters(acceptedIds, (waiter) =>
+									waiter.resolve(amendedValues),
+								);
 								// if there are no changes left, resolve and remove the changes
 								if (allChangesAccepted) {
+									// also executions waiting for a change which is no
+									// longer queued (as with `wait`)
+									settleWaiters(
+										[...waiters.keys()],
+										(waiter) =>
+											waiter.resolve(amendedValues),
+									);
+									waitSettled = true;
 									resolve(amendedValues);
 								} else {
 									// else disable the executing mode
@@ -1239,6 +1291,15 @@ export const useShapeDiverStoreParameters =
 										"executeChanges - error reset",
 									);
 								}
+								// the executions of the accepted changes end, all of them
+								// when the changes are removed (as with `wait`)
+								settleWaiters(
+									allChangesAccepted
+										? [...waiters.keys()]
+										: acceptedIds,
+									(waiter) => waiter.reject(e),
+								);
+								waitSettled = true;
 								reject(e);
 							} finally {
 								if (allChangesAccepted)
@@ -1249,6 +1310,11 @@ export const useShapeDiverStoreParameters =
 						};
 						changes.reject = () => {
 							removeChanges(namespace);
+							waitSettled = true;
+							// also the executions which do not wait for `wait` (see waitFor)
+							settleWaiters([...waiters.keys()], (waiter) =>
+								waiter.reject(),
+							);
 							reject();
 						};
 
@@ -1876,79 +1942,258 @@ export const useShapeDiverStoreParameters =
 				},
 
 				async batchParameterValueUpdate(
-					state: ISessionsHistoryState,
+					requestedState: ISessionsHistoryState,
 					skipHistory?: boolean,
 					skipUrlUpdate?: boolean,
+					options?: IBatchParameterValueUpdateOptions,
 				) {
-					const {parameterStores} = get();
-
-					// update parameter values in all namespaces
-					const paramUpdatePromises: Promise<void>[] = [];
-					for (const namespace in state) {
-						const values = state[namespace];
-						const stores = parameterStores[namespace];
-						if (!stores) return;
-
-						const paramIds = Object.keys(values);
-						if (paramIds.length === 0) return;
-
-						// verify that all parameter stores exist and values are valid before updating any value or executing any change
-						const promises = paramIds
-							.map((paramId) => {
-								const paramStore = Object.values(stores)
-									.map((s) => s.getState())
-									.find((s) => {
-										const def = s.definition;
-										return (
-											def.id === paramId ||
-											def.name === paramId ||
-											def.displayname === paramId
-										);
-									});
-								if (!paramStore) {
-									Logger.warn(
-										`Parameter ${paramId} does not exist for session namespace ${namespace}`,
-									);
-									return undefined;
-								}
-
-								const {actions} = paramStore;
-								const value = values[paramId];
-								if (!actions.isValid(value)) {
-									Logger.warn(
-										`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
-									);
-									return undefined;
-								}
-								// update value and return execution promise
-								actions.setUiValue(value);
-								// Note: We do not execute the changes immediately here,
-								// but call changes.accept below.
-								return actions.execute(
-									false,
-									skipHistory,
-									undefined,
-									skipUrlUpdate,
+					/** The store of a parameter given by its id, name or display name. */
+					const findParameter = (
+						namespace: string,
+						paramId: string,
+					) =>
+						Object.values(get().parameterStores[namespace] ?? {})
+							.map((s) => s.getState())
+							.find((s) => {
+								const def = s.definition;
+								return (
+									def.id === paramId ||
+									def.name === paramId ||
+									def.displayname === paramId
 								);
-							})
-							.filter((p) => p !== undefined);
+							});
+					/** The id of a parameter given by its id, name or display name. */
+					const resolveId = (namespace: string, paramId: string) =>
+						findParameter(namespace, paramId)?.definition.id ??
+						paramId;
 
-						paramUpdatePromises.push(...promises);
+					// the requested values keyed by parameter id, as the pending
+					// changes of the parameter components (an unknown parameter or
+					// an invalid value does not replace a pending change; a
+					// namespace without a valid value is not requested)
+					const requested: ISessionsHistoryState = {};
+					for (const namespace in requestedState) {
+						// an unknown namespace is ignored (the other namespaces
+						// are still sent)
+						if (!get().parameterStores[namespace]) continue;
+						for (const paramId in requestedState[namespace]) {
+							const value = requestedState[namespace][paramId];
+							const parameter = findParameter(namespace, paramId);
+							if (!parameter) {
+								Logger.warn(
+									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
+								);
+								continue;
+							}
+							if (!parameter.actions.isValid(value)) {
+								Logger.warn(
+									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
+								);
+								continue;
+							}
+							(requested[namespace] ??= {})[
+								parameter.definition.id
+							] = value;
+						}
 					}
+					// (only for requested values)
+					const requestedForceSameValue: {
+						[namespace: string]: string[];
+					} = {};
+					for (const namespace in options?.forceSameValue ?? {})
+						requestedForceSameValue[namespace] = options!
+							.forceSameValue![
+								namespace
+							].map((paramId) => resolveId(namespace, paramId))
+							.filter((id) => id in (requested[namespace] ?? {}));
 
-					// accept changes for all namespaces
-					const {parameterChanges} = get();
-					const acceptPromises = Object.keys(state)
-						.map((namespace) => parameterChanges[namespace])
-						.filter((c) => c !== undefined)
-						.sort((a, b) => a.priority - b.priority)
-						.map((c) =>
-							c.accept(skipHistory, undefined, skipUrlUpdate),
+					// The pending changes of the parameter components are sent along
+					// (one computation instead of several, none of them sending a stale
+					// value of another parameter), unless the given state replaces
+					// them (e.g. undo): the pending changes of the restored namespaces
+					// (and of the custom parameters of their sessions) are dropped,
+					// the ones of other namespaces stay pending.
+					if (
+						options?.scheduledChanges !== undefined &&
+						options.scheduledChanges !== "include"
+					) {
+						if (options.scheduledChanges === "discard")
+							parameterChangeScheduler.discard(
+								Object.keys(requestedState).flatMap(
+									(namespace) => [
+										namespace,
+										namespace + CUSTOM_SESSION_ID_POSTFIX,
+									],
+								),
+							);
+						await sendBatch(
+							requested,
+							requestedForceSameValue,
+							new Set(),
 						);
+						return;
+					}
+					const {state, forceSameValue, included, overridden} =
+						parameterChangeScheduler
+							.take()
+							.mergeInto(requested, requestedForceSameValue);
+					// a pending change replaced by a value of the request
+					overridden.forEach((change) => change.onDiscard?.());
+					// Changes of the user taken along by a request which skips the
+					// history (e.g. an output action) still get their history entry
+					// and URL update in their namespace, otherwise undo would skip
+					// them.
+					// (the execution of the custom parameters of a session accepts
+					// the queued changes of the session: they are lifted too)
+					await included.sendAlong(
+						sendBatch(
+							state,
+							forceSameValue,
+							new Set(
+								included.changes.flatMap((c) => [
+									c.namespace,
+									c.namespace + CUSTOM_SESSION_ID_POSTFIX,
+								]),
+							),
+						),
+					);
 
-					// wait for all parameter updates and accept promises
-					await Promise.all(acceptPromises);
-					await Promise.all(paramUpdatePromises);
+					/**
+					 * @param takenAlong The namespaces with pending changes taken
+					 * along: the history entry and the URL update are not skipped.
+					 */
+					async function sendBatch(
+						state: ISessionsHistoryState,
+						forceSameValue: {[namespace: string]: string[]},
+						takenAlong: Set<string>,
+					) {
+						const skipHistoryOf = (namespace: string) =>
+							skipHistory && !takenAlong.has(namespace);
+						const skipUrlUpdateOf = (namespace: string) =>
+							skipUrlUpdate && !takenAlong.has(namespace);
+						const {parameterStores} = get();
+						// the parameters set by this request, per namespace
+						const batchParamIds: {[namespace: string]: string[]} =
+							{};
+
+						// update parameter values in all namespaces
+						const paramUpdatePromises: Promise<unknown>[] = [];
+						for (const namespace in state) {
+							const values = state[namespace];
+							const stores = parameterStores[namespace];
+							if (!stores) continue;
+
+							const paramIds = Object.keys(values);
+							if (paramIds.length === 0) continue;
+
+							// verify that all parameter stores exist and values are valid before updating any value or executing any change
+							const promises = paramIds
+								.map((paramId) => {
+									const paramStore = findParameter(
+										namespace,
+										paramId,
+									);
+									if (!paramStore) {
+										Logger.warn(
+											`Parameter ${paramId} does not exist for session namespace ${namespace}`,
+										);
+										return undefined;
+									}
+
+									const {actions} = paramStore;
+									const value = values[paramId];
+									if (!actions.isValid(value)) {
+										Logger.warn(
+											`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
+										);
+										return undefined;
+									}
+									// update value and return execution promise
+									actions.setUiValue(value);
+									(batchParamIds[namespace] ??= []).push(
+										paramStore.definition.id,
+									);
+									// Note: We do not execute the changes immediately here,
+									// but call changes.accept below.
+									return actions.execute(
+										false,
+										skipHistoryOf(namespace),
+										undefined,
+										skipUrlUpdateOf(namespace),
+										forceSameValue[namespace]?.includes(
+											paramId,
+										),
+									);
+								})
+								.filter((p) => p !== undefined);
+
+							paramUpdatePromises.push(...promises);
+						}
+
+						// Accept the changes set by this request (other queued changes,
+						// e.g. of a parameter in accept/reject mode, wait for their
+						// confirmation), by priority: the changes of the custom
+						// parameters first. Their execution takes the changes of the
+						// session they depend on along (see
+						// useAppBuilderCustomParameters), which must not be sent in a
+						// request of their own.
+						// (and the queued changes accepted by the request, see
+						// options.accept)
+						const accepted = options?.accept ?? {};
+						for (const namespace in accepted)
+							if (get().parameterChanges[namespace])
+								batchParamIds[namespace] ??= [];
+						const acceptsAll = (namespace: string) =>
+							namespace in requested ||
+							(namespace in accepted &&
+								accepted[namespace] === undefined);
+						const namespaces = Object.keys(batchParamIds);
+						const priorities = [
+							...new Set(
+								namespaces
+									.map(
+										(namespace) =>
+											get().parameterChanges[namespace]
+												?.priority,
+									)
+									.filter((p) => p !== undefined),
+							),
+						].sort((a, b) => a - b);
+						for (const priority of priorities) {
+							const {parameterChanges} = get();
+							await Promise.all(
+								namespaces.map((namespace) => {
+									const changes = parameterChanges[namespace];
+									if (changes?.priority !== priority) return;
+									// not taken along by an execution already
+									const ids = [
+										...batchParamIds[namespace],
+										...(accepted[namespace] ?? []),
+									].filter((id) => id in changes.values);
+									const all = acceptsAll(namespace);
+									if (
+										(all
+											? Object.keys(changes.values)
+											: ids
+										).length === 0
+									)
+										return;
+									// explicit values of the request accept all changes
+									// of the namespace (as before the scheduler), the
+									// pending changes of the components only their own
+									// (like an execution of the component did)
+									return changes.accept(
+										skipHistoryOf(namespace),
+										all ? undefined : ids,
+										skipUrlUpdateOf(namespace),
+									);
+								}),
+							);
+						}
+
+						// wait for all parameter updates
+						await Promise.all(paramUpdatePromises);
+					}
 				},
 
 				getDefaultState(): ISessionsHistoryState {
@@ -2108,7 +2353,13 @@ export const useShapeDiverStoreParameters =
 					// so the AppBuilder custom-parameter hook can rehydrate its local
 					// stores once after the controller/session restore completes.
 					setPendingHistoryDerivedState(derivedState);
-					await batchParameterValueUpdate(primaryState, skipHistory);
+					// the restored state replaces pending changes of the parameter components
+					await batchParameterValueUpdate(
+						primaryState,
+						skipHistory,
+						undefined,
+						{scheduledChanges: "discard"},
+					);
 				},
 
 				async restoreHistoryStateFromIndex(index: number) {
@@ -2213,3 +2464,9 @@ export const useShapeDiverStoreParameters =
 			{...devtoolsSettings, name: "ShapeDiver | Parameters"},
 		),
 	);
+
+// the countdown of the pending parameter changes elapsed: send them in a
+// request of their own (a request takes all pending changes along)
+parameterChangeScheduler.setSend(() =>
+	useShapeDiverStoreParameters.getState().batchParameterValueUpdate({}),
+);

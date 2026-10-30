@@ -132,9 +132,15 @@ export function importParameterValues(namespace: string): Promise<void> {
 				return;
 			}
 
-			await batchParameterValueUpdate({
-				[namespace]: validationResult.validParameters,
-			});
+			// the imported values replace pending changes of the parameter components
+			await batchParameterValueUpdate(
+				{
+					[namespace]: validationResult.validParameters,
+				},
+				undefined,
+				undefined,
+				{scheduledChanges: "discard"},
+			);
 			clearUnsavedChanges();
 
 			const feedback = generateParameterFeedback(
@@ -162,7 +168,13 @@ export async function resetParameterValues(
 		},
 		{} as Record<string, unknown>,
 	);
-	await batchParameterValueUpdate({[namespace]: defaultValues});
+	// the default values replace pending changes of the parameter components
+	await batchParameterValueUpdate(
+		{[namespace]: defaultValues},
+		undefined,
+		undefined,
+		{scheduledChanges: "discard"},
+	);
 	if (options?.notify !== false) {
 		getNotificationActions().success({
 			message: "Parameters reset to default values",

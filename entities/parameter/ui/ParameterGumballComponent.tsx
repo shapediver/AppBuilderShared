@@ -39,6 +39,7 @@ import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
 import {hasLocalTransformationDelta} from "../lib/transformedNodes";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useGumball} from "../model/interaction/useGumball";
+import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -121,8 +122,8 @@ export default function ParameterGumballComponent(
 		state,
 		sessionDependencies,
 		executing,
-		scheduleChange,
-		cancelScheduledChange,
+		busy,
+		cancelPendingChange,
 	} = useParameterComponentCommons<string>(props);
 
 	const {namespace} = props;
@@ -194,6 +195,9 @@ export default function ParameterGumballComponent(
 	const {viewportId} = useViewportId();
 	// a new move pauses the countdown of earlier automatic updates
 	useAutomaticSceneUpdatePointerHold(viewportId, automaticSceneUpdate);
+	// editing is paused during a computation, like the other parameters: the
+	// selection of the nodes to transform too (the gizmo pauses itself)
+	useInteractionEnginePause(viewportId, busy);
 	const interactionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 
 	// get the transformed nodes and the selected nods
@@ -212,6 +216,8 @@ export default function ParameterGumballComponent(
 		parseTransformation(value),
 		true,
 		executing,
+		// editing is paused during a computation, like the other parameters
+		busy,
 	);
 
 	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";
@@ -318,7 +324,7 @@ export default function ParameterGumballComponent(
 			!ownCommit &&
 			commitEffectMountedRef.current
 		)
-			cancelScheduledChange();
+			cancelPendingChange();
 		commitEffectMountedRef.current = true;
 		setParsedCommitValue(structuredClone(parsed));
 		// the scene shows the newer transformation: the local state is kept
@@ -387,10 +393,8 @@ export default function ParameterGumballComponent(
 				return;
 			}
 			sentValuesRef.current.record(serializedValue);
-			// an automatic update is sent together with the pending updates of
-			// the other interaction parameters
-			if (automaticSceneUpdate) scheduleChange(serializedValue, timeout);
-			else handleChange(serializedValue, timeout);
+			// sent together with the pending changes of the other parameters
+			handleChange(serializedValue, timeout);
 			if (!alwaysActive) setSelectedNodeNames([]);
 		},
 		[alwaysActive, automaticSceneUpdate, state.uiValue],
@@ -479,7 +483,7 @@ export default function ParameterGumballComponent(
 	// Clear: the committed transformations are undone (the parameter is reset
 	// to its default value and executed), a pending transformation is dropped.
 	const clearTransformation = useCallback(() => {
-		if (automaticSceneUpdate) cancelScheduledChange();
+		if (automaticSceneUpdate) cancelPendingChange();
 		sentValuesRef.current.clear();
 		if (parsedCommitValue.length === 0) {
 			// nothing is committed: only the pending transformation is undone
@@ -494,7 +498,7 @@ export default function ParameterGumballComponent(
 	}, [
 		alwaysActive,
 		automaticSceneUpdate,
-		cancelScheduledChange,
+		cancelPendingChange,
 		parsedCommitValue,
 		resetToDefault,
 		_onCancelCallback,

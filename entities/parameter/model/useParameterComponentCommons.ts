@@ -8,7 +8,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
-import {automaticSceneUpdateScheduler} from "./automaticSceneUpdateScheduler";
+import {parameterChangeScheduler} from "./parameterChangeScheduler";
 import {useParameter} from "./useParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
@@ -132,17 +132,40 @@ export function useParameterComponentCommons<T>(
 			}).length > 0
 		);
 	});
-	const [value, setValue] = useState(initializer(state));
+	// a change still waiting to be sent (the component was unmounted and
+	// mounted again, e.g. its container was closed) is shown
+	const [value, setValue] = useState(() =>
+		parameterChangeScheduler.isPending(namespace, definition.id)
+			? (parameterChangeScheduler.pendingValue(
+					namespace,
+					definition.id,
+				) as T | string)
+			: initializer(state),
+	);
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
+	// Changes are sent by the scheduler, together with the pending changes of
+	// all other parameters. Exceptions, which use a timeout of their own:
+	// accept/reject mode (the change waits for the confirmation of the user),
+	// and components whose values are not executed by the parameter store
+	// (e.g. the form widget).
+	const scheduled = !acceptRejectMode && !props.customActions?.execute;
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const delegatesInitializedRef = useRef(false);
-	const cancelPendingChange = useCallback(() => {
+	const clearDebounceTimer = useCallback(() => {
 		clearTimeout(debounceRef.current);
 		debounceRef.current = undefined;
 	}, []);
 
-	useEffect(() => cancelPendingChange, [cancelPendingChange]);
+	// a scheduled change survives an unmount of the component (e.g. the
+	// container of the parameter closes)
+	useEffect(() => clearDebounceTimer, [clearDebounceTimer]);
+
+	/** Drop the change of this parameter which waits to be sent. */
+	const cancelPendingChange = useCallback(() => {
+		clearDebounceTimer();
+		parameterChangeScheduler.cancel(namespace, definition.id);
+	}, [clearDebounceTimer, namespace, definition.id]);
 
 	const executeDelegates = useCallback(
 		(value: T | string, forceImmediate: boolean, forceSameValue = false) =>
@@ -193,6 +216,11 @@ export function useParameterComponentCommons<T>(
 		void Promise.all(executeDelegates(state.commitValue, true));
 	}, [delegateStores, delegates.length, executeDelegates, state.commitValue]);
 
+	/**
+	 * Send a change once the timeout elapsed without a further change (of any
+	 * parameter, see {@link parameterChangeScheduler}), a timeout of 0 sends
+	 * it right away, together with the pending changes of all parameters.
+	 */
 	const handleChange = useCallback(
 		(
 			curval: T | string,
@@ -200,8 +228,51 @@ export function useParameterComponentCommons<T>(
 			cb: () => void = () => {},
 			forceSameValue = false,
 		) => {
-			cancelPendingChange();
+			clearDebounceTimer();
 			setValue(curval);
+			if (scheduled) {
+				parameterChangeScheduler.schedule({
+					namespace,
+					parameterId: definition.id,
+					value: curval,
+					timeout: timeout === undefined ? debounceTimeout : timeout,
+					forceSameValue,
+					onSend:
+						delegates.length > 0
+							? () =>
+									Promise.all(
+										executeDelegates(
+											curval,
+											true,
+											forceSameValue,
+										),
+									)
+							: undefined,
+					onSent: cb,
+					// A restored state or a value of another request replaced the
+					// change (e.g. undo): show the committed value again. It is
+					// committed again (a new commit revision), so that components
+					// which applied the change to the scene restore it (e.g. a
+					// gizmo following its committed value), also an instance
+					// mounted again meanwhile. While an execution of the session
+					// runs, its end commits (a commit now would replace the value
+					// being executed).
+					onDiscard: () => {
+						const store = useShapeDiverStoreParameters.getState();
+						const parameter = store.getParameter(
+							namespace,
+							definition.id,
+						);
+						if (!parameter) return;
+						const {state, actions} = parameter.getState();
+						if (store.parameterChanges[namespace]?.executing)
+							actions.resetToCommitValue();
+						else actions.setCommittedValue(state.commitValue);
+						setValue(state.commitValue as T | string);
+					},
+				});
+				return;
+			}
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
@@ -233,69 +304,32 @@ export function useParameterComponentCommons<T>(
 			acceptRejectMode,
 			debounceTimeout,
 			actions,
-			cancelPendingChange,
+			clearDebounceTimer,
 			definition,
-			executeDelegates,
-		],
-	);
-
-	/**
-	 * Schedule an automatic scene update of the value: it is sent together
-	 * with the pending automatic updates of all other parameters once the
-	 * longest of their timeouts elapsed without a further change (see
-	 * {@link automaticSceneUpdateScheduler}). Unlike {@link handleChange} the
-	 * pending value survives an unmount of the component. In accept/reject
-	 * mode the value is registered like any other debounced change.
-	 */
-	const scheduleChange = useCallback(
-		(curval: T | string, timeout: number) => {
-			if (acceptRejectMode) {
-				handleChange(curval, timeout);
-				return;
-			}
-			cancelPendingChange();
-			setValue(curval);
-			const value = actions.stringify?.(curval) ?? `${curval}`;
-			automaticSceneUpdateScheduler.schedule({
-				namespace,
-				parameterId: definition.id,
-				value,
-				timeout,
-				afterSend:
-					delegates.length > 0
-						? () => Promise.all(executeDelegates(curval, true))
-						: undefined,
-			});
-		},
-		[
-			acceptRejectMode,
-			actions,
-			cancelPendingChange,
-			definition.id,
 			delegates.length,
 			executeDelegates,
-			handleChange,
 			namespace,
+			scheduled,
 		],
 	);
 
-	/** Drop the value of this parameter scheduled by {@link scheduleChange}. */
-	const cancelScheduledChange = useCallback(
-		() => automaticSceneUpdateScheduler.cancel(namespace, definition.id),
-		[namespace, definition.id],
-	);
-
-	/** Whether a value scheduled by {@link scheduleChange} waits to be sent. */
+	/** Whether a change of this parameter waits to be sent by the scheduler. */
 	const isScheduledChangePending = useCallback(
-		() => automaticSceneUpdateScheduler.isPending(namespace, definition.id),
+		() => parameterChangeScheduler.isPending(namespace, definition.id),
 		[namespace, definition.id],
 	);
 
 	useEffect(() => {
+		// a change waiting to be sent is shown (e.g. after the component was
+		// mounted again), the store does not know it yet
+		if (parameterChangeScheduler.isPending(namespace, definition.id))
+			return;
 		if (reactive) {
 			setValue(state.uiValue);
 		}
-	}, [state.uiValue, reactive]);
+		// a commit (e.g. of a discarded change) shows the committed value, also
+		// when the ui value did not change
+	}, [state.uiValue, state.commitRevision, reactive]);
 
 	useEffect(() => {
 		if (!reactive) {
@@ -368,6 +402,12 @@ export function useParameterComponentCommons<T>(
 		processesInSession ||
 		disabledByParameter;
 
+	/**
+	 * Whether a computation runs (busy mode): editing is paused, e.g. the
+	 * interaction tools in the viewport ignore presses.
+	 */
+	const busy = executing || delegatesExecuting || processesInSession;
+
 	const memoizedDefinition = useMemo(() => {
 		return applyOverrides(definition, props.overrides);
 	}, [definition, props.overrides]);
@@ -403,8 +443,6 @@ export function useParameterComponentCommons<T>(
 		setValue,
 		handleChange,
 		cancelPendingChange,
-		scheduleChange,
-		cancelScheduledChange,
 		isScheduledChangePending,
 		setOnCancelCallback,
 		onCancel,
@@ -413,6 +451,7 @@ export function useParameterComponentCommons<T>(
 		resetToDefault,
 		sessionDependencies,
 		executing,
+		busy,
 		// Form instance (optional)
 		form,
 		formInputProps,

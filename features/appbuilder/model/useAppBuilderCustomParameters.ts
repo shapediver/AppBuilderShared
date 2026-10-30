@@ -2,6 +2,7 @@ import {
 	IAcceptRejectModeSelector,
 	IGenericParameterCommitter,
 	IGenericParameterExecutor,
+	ISessionsHistoryState,
 } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useDefineGenericParameters} from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
 import {useParameterStateless} from "@AppBuilderLib/entities/parameter/model/useParameterStateless";
@@ -127,7 +128,13 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 	// executor function for changes of custom parameter values
 	const executor = useCallback<IGenericParameterExecutor>(
-		async (values: {[key: string]: any}, _, skipHistory) => {
+		async (
+			values: {[key: string]: any},
+			_,
+			skipHistory,
+			_historyState,
+			skipUrlUpdate,
+		) => {
 			Object.keys(values).forEach(
 				(key) => (customParameterValues.current[key] = values[key]),
 			);
@@ -173,6 +180,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 				if (appBuilderParam.actions.setUiValue(json)) {
 					if (appBuilderFileParam) {
 						// clear the appBuilderFileParam in case it exists
+						// (part of this execution: pending changes stay pending)
 						await batchParameterValueUpdate(
 							{
 								[namespace]: {
@@ -180,13 +188,18 @@ export function useAppBuilderCustomParameters(props: Props) {
 									[appBuilderFileParam.definition.id]: "",
 								},
 							},
-							true,
+							// the history of this execution (also of changes of
+							// the session taken along)
+							skipHistory,
+							skipUrlUpdate,
+							{scheduledChanges: "keep"},
 						);
 					} else {
 						await appBuilderParam.actions.execute(
 							true,
 							skipHistory,
 							true,
+							skipUrlUpdate,
 						);
 					}
 				} else {
@@ -205,7 +218,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 					if (appBuilderParam) {
 						// clear the appBuilderParam in case it exists
 						// (the state of appBuilderFileParam is the one of the
-						// latest render, it does not contain the blob yet)
+						// latest render, it does not contain the blob yet; part of
+						// this execution: pending changes stay pending)
 						await batchParameterValueUpdate(
 							{
 								[namespace]: {
@@ -213,13 +227,18 @@ export function useAppBuilderCustomParameters(props: Props) {
 									[appBuilderFileParam.definition.id]: blob,
 								},
 							},
-							true,
+							// the history of this execution (also of changes of
+							// the session taken along)
+							skipHistory,
+							skipUrlUpdate,
+							{scheduledChanges: "keep"},
 						);
 					} else {
 						await appBuilderFileParam.actions.execute(
 							true,
 							skipHistory,
 							true,
+							skipUrlUpdate,
 						);
 					}
 				} else {
@@ -296,9 +315,20 @@ export function useAppBuilderCustomParameters(props: Props) {
 					);
 				}
 
+				// a value which is not JSON (e.g. the default value of the model,
+				// restored by undo) holds no custom values
+				let customState: ISessionsHistoryState[string] | undefined;
+				try {
+					customState = JSON.parse(json);
+				} catch {
+					customState = undefined;
+				}
+
 				return {
 					amendedValues: values,
-					historyState: {[namespaceAppBuilder]: JSON.parse(json)},
+					historyState: customState
+						? {[namespaceAppBuilder]: customState}
+						: undefined,
 				};
 			});
 		}

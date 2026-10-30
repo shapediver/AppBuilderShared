@@ -27,6 +27,7 @@ import {
 import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
 import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import {useDragging} from "../model/interaction/useDragging";
+import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
@@ -93,6 +94,7 @@ export default function ParameterDraggingComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		busy,
 		showReset,
 		resetToDefault,
 		value,
@@ -165,6 +167,10 @@ export default function ParameterDraggingComponent(
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
+
+	// editing is paused during a computation, like the other parameters: a
+	// drag in progress is cancelled
+	useInteractionEnginePause(viewportId, busy);
 
 	const {candidateNodes, draggedNodes, setDraggedNodes, restoreDraggedNodes} =
 		useDragging(

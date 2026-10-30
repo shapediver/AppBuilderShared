@@ -9,6 +9,7 @@ const queuedChange = {
 	accept: () => Promise.resolve({}),
 	reject: () => undefined,
 	wait: Promise.resolve({}),
+	waitFor: () => Promise.resolve({}),
 	executing: false,
 	priority: 0,
 	addValueChange: () => undefined,

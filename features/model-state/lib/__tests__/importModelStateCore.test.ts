@@ -90,9 +90,15 @@ describe("importModelStateCore", () => {
 		});
 
 		expect(result).toEqual({success: true, data});
-		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
-			ns: {p1: 1},
-		});
+		// the model state replaces pending changes of the parameter components
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith(
+			{
+				ns: {p1: 1},
+			},
+			undefined,
+			undefined,
+			{scheduledChanges: "discard"},
+		);
 		expect(clearUnsavedChanges).toHaveBeenCalled();
 		expect(onNotification).toHaveBeenCalledWith({
 			type: "success",
