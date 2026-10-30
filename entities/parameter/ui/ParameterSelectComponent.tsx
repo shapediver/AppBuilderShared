@@ -10,6 +10,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {filterableDatabasePersistenceKey} from "../model/filterableDatabase/useFilterableDatabaseStateStore";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import MultiSelectComponent from "./multiselect/MultiSelectComponent";
@@ -221,6 +222,10 @@ export default function ParameterSelectComponent(
 				settings={settings.settings}
 				height={settings.height}
 				database={settings.database}
+				persistenceKey={filterableDatabasePersistenceKey(
+					props.namespace,
+					props.parameterId,
+				)}
 			/>
 		) : (
 			<SelectComponent
@@ -266,6 +271,10 @@ export default function ParameterSelectComponent(
 				height={settings.height}
 				database={settings.database}
 				source={settings.source}
+				persistenceKey={filterableDatabasePersistenceKey(
+					props.namespace,
+					props.parameterId,
+				)}
 				emitValue="itemKey"
 			/>
 		);

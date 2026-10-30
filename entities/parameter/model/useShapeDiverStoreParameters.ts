@@ -63,6 +63,7 @@ import {
 } from "../config/shapediverStoreParameters";
 import {getResetValue} from "../lib/parameterResetValue";
 import {addValidator} from "../lib/parameterValidation";
+import {useFilterableDatabaseStateStore} from "./filterableDatabase/useFilterableDatabaseStateStore";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -1287,6 +1288,10 @@ export const useShapeDiverStoreParameters =
 					// check if there is something to add
 					if (parameters[sessionId] || exports[sessionId]) return;
 
+					useFilterableDatabaseStateStore
+						.getState()
+						.openNamespace(sessionId);
+
 					const getDefaultExports = () => {
 						return get().defaultExports[sessionId] || [];
 					};
@@ -1448,6 +1453,10 @@ export const useShapeDiverStoreParameters =
 					// check if there is something to add
 					if (parameters[namespace]) return;
 
+					useFilterableDatabaseStateStore
+						.getState()
+						.openNamespace(namespace);
+
 					const acceptRejectModeSelector =
 						typeof _acceptRejectMode === "boolean"
 							? () => _acceptRejectMode
@@ -1529,6 +1538,13 @@ export const useShapeDiverStoreParameters =
 					dependsOnSessions: string[] | string | undefined,
 					commit?: IGenericParameterCommitter,
 				) => {
+					// useDefineGenericParameters removes the namespace in an
+					// effect cleanup and syncs it back (StrictMode, namespace
+					// change), so syncing must reopen it like addGeneric.
+					useFilterableDatabaseStateStore
+						.getState()
+						.openNamespace(namespace);
+
 					const {
 						parameterStores: parameterStorePerSession,
 						getChanges,
@@ -1648,6 +1664,11 @@ export const useShapeDiverStoreParameters =
 				},
 
 				removeSession: (namespace: string) => {
+					// Saved filterable database views belong to this session's parameters.
+					useFilterableDatabaseStateStore
+						.getState()
+						.removeNamespace(namespace);
+
 					const {
 						parameterStores: parametersPerSession,
 						exportStores: exportsPerSession,
