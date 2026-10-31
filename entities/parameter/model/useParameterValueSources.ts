@@ -81,6 +81,8 @@ export function useParameterValueSources(props?: {
 		| {
 				source: IAppBuilderParameterValueSourceDefinition;
 				id: string;
+				// false if the source was rejected (e.g. parameter not found or wrong type)
+				approved?: boolean;
 		  }[]
 		| undefined
 	>(sources);
@@ -98,7 +100,7 @@ export function useParameterValueSources(props?: {
 			return;
 		}
 
-		const approvedSources = [];
+		const approved: boolean[] = [];
 		const sourcesByType: ParameterValueSourcesByType = {
 			outputData: [],
 			screenshot: [],
@@ -149,7 +151,7 @@ export function useParameterValueSources(props?: {
 						source: source.props,
 						upload,
 					});
-					approvedSources.push(sources[i]);
+					approved[i] = true;
 				} else {
 					Logger.warn(
 						`Data output source parameter has invalid type ${type}. Only STRING and FILE are supported.`,
@@ -163,7 +165,7 @@ export function useParameterValueSources(props?: {
 							parameter,
 						),
 					});
-					approvedSources.push(sources[i]);
+					approved[i] = true;
 				} else {
 					Logger.warn(
 						`Screenshot source parameter has invalid type ${type}. Only FILE is supported.`,
@@ -172,7 +174,7 @@ export function useParameterValueSources(props?: {
 			} else if (isModelStateSource(source)) {
 				if (type === PARAMETER_TYPE.STRING) {
 					sourcesByType.modelState.push({source: source.props});
-					approvedSources.push(sources[i]);
+					approved[i] = true;
 				} else {
 					Logger.warn(
 						`Model state source parameter has invalid type ${type}. Only STRING is supported.`,
@@ -184,7 +186,7 @@ export function useParameterValueSources(props?: {
 						source: source.props,
 						namespace: targetNamespace,
 					});
-					approvedSources.push(sources[i]);
+					approved[i] = true;
 				} else {
 					Logger.warn(
 						`sdTF source parameter has invalid type ${type}. Only s-type parameters are supported.`,
@@ -198,7 +200,7 @@ export function useParameterValueSources(props?: {
 							parameter,
 						),
 					});
-					approvedSources.push(sources[i]);
+					approved[i] = true;
 				} else {
 					Logger.warn(
 						`Export source parameter has invalid type ${type}. Only FILE is supported.`,
@@ -207,7 +209,12 @@ export function useParameterValueSources(props?: {
 			}
 		}
 
-		sourcesRef.current = approvedSources;
+		// keep one entry per requested source, so the results stay aligned
+		// with the sources even if some of them were rejected
+		sourcesRef.current = sources.map((s, i) => ({
+			...s,
+			approved: !!approved[i],
+		}));
 		// set the reset signal so that the individual hooks can reset their state
 		resetValues();
 		setSourcesByType(sourcesByType);
@@ -319,8 +326,10 @@ export function useParameterValueSources(props?: {
 		// now loop through the original sources and map the values
 		// to their respective source type
 		for (let i = 0; i < sourcesRef.current.length; i++) {
-			const {source} = sourcesRef.current[i];
-			if (isDataOutputSource(source)) {
+			const {source, approved} = sourcesRef.current[i];
+			if (!approved) {
+				sourceResults.push(undefined);
+			} else if (isDataOutputSource(source)) {
 				sourceResults.push(loadedValues.outputData?.[outputIndex++]);
 			} else if (isScreenshotSource(source)) {
 				sourceResults.push(
