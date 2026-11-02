@@ -260,6 +260,86 @@ describe("createFilterableDatabaseScrollingApi", () => {
 		expect(api.items[0].data?.displayname).toBe("Blue Fabric");
 	});
 
+	it("limits rows to items, in that order, and ignores duplicates and unknown keys", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+			items: ["id5", "id1", "id1", "missing"],
+		});
+
+		expect(api.items.map((entry) => entry.item)).toEqual(["id5", "id1"]);
+	});
+
+	it("shows no rows when items is empty", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+			items: [],
+		});
+
+		expect(api.items).toEqual([]);
+		expect(api.hasNextPage).toBe(false);
+	});
+
+	it("searches and pages only the allowed rows", async () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 1,
+			items: ["id2", "id3"],
+		});
+
+		expect(api.items.map((entry) => entry.item)).toEqual(["id2"]);
+		expect(api.hasNextPage).toBe(true);
+
+		await api.setSearchTerms(["green"]);
+
+		expect(api.items.map((entry) => entry.item)).toEqual(["id3"]);
+		expect(api.hasNextPage).toBe(false);
+	});
+
+	it("patches allowed rows and ignores itemData for other rows", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+			items: ["id2", "id1"],
+			itemData: {
+				id1: {hidden: true, displayname: "Hidden red"},
+				id2: {displayname: "Blue (limited)"},
+				id3: {displayname: "Not allowed"},
+			},
+		});
+
+		expect(api.items.map((entry) => entry.item)).toEqual(["id2"]);
+		expect(api.items[0].data?.displayname).toBe("Blue (limited)");
+	});
+
+	it("updateItems rebuilds the list and leaves an equal list alone", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+		});
+		const resetStateBefore = api.resetState;
+
+		api.updateItems(["id4", "id2"]);
+
+		expect(api.items.map((entry) => entry.item)).toEqual(["id4", "id2"]);
+		expect(api.resetState).toBe(resetStateBefore + 1);
+
+		api.updateItems(["id4", "id2"]);
+
+		expect(api.resetState).toBe(resetStateBefore + 1);
+	});
+
 	it("setSearchTerms bumps resetState so consumers can re-render", async () => {
 		const api = createFilterableDatabaseScrollingApi({
 			table,

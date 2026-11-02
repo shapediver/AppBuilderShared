@@ -9,6 +9,11 @@ import type {
 import {resolveDatabaseCatalog} from "./resolveDatabaseCatalog";
 import type {DatabaseTable, FilterSelection} from "./types";
 
+/** `undefined` (show every row) and `[]` (show none) must not compare equal. */
+function itemsAllowListKey(items: readonly string[] | undefined): string {
+	return items === undefined ? "" : JSON.stringify(items);
+}
+
 /** Deep-equal for filter maps so no-op updates skip resetState (avoids clearing the parameter value). */
 function isSelectionEqual(a: FilterSelection, b: FilterSelection): boolean {
 	const keysA = Object.keys(a);
@@ -67,6 +72,11 @@ export function createFilterableDatabaseScrollingApi(options: {
 	pageSize?: number;
 	/** Grasshopper itemData patch. Matching keys overwrite database fields. */
 	itemData?: Record<string, ISelectComponentItemDataType>;
+	/**
+	 * When set, only rows whose value is in this list are shown, in this order.
+	 * Omit to show every row. An empty array shows no rows.
+	 */
+	items?: readonly string[];
 	/** Restored search. Applied before the first page so a remount stays filtered. */
 	searchTerms?: string[];
 	/** Restored number of shown rows. Starts with that many pages loaded. */
@@ -77,10 +87,13 @@ export function createFilterableDatabaseScrollingApi(options: {
 	updateItemData(
 		itemData: Record<string, ISelectComponentItemDataType> | undefined,
 	): void;
+	updateItems(items: readonly string[] | undefined): void;
 } {
 	let table = options.table;
 	let selection = options.selection;
 	let itemDataPatch = options.itemData;
+	let allowedItems = options.items;
+	let allowedItemsKey = itemsAllowListKey(options.items);
 	const settings = options.settings;
 	let pageSize = options.pageSize ?? 20;
 	let searchTerms: string[] = [...(options.searchTerms ?? [])];
@@ -95,6 +108,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 			settings,
 			selection,
 			itemDataPatch,
+			allowedItems,
 		);
 
 		const mapped = items.map((item) => ({
@@ -129,6 +143,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 		updateItemData(
 			itemData: Record<string, ISelectComponentItemDataType> | undefined,
 		): void;
+		updateItems(items: readonly string[] | undefined): void;
 	} = {
 		loading: false,
 		error: undefined,
@@ -189,6 +204,17 @@ export function createFilterableDatabaseScrollingApi(options: {
 				Record<string, ISelectComponentItemDataType> | undefined,
 		) {
 			itemDataPatch = nextItemData;
+			applyPaging();
+			bumpResetState();
+		},
+		updateItems(nextItems: readonly string[] | undefined) {
+			const nextKey = itemsAllowListKey(nextItems);
+			if (nextKey === allowedItemsKey) {
+				return;
+			}
+
+			allowedItemsKey = nextKey;
+			allowedItems = nextItems;
 			applyPaging();
 			bumpResetState();
 		},

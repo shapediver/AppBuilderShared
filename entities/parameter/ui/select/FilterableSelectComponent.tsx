@@ -16,6 +16,11 @@ interface FilterableSelectComponentProps
 	type?: SelectComponentType;
 	/** Keeps filters, loaded pages, and search across unmount. `namespace:parameterId`. */
 	persistenceKey?: string;
+	/**
+	 * When set, only database rows whose value is listed here are shown,
+	 * in this order. Omit to show every row.
+	 */
+	databaseItems?: readonly string[];
 }
 
 /**
@@ -29,6 +34,7 @@ export default function FilterableSelectComponent(
 		type,
 		database,
 		itemData,
+		databaseItems,
 		limit,
 		persistenceKey,
 		items: _items,
@@ -48,6 +54,7 @@ export default function FilterableSelectComponent(
 		<DatabaseSelectFrame
 			database={database}
 			itemData={itemData}
+			items={databaseItems}
 			limit={limit}
 			persistenceKey={persistenceKey}
 			resolveCatalog={!paged}

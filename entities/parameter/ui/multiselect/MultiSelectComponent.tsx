@@ -4,6 +4,10 @@ import {
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
+import {
+	mergeFilteredMultiselectValue,
+	visibleMultiselectValue,
+} from "../../lib/select/filteredMultiselectValue";
 import {DatabaseSelectFrame} from "../select/DatabaseSelectFrame";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
@@ -49,6 +53,7 @@ export interface MultiSelectComponentProps {
 	/**
 	 * Optional catalog. Same file and patch rules as a single-select database.
 	 * Checklist widgets render the filtered catalog directly.
+	 * `databaseItems` limits which rows are shown and sets their order.
 	 */
 	database?: IFilterableDatabaseSettings;
 	/**
@@ -56,6 +61,11 @@ export interface MultiSelectComponentProps {
 	 * or idle. Pass `namespace:parameterId`.
 	 */
 	persistenceKey?: string;
+	/**
+	 * Allow-list used only when `database` is set.
+	 * Omit to show every database row. An empty array shows no rows.
+	 */
+	databaseItems?: readonly string[];
 	/** Enable search (only used by dropdown type). */
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
@@ -71,13 +81,22 @@ export type UniversalMultiSelectComponentProps =
  * Multiple items can be selected at a time.
  */
 export default function MultiSelectComponent(props: MultiSelectComponentProps) {
-	const {type, database, persistenceKey, itemData, items, ...rest} = props;
+	const {
+		type,
+		database,
+		persistenceKey,
+		itemData,
+		items,
+		databaseItems,
+		...rest
+	} = props;
 
 	if (database) {
 		return (
 			<DatabaseSelectFrame
 				database={database}
 				itemData={itemData}
+				items={databaseItems}
 				limit={rest.limit}
 				persistenceKey={persistenceKey}
 			>
@@ -87,6 +106,27 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 						type={type}
 						items={catalog?.items ?? []}
 						itemData={catalog?.itemData}
+						value={
+							catalog
+								? visibleMultiselectValue(
+										props.value,
+										catalog.items,
+									)
+								: props.value
+						}
+						onChange={(next) => {
+							if (!catalog) {
+								props.onChange(next);
+								return;
+							}
+							props.onChange(
+								mergeFilteredMultiselectValue(
+									props.value,
+									catalog.items,
+									next,
+								),
+							);
+						}}
 					/>
 				)}
 			</DatabaseSelectFrame>

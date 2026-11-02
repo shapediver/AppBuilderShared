@@ -23,11 +23,9 @@ export default function SelectWidget(props: SelectWidgetProps) {
 	const {type, limit, emitValue, value, onChange, items, itemData, ...rest} =
 		props;
 
-	// String+database parameters store JSON data. Widgets select by item key.
-	const displayValue =
-		emitValue === "itemData"
-			? resolveDisplayValueForCards(value, items, itemData)
-			: value;
+	// A value that is not among the shown rows stays on the parameter and
+	// is not highlighted. String+database values may be JSON item data.
+	const displayValue = resolveDisplayValueForCards(value, items, itemData);
 
 	const handleChange = (next: string | null) => {
 		onChange(emitSelectValue(next, emitValue, itemData));

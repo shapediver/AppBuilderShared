@@ -120,6 +120,13 @@ export interface SelectComponentProps {
 	 * `itemKey` — item id (string-list parameters); `itemData` — JSON of `itemData.data` (string parameters).
 	 */
 	emitValue?: "itemKey" | "itemData";
+	/**
+	 * Allow-list used only when `database` is set.
+	 * Omit to show every database row. An empty array shows no rows.
+	 * `items` stays the widget list for selects that do not use a database;
+	 * hidden entries are already removed there, so this keeps the raw list.
+	 */
+	databaseItems?: readonly string[];
 }
 
 /** Base props shared by all select component types */
@@ -163,7 +170,8 @@ export type SelectComponentPropsExt = SelectComponentPropsBase &
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, source, database, persistenceKey, ...rest} = props;
+	const {type, source, database, databaseItems, persistenceKey, ...rest} =
+		props;
 
 	// scrolling API
 	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
@@ -191,6 +199,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 				{...rest}
 				type={type}
 				database={database}
+				databaseItems={databaseItems}
 				persistenceKey={persistenceKey}
 				multiselect={false}
 			/>

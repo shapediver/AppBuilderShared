@@ -222,6 +222,9 @@ export default function ParameterSelectComponent(
 				settings={settings.settings}
 				height={settings.height}
 				database={settings.database}
+				databaseItems={
+					settings.database ? uniqueChoicesIncludingHidden : undefined
+				}
 				persistenceKey={filterableDatabasePersistenceKey(
 					props.namespace,
 					props.parameterId,
@@ -251,6 +254,9 @@ export default function ParameterSelectComponent(
 				items={uniqueChoices}
 				disabled={disabled}
 				type={settings.type}
+				databaseItems={
+					settings.database ? uniqueChoicesIncludingHidden : undefined
+				}
 				itemData={settings.itemData}
 				settings={settings.settings}
 				inputContainer={inputContainer}

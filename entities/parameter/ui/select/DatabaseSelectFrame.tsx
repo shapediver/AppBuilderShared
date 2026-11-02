@@ -115,6 +115,11 @@ export function DatabaseSelectFrame(
 	props: FilterableSelectComponentThemePropsType & {
 		database: IFilterableDatabaseSettings;
 		itemData?: Record<string, ISelectComponentItemDataType>;
+		/**
+		 * When set, only rows whose value is in this list are shown, in this order.
+		 * Omit to show every row. An empty array shows no rows.
+		 */
+		items?: readonly string[];
 		limit?: number;
 		/** Keeps filters, loaded pages, and search across unmount. `namespace:parameterId`. */
 		persistenceKey?: string;
@@ -143,6 +148,7 @@ export function DatabaseSelectFrame(
 		activeFilterTagsProps,
 		database,
 		itemData,
+		items,
 		limit,
 		persistenceKey,
 		resolveCatalog = true,
@@ -166,6 +172,7 @@ export function DatabaseSelectFrame(
 	} = useFilterableDatabase(database, {
 		pageSize: limit,
 		itemData,
+		items,
 		// Paged widgets read the scrolling API; the others read the catalog.
 		buildScrollingApi: !resolveCatalog,
 		persistenceKey,
@@ -174,9 +181,15 @@ export function DatabaseSelectFrame(
 	const catalog = useMemo(
 		() =>
 			resolveCatalog && table
-				? resolveDatabaseCatalog(table, database, selection, itemData)
+				? resolveDatabaseCatalog(
+						table,
+						database,
+						selection,
+						itemData,
+						items,
+					)
 				: undefined,
-		[resolveCatalog, table, database, selection, itemData],
+		[resolveCatalog, table, database, selection, itemData, items],
 	);
 
 	if (loading) {

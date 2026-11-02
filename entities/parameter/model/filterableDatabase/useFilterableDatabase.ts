@@ -14,6 +14,7 @@ import {
 	getSelectAllState,
 	toggleFilterSelection,
 } from "../../lib/filterableDatabase/filterLogic";
+import {narrowDatabaseTableByItems} from "../../lib/filterableDatabase/resolveDatabaseCatalog";
 import {
 	fetchRawText,
 	hasDataSource,
@@ -53,6 +54,11 @@ export type FilterableDatabaseScrollingApi = ReturnType<
 
 const FILTER_TEXT_DEBOUNCE_MS = 300;
 
+/** `undefined` (every row) and `[]` (no rows) must not compare equal. */
+function itemsKeyOf(items: readonly string[] | undefined): string {
+	return items === undefined ? "" : JSON.stringify(items);
+}
+
 /** Search and scroll state of the paged list, saved per parameter. */
 export interface FilterableDatabaseListPersistence {
 	read(): FilterableDatabaseViewState | undefined;
@@ -71,6 +77,7 @@ function createScrollingApiForView(
 	view: FilterableDatabaseViewState | undefined,
 	pageSize: number,
 	itemData: Record<string, ISelectComponentItemDataType> | undefined,
+	items: readonly string[] | undefined,
 ): FilterableDatabaseScrollingApi {
 	return createFilterableDatabaseScrollingApi({
 		table,
@@ -78,6 +85,7 @@ function createScrollingApiForView(
 		selection,
 		pageSize,
 		itemData,
+		items,
 		searchTerms: view?.appliedSearchTerms,
 		loadedCount: view?.loadedCount,
 	});
@@ -94,6 +102,12 @@ export function useFilterableDatabase(
 		pageSize?: number;
 		/** Grasshopper itemData patch applied to matching database rows. */
 		itemData?: Record<string, ISelectComponentItemDataType>;
+		/**
+		 * When set, only rows whose value is in this list are shown, in this order.
+		 * Omit to show every row. An empty array shows no rows.
+		 * For StringList parameters this is the parameter's choices.
+		 */
+		items?: readonly string[];
 		/**
 		 * Build the in-memory paging structure. Set false when the widget
 		 * renders the full catalog list (dropdown, color, chips, checklist…).
@@ -131,6 +145,7 @@ export function useFilterableDatabase(
 						view,
 						pageSize,
 						options?.itemData,
+						options?.items,
 					)
 				: undefined;
 
@@ -176,6 +191,15 @@ export function useFilterableDatabase(
 	selectionRef.current = selection;
 	const itemDataRef = useRef(options?.itemData);
 	itemDataRef.current = options?.itemData;
+	const itemsRef = useRef(options?.items);
+	itemsRef.current = options?.items;
+	const itemsKey =
+		options?.items === undefined
+			? undefined
+			: JSON.stringify(options.items);
+	const appliedItemsKeyRef = useRef<string | undefined>(
+		initial.scrollingApi ? itemsKeyOf(options?.items) : undefined,
+	);
 	const appliedItemDataKeyRef = useRef<string | undefined>(
 		initial.scrollingApi ? itemDataKey : undefined,
 	);
@@ -264,11 +288,13 @@ export function useFilterableDatabase(
 						view,
 						pageSize,
 						itemDataRef.current,
+						itemsRef.current,
 					)
 				: undefined;
 			appliedItemDataKeyRef.current = JSON.stringify(
 				itemDataRef.current ?? null,
 			);
+			appliedItemsKeyRef.current = itemsKeyOf(itemsRef.current);
 			builtForRef.current = built;
 			shownSettingsKeyRef.current = settingsKey;
 			setShownSettingsKey(settingsKey);
@@ -390,6 +416,19 @@ export function useFilterableDatabase(
 		api.updateItemData(itemDataRef.current);
 	}, [itemDataKey, scrollingApi]);
 
+	useEffect(() => {
+		const api = scrollingApiRef.current;
+		if (!api) {
+			return;
+		}
+		const key = itemsKeyOf(itemsRef.current);
+		if (appliedItemsKeyRef.current === key) {
+			return;
+		}
+		appliedItemsKeyRef.current = key;
+		api.updateItems(itemsRef.current);
+	}, [itemsKey, scrollingApi]);
+
 	const applySelection = useCallback(
 		(updater: (prev: FilterSelection) => FilterSelection) => {
 			setSelection((prev) => {
@@ -408,6 +447,12 @@ export function useFilterableDatabase(
 			return [];
 		}
 
+		const narrowed = narrowDatabaseTableByItems(
+			table,
+			settings.itemDataDefinition.value,
+			itemsRef.current,
+		);
+
 		return settings.filters.map((filter, filterIndex) => ({
 			filterIndex,
 			label: filter.label?.trim() || `Filter ${filterIndex + 1}`,
@@ -415,7 +460,7 @@ export function useFilterableDatabase(
 			nodes:
 				filter.type === "text"
 					? []
-					: extractFilterOptions(table, filter, filterIndex).map(
+					: extractFilterOptions(narrowed, filter, filterIndex).map(
 							({value, label}) => ({
 								value,
 								label,
@@ -425,7 +470,7 @@ export function useFilterableDatabase(
 							}),
 						),
 		}));
-	}, [table, settings.filters]);
+	}, [table, settings.filters, settings.itemDataDefinition.value, itemsKey]);
 
 	const setFilterValue = useCallback(
 		(filterIndex: number, values: string[]) => {
