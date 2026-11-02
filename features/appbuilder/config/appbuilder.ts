@@ -1568,7 +1568,11 @@ export interface IAppBuilderInstanceDefinition extends IAppBuilderSessionDefinit
 	parameterValues?: {
 		[key: string]: IAppBuilderParameterValueDefinition;
 	};
-	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
+	/**
+	 * Optional name of the instance. This name will be used for the node in the scene graph.
+	 * Each transformation is a child of that node, e.g. NAME > transformations[0] for the first transformation.
+	 * When omitted, the node is named `instances[i]`, with i being the index in the instances array.
+	 */
 	name?: string;
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
@@ -1635,6 +1639,8 @@ export interface IAppBuilder {
 	/**
 	 * Optional list of instances to be created.
 	 * Instances are used to customize a session by setting parameters and transformations.
+	 *
+	 * @see [Sessions and instances](../sessions-and-instances.md)
 	 */
 	instances?: IAppBuilderInstanceDefinition[];
 
@@ -1644,6 +1650,8 @@ export interface IAppBuilder {
 	 * settings JSON. The controller session still comes from the theme or URL.
 	 * A session id that also appears in `instances` is ignored. The instance
 	 * owns that session.
+	 *
+	 * @see [Sessions and instances](../sessions-and-instances.md)
 	 */
 	sessions?: IAppBuilderSessionDefinition[];
 

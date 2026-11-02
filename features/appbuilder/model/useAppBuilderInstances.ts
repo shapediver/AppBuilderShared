@@ -253,16 +253,17 @@ export function useAppBuilderInstances(props: Props) {
 				// use slug if available, otherwise use sessionId
 				const slug = instance.slug || instance.sessionId;
 
-				const index = sessionsDescriptions.findIndex(
-					(session) => session.slug === slug,
+				// one session per session id, several ids may use the same slug
+				const existing = sessionsDescriptions.find(
+					(session) => session.id === instance.sessionId,
 				);
 
-				// there already is a session with this slug
-				// check if the ids match, if not, warn the user
-				if (index !== -1) {
-					if (sessionsDescriptions[index].id !== instance.sessionId) {
+				// there already is a session with this id
+				// check if the slugs match, if not, warn the user
+				if (existing) {
+					if (existing.slug !== slug) {
 						Logger.warn(
-							`Multiple instances are using the same slug "${slug}" but different session ids ("${sessionsDescriptions[index].id}" and "${instance.sessionId}"). This can lead to unexpected behavior.`,
+							`Multiple instances are using the same session id "${instance.sessionId}" but different slugs ("${existing.slug}" and "${slug}"). Using slug "${existing.slug}".`,
 						);
 					}
 					return;
@@ -316,8 +317,16 @@ export function useAppBuilderInstances(props: Props) {
 			parseProcessToken?: number,
 		) => {
 			const parsedInstances: IParsedInstanceDefinition[] = [];
+			// the first instance with a name wins, later duplicates are skipped
+			// (the warning is logged when the instances are parsed)
+			const existingNames = new Set<string>();
 
 			instances.forEach((instance, index) => {
+				if (instance.name) {
+					if (existingNames.has(instance.name)) return;
+					existingNames.add(instance.name);
+				}
+
 				const session = sessionsRef.current[instance.sessionId];
 				if (!session) return;
 
@@ -1339,7 +1348,10 @@ const processOutputActions = (
 
 				const parameterId =
 					sessionApi.getParameterByName(parameterIdentifier)[0]?.id ||
-					sessionApi.getParameterById(parameterIdentifier)?.id;
+					sessionApi.getParameterById(parameterIdentifier)?.id ||
+					Object.values(sessionApi.parameters).find(
+						(p) => p.displayname === parameterIdentifier,
+					)?.id;
 
 				if (!parameterId) return;
 
