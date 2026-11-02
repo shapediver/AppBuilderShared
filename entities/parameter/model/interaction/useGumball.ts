@@ -10,6 +10,12 @@ import {
 	GumballTransform,
 	updateTransformation,
 } from "@shapediver/viewer.features.transformation-tools";
+import {
+	addListener,
+	EVENTTYPE_VIEWPORT,
+	type IViewportEvent,
+	removeListener,
+} from "@shapediver/viewer.session";
 import type {
 	IGumballTransformParameterProps,
 	ISelectionParameterProps,
@@ -231,14 +237,33 @@ export function useGumball(
 
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
+		// Nodes with an empty bounding box are not in the viewport's scene yet,
+		// the gizmo cannot be placed on them. It is created once all of them
+		// got a bounding box with a viewport update.
+		const nodes = selectedNodesRef.current;
+		const hasEmptyNodes = () =>
+			nodes.some((n) => n.node.boundingBox.isEmpty());
+		let updateToken: string | undefined;
 		if (
 			activate &&
 			viewportApi &&
 			sessionApis &&
-			selectedNodesRef.current.length > 0
+			nodes.length > 0 &&
+			hasEmptyNodes()
 		) {
+			updateToken = addListener(
+				EVENTTYPE_VIEWPORT.VIEWPORT_UPDATED,
+				(event) => {
+					if ((event as IViewportEvent).viewportId !== viewportApi.id)
+						return;
+					if (hasEmptyNodes()) return;
+					if (updateToken) removeListener(updateToken);
+					updateToken = undefined;
+					setGizmoRevision((revision) => revision + 1);
+				},
+			);
+		} else if (activate && viewportApi && sessionApis && nodes.length > 0) {
 			// whenever the selected node names change, create a new gumball
-			const nodes = selectedNodesRef.current;
 
 			// for the nodes, we search for the correct restrictions in the dragging objects
 			// this allows us to have different restrictions for different nodes
@@ -323,6 +348,7 @@ export function useGumball(
 		}
 
 		return () => {
+			if (updateToken) removeListener(updateToken);
 			// clean up the select manager
 			if (gumballRef.current) {
 				gumballRef.current.close();
