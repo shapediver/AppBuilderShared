@@ -1604,6 +1604,13 @@ export const useShapeDiverStoreParameters =
 					dependsOnSessions: string[] | string | undefined,
 					commit?: IGenericParameterCommitter,
 				) => {
+					// useDefineGenericParameters removes the namespace in an
+					// effect cleanup and syncs it back (StrictMode, namespace
+					// change), so syncing must reopen it like addGeneric.
+					useFilterableDatabaseStateStore
+						.getState()
+						.openNamespace(namespace);
+
 					const {
 						parameterStores: parameterStorePerSession,
 						getChanges,
