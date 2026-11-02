@@ -592,3 +592,72 @@ describe("useFilterableDatabase filter groups", () => {
 		expect(view.result.current.listPersistence?.read()).toBeUndefined();
 	});
 });
+
+describe("useFilterableDatabase items allow-list", () => {
+	beforeEach(() => {
+		mockFetchRawText.mockReset();
+		resetFilterableDatabaseState();
+	});
+
+	it("builds filter options from the items allow-list only", async () => {
+		mockFetchRawText.mockResolvedValue(
+			[
+				"value,name,color",
+				"6469,A,Blue",
+				"1420,B,Grey",
+				"1290,C,Brown",
+				"9999,D,Red",
+			].join("\n"),
+		);
+
+		const {result} = renderHook(() =>
+			useFilterableDatabase(
+				{
+					dataSource: {href: "https://example.com/data.csv"},
+					itemDataDefinition: {value: 0},
+					filters: [{column: 2, label: "Color"}],
+				},
+				{items: ["1420", "6469", "1290", "1420", "missing"]},
+			),
+		);
+
+		await waitFor(() => {
+			expect(result.current.loading).toBe(false);
+		});
+
+		expect(
+			result.current.filterGroups[0].nodes.map((node) => node.value),
+		).toEqual(["Blue", "Brown", "Grey"]);
+	});
+
+	it("keeps explicit filterValues when items narrows the table", async () => {
+		mockFetchRawText.mockResolvedValue(
+			["value,name,color", "6469,A,Blue", "9999,D,Red"].join("\n"),
+		);
+
+		const {result} = renderHook(() =>
+			useFilterableDatabase(
+				{
+					dataSource: {href: "https://example.com/data.csv"},
+					itemDataDefinition: {value: 0},
+					filters: [
+						{
+							column: 2,
+							label: "Color",
+							filterValues: ["Red", "Blue"],
+						},
+					],
+				},
+				{items: ["6469"]},
+			),
+		);
+
+		await waitFor(() => {
+			expect(result.current.loading).toBe(false);
+		});
+
+		expect(
+			result.current.filterGroups[0].nodes.map((node) => node.value),
+		).toEqual(["Blue", "Red"]);
+	});
+});

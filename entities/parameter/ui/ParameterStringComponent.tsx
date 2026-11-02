@@ -301,6 +301,9 @@ export default function ParameterStringComponent(
 			}}
 			{...selectSettings}
 			items={visibleSelectItems}
+			databaseItems={
+				selectSettings.database ? selectSettings.items : undefined
+			}
 			persistenceKey={filterableDatabasePersistenceKey(
 				props.namespace,
 				props.parameterId,

@@ -257,6 +257,7 @@ export interface ISelectParameterSettings {
 	 * When `filters` is empty, no filter UI is shown.
 	 * `fullwidthcards` and `grid` page their results. Every other type renders
 	 * the filtered catalog in its own widget.
+	 * `items` limits the catalog to the listed rows and sets their order.
 	 * `itemData` patches matching rows field by field and does not add rows.
 	 */
 	database?: IFilterableDatabaseSettings;
@@ -376,6 +377,10 @@ export interface IStringParameterSelectSettings extends ISelectParameterSettings
 	/**
 	 * The items to select from.
 	 * In case this is not specified, "source" or "database" must be given.
+	 *
+	 * With `database`, only rows whose value is in `items` are shown,
+	 * in the order of `items`. Items without a matching row are ignored.
+	 * An empty array shows no rows. If not set, all database rows are shown.
 	 */
 	items?: string[];
 	/**
@@ -387,6 +392,7 @@ export interface IStringParameterSelectSettings extends ISelectParameterSettings
 	/**
 	 * Optional catalog. Same patch and filter rules as
 	 * {@link ISelectParameterSettings.database}.
+	 * `items` limits the catalog to the listed rows and sets their order.
 	 */
 	database?: IFilterableDatabaseSettings;
 }

@@ -60,4 +60,63 @@ describe("resolveDatabaseCatalog", () => {
 
 		expect(catalog.items).toEqual(["granite"]);
 	});
+
+	it("shows items in list order and ignores unknown or repeated entries", () => {
+		const catalog = resolveDatabaseCatalog(table, settings, {}, undefined, [
+			"slate",
+			"  granite  ",
+			"missing",
+			"granite",
+		]);
+
+		expect(catalog.items).toEqual(["slate", "granite"]);
+		expect(catalog.itemData.missing).toBeUndefined();
+	});
+
+	it("shows no rows when items is empty", () => {
+		const catalog = resolveDatabaseCatalog(
+			table,
+			settings,
+			{},
+			undefined,
+			[],
+		);
+
+		expect(catalog.items).toEqual([]);
+		expect(catalog.itemData).toEqual({});
+	});
+
+	it("patches allowed rows and ignores itemData keys outside items", () => {
+		const catalog = resolveDatabaseCatalog(
+			table,
+			settings,
+			{},
+			{
+				marble: {hidden: true},
+				granite: {displayname: "Grey rock"},
+				slate: {displayname: "Not allowed"},
+			},
+			["marble", "granite"],
+		);
+
+		expect(catalog.items).toEqual(["granite"]);
+		expect(catalog.itemData.granite.displayname).toBe("Grey rock");
+		expect(catalog.itemData.marble.hidden).toBe(true);
+		expect(catalog.itemData.slate).toBeUndefined();
+	});
+
+	it("applies items before filters", () => {
+		const catalog = resolveDatabaseCatalog(
+			table,
+			{
+				...settings,
+				filters: [{column: 2}],
+			},
+			{0: ["#888888"]},
+			undefined,
+			["slate", "granite"],
+		);
+
+		expect(catalog.items).toEqual(["granite"]);
+	});
 });

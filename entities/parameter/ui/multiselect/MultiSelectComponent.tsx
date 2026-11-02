@@ -49,6 +49,7 @@ export interface MultiSelectComponentProps {
 	/**
 	 * Optional catalog. Same file and patch rules as a single-select database.
 	 * Checklist widgets render the filtered catalog directly.
+	 * `databaseItems` limits which rows are shown and sets their order.
 	 */
 	database?: IFilterableDatabaseSettings;
 	/**
@@ -56,6 +57,11 @@ export interface MultiSelectComponentProps {
 	 * or idle. Pass `namespace:parameterId`.
 	 */
 	persistenceKey?: string;
+	/**
+	 * Allow-list used only when `database` is set.
+	 * Omit to show every database row. An empty array shows no rows.
+	 */
+	databaseItems?: readonly string[];
 	/** Enable search (only used by dropdown type). */
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
@@ -71,13 +77,22 @@ export type UniversalMultiSelectComponentProps =
  * Multiple items can be selected at a time.
  */
 export default function MultiSelectComponent(props: MultiSelectComponentProps) {
-	const {type, database, persistenceKey, itemData, items, ...rest} = props;
+	const {
+		type,
+		database,
+		persistenceKey,
+		itemData,
+		items,
+		databaseItems,
+		...rest
+	} = props;
 
 	if (database) {
 		return (
 			<DatabaseSelectFrame
 				database={database}
 				itemData={itemData}
+				items={databaseItems}
 				limit={rest.limit}
 				persistenceKey={persistenceKey}
 			>
@@ -87,6 +102,13 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 						type={type}
 						items={catalog?.items ?? []}
 						itemData={catalog?.itemData}
+						value={
+							catalog
+								? props.value.filter((entry) =>
+										catalog.items.includes(entry),
+									)
+								: props.value
+						}
 					/>
 				)}
 			</DatabaseSelectFrame>
