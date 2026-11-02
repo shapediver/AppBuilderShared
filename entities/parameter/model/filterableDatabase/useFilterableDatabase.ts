@@ -24,7 +24,6 @@ import type {
 	FilterSelection,
 } from "../../lib/filterableDatabase/types";
 import {
-	committedFilterableSearchTerms,
 	filterableDatabaseSettingsKey,
 	readFilterableDatabaseTable,
 	readFilterableDatabaseView,
@@ -60,7 +59,7 @@ export interface FilterableDatabaseListPersistence {
 	save(
 		patch: Pick<
 			FilterableDatabaseViewPatch,
-			"searchText" | "searchAnchors" | "scrollTop"
+			"searchText" | "searchAnchors" | "appliedSearchTerms" | "scrollTop"
 		>,
 	): void;
 }
@@ -79,10 +78,7 @@ function createScrollingApiForView(
 		selection,
 		pageSize,
 		itemData,
-		searchTerms: committedFilterableSearchTerms(
-			view?.searchAnchors ?? [],
-			view?.searchText ?? "",
-		),
+		searchTerms: view?.appliedSearchTerms,
 		loadedCount: view?.loadedCount,
 	});
 }

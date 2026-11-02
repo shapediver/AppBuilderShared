@@ -1354,6 +1354,10 @@ export const useShapeDiverStoreParameters =
 					// check if there is something to add
 					if (parameters[sessionId] || exports[sessionId]) return;
 
+					useFilterableDatabaseStateStore
+						.getState()
+						.openNamespace(sessionId);
+
 					const getDefaultExports = () => {
 						return get().defaultExports[sessionId] || [];
 					};
@@ -1514,6 +1518,10 @@ export const useShapeDiverStoreParameters =
 
 					// check if there is something to add
 					if (parameters[namespace]) return;
+
+					useFilterableDatabaseStateStore
+						.getState()
+						.openNamespace(namespace);
 
 					const acceptRejectModeSelector =
 						typeof _acceptRejectMode === "boolean"

@@ -384,6 +384,77 @@ describe("useFilterableDatabase filter groups", () => {
 		expect(mockFetchRawText).toHaveBeenCalledTimes(2);
 	});
 
+	it("ignores saves from a control that unmounts after its session was removed", async () => {
+		mockFetchRawText.mockResolvedValue(fourRows);
+		const persistenceKey = "session:elements_select";
+		const options = {persistenceKey, pageSize: 2};
+
+		const first = renderHook(() =>
+			useFilterableDatabase(colorSettings, options),
+		);
+		await filterAndLoadMore(first.result);
+
+		// The session goes first; its controls unmount afterwards.
+		act(() => {
+			useFilterableDatabaseStateStore
+				.getState()
+				.removeNamespace("session");
+		});
+		first.unmount();
+		expect(
+			useFilterableDatabaseStateStore.getState().views[persistenceKey],
+		).toBeUndefined();
+
+		// Added back: saves count again.
+		act(() => {
+			useFilterableDatabaseStateStore.getState().openNamespace("session");
+		});
+		const second = renderHook(() =>
+			useFilterableDatabase(colorSettings, options),
+		);
+		await waitFor(() => {
+			expect(second.result.current.loading).toBe(false);
+		});
+		expect(second.result.current.selection).toEqual({});
+		expect(second.result.current.scrollingApi?.items).toHaveLength(2);
+		act(() => {
+			second.result.current.toggleFilterValue(0, "#277DA1");
+		});
+		expect(
+			useFilterableDatabaseStateStore.getState().views[persistenceKey]
+				?.selection,
+		).toEqual({0: ["#277DA1"]});
+	});
+
+	it("restores the applied search terms, not anchors plus field text", async () => {
+		mockFetchRawText.mockResolvedValue(fourRows);
+		const persistenceKey = "session:elements_select";
+		// An anchor was added while "2" was still in the field: the list
+		// applied only the anchor.
+		useFilterableDatabaseStateStore
+			.getState()
+			.saveView(
+				persistenceKey,
+				filterableDatabaseSettingsKey(colorSettings),
+				{
+					searchText: "2",
+					searchAnchors: ["1"],
+					appliedSearchTerms: ["1"],
+				},
+			);
+
+		const view = renderHook(() =>
+			useFilterableDatabase(colorSettings, {persistenceKey, pageSize: 2}),
+		);
+		await waitFor(() => {
+			expect(view.result.current.loading).toBe(false);
+		});
+
+		expect(
+			view.result.current.scrollingApi?.items.map((entry) => entry.item),
+		).toEqual(["1"]);
+	});
+
 	it("starts a changed database definition from its own view", async () => {
 		mockFetchRawText.mockResolvedValue(fourRows);
 		const persistenceKey = "session:elements_select";
