@@ -4,6 +4,10 @@ import {
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
+import {
+	mergeFilteredMultiselectValue,
+	visibleMultiselectValue,
+} from "../../lib/select/filteredMultiselectValue";
 import {DatabaseSelectFrame} from "../select/DatabaseSelectFrame";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
@@ -104,11 +108,25 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 						itemData={catalog?.itemData}
 						value={
 							catalog
-								? props.value.filter((entry) =>
-										catalog.items.includes(entry),
+								? visibleMultiselectValue(
+										props.value,
+										catalog.items,
 									)
 								: props.value
 						}
+						onChange={(next) => {
+							if (!catalog) {
+								props.onChange(next);
+								return;
+							}
+							props.onChange(
+								mergeFilteredMultiselectValue(
+									props.value,
+									catalog.items,
+									next,
+								),
+							);
+						}}
 					/>
 				)}
 			</DatabaseSelectFrame>
