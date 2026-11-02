@@ -67,6 +67,10 @@ export function createFilterableDatabaseScrollingApi(options: {
 	pageSize?: number;
 	/** Grasshopper itemData patch. Matching keys overwrite database fields. */
 	itemData?: Record<string, ISelectComponentItemDataType>;
+	/** Restored search. Applied before the first page so a remount stays filtered. */
+	searchTerms?: string[];
+	/** Restored number of shown rows. Starts with that many pages loaded. */
+	loadedCount?: number;
 }): IScrollingApi<IScrollingApiItemTypeSelect> & {
 	updateSelection(selection: FilterSelection): void;
 	updateTable(table: DatabaseTable): void;
@@ -79,7 +83,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 	let itemDataPatch = options.itemData;
 	const settings = options.settings;
 	let pageSize = options.pageSize ?? 20;
-	let searchTerms: string[] = [];
+	let searchTerms: string[] = [...(options.searchTerms ?? [])];
 	let allItems: IScrollingApiItemTypeSelect[] = [];
 	let loadedCount = 0;
 	let resetStateCounter = 0;
@@ -145,6 +149,13 @@ export function createFilterableDatabaseScrollingApi(options: {
 			bumpResetState();
 		},
 		setSearchTerms: async (terms: string[]) => {
+			if (
+				terms.length === searchTerms.length &&
+				terms.every((term, index) => term === searchTerms[index])
+			) {
+				return;
+			}
+
 			searchTerms = terms;
 			applyPaging();
 			bumpResetState();
@@ -184,6 +195,14 @@ export function createFilterableDatabaseScrollingApi(options: {
 	};
 
 	applyPaging();
+
+	// Restored view: show as many rows as before, rounded up to whole pages.
+	if (options.loadedCount && options.loadedCount > loadedCount) {
+		const pages = Math.ceil(options.loadedCount / pageSize);
+		loadedCount = Math.min(pages * pageSize, allItems.length);
+		api.items = allItems.slice(0, loadedCount);
+		api.hasNextPage = loadedCount < allItems.length;
+	}
 
 	return api;
 }

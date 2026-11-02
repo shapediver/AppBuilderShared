@@ -52,6 +52,8 @@ export type SelectFullWidthCardsComponentProps =
 	UniversalMultiSelectComponentProps &
 		Partial<SelectFullWidthCardsComponentStyleProps> & {
 			scrollRootRef?: React.Ref<HTMLDivElement>;
+			/** When set, the search field is controlled by the parent. */
+			searchValue?: string;
 		};
 
 export const defaultStyleProps: Partial<SelectFullWidthCardsComponentStyleProps> =
@@ -102,6 +104,7 @@ export default function SelectFullWidthCardsComponent(
 		topSection = <></>,
 		onSearch,
 		scrollRootRef,
+		searchValue,
 		...styleProps
 	} = props;
 
@@ -128,7 +131,8 @@ export default function SelectFullWidthCardsComponent(
 		styleProps,
 	);
 
-	const [searchTerm, setSearchTerm] = useState("");
+	const [uncontrolledSearchTerm, setUncontrolledSearchTerm] = useState("");
+	const searchTerm = searchValue ?? uncontrolledSearchTerm;
 	// Transform items array into the format expected by the component
 	const cardData = useMemo(
 		() =>
@@ -162,7 +166,9 @@ export default function SelectFullWidthCardsComponent(
 				value={searchTerm}
 				onChange={(e) => {
 					const term = e.currentTarget.value;
-					setSearchTerm(term);
+					if (searchValue === undefined) {
+						setUncontrolledSearchTerm(term);
+					}
 					onSearch?.(term);
 				}}
 				placeholder="Search"

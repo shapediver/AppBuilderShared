@@ -166,6 +166,61 @@ describe("createFilterableDatabaseScrollingApi", () => {
 		expect(api.resetState).toBe(resetStateBefore + 1);
 	});
 
+	it("setSearchTerms with the same terms keeps already loaded pages", async () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 2,
+		});
+
+		await api.loadMore();
+		const resetStateBefore = api.resetState;
+
+		await api.setSearchTerms([]);
+
+		expect(api.items).toHaveLength(4);
+		expect(api.resetState).toBe(resetStateBefore);
+	});
+
+	it("starts from the given search terms", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+			searchTerms: ["blue"],
+		});
+
+		expect(api.items.map((entry) => entry.item)).toEqual(["id2"]);
+	});
+
+	it("starts with the restored number of rows, rounded up to whole pages", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 2,
+			loadedCount: 3,
+		});
+
+		expect(api.items).toHaveLength(4);
+		expect(api.hasNextPage).toBe(true);
+	});
+
+	it("caps the restored number of rows at the filtered list", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 2,
+			loadedCount: 50,
+		});
+
+		expect(api.items).toHaveLength(5);
+		expect(api.hasNextPage).toBe(false);
+	});
+
 	it("applies an itemData patch and drops hidden rows", () => {
 		const api = createFilterableDatabaseScrollingApi({
 			table,

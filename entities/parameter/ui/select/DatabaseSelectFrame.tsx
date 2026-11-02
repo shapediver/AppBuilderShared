@@ -28,6 +28,7 @@ import {useMemo, type ReactNode} from "react";
 import {resolveDatabaseCatalog} from "../../lib/filterableDatabase/resolveDatabaseCatalog";
 import {
 	useFilterableDatabase,
+	type FilterableDatabaseListPersistence,
 	type FilterableDatabaseScrollingApi,
 } from "../../model/filterableDatabase/useFilterableDatabase";
 import {FilterableDatabaseFilterSelect} from "../filterableDatabase/FilterableDatabaseFilterSelect";
@@ -115,6 +116,8 @@ export function DatabaseSelectFrame(
 		database: IFilterableDatabaseSettings;
 		itemData?: Record<string, ISelectComponentItemDataType>;
 		limit?: number;
+		/** Keeps filters, loaded pages, and search across unmount. `namespace:parameterId`. */
+		persistenceKey?: string;
 		/**
 		 * Build the full item list for widgets that render every row.
 		 * Paged cards and grids read the scrolling API instead.
@@ -123,6 +126,10 @@ export function DatabaseSelectFrame(
 		children: (state: {
 			catalog: DatabaseSelectCatalog | undefined;
 			scrollingApi: FilterableDatabaseScrollingApi | undefined;
+			/** Saved search and scroll offset for the paged list. */
+			listPersistence: FilterableDatabaseListPersistence | undefined;
+			/** Changes when a new table or scrolling API replaces the shown one. */
+			viewVersion: number;
 		}) => ReactNode;
 	},
 ) {
@@ -137,6 +144,7 @@ export function DatabaseSelectFrame(
 		database,
 		itemData,
 		limit,
+		persistenceKey,
 		resolveCatalog = true,
 		children,
 	} = useProps("FilterableSelectComponent", defaultStyleProps, props);
@@ -153,11 +161,14 @@ export function DatabaseSelectFrame(
 		activeFilterTags,
 		filterGroups,
 		scrollingApi,
+		listPersistence,
+		viewVersion,
 	} = useFilterableDatabase(database, {
 		pageSize: limit,
 		itemData,
 		// Paged widgets read the scrolling API; the others read the catalog.
 		buildScrollingApi: !resolveCatalog,
+		persistenceKey,
 	});
 
 	const catalog = useMemo(
@@ -184,7 +195,12 @@ export function DatabaseSelectFrame(
 		);
 	}
 
-	const results = children({catalog, scrollingApi});
+	const results = children({
+		catalog,
+		scrollingApi,
+		listPersistence,
+		viewVersion,
+	});
 	if (database.filters.length === 0) {
 		return results;
 	}

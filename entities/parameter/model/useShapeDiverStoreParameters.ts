@@ -64,6 +64,7 @@ import {
 } from "../config/shapediverStoreParameters";
 import {getResetValue} from "../lib/parameterResetValue";
 import {addValidator} from "../lib/parameterValidation";
+import {useFilterableDatabaseStateStore} from "./filterableDatabase/useFilterableDatabaseStateStore";
 import {parameterChangeScheduler} from "./parameterChangeScheduler";
 
 /**
@@ -1714,6 +1715,11 @@ export const useShapeDiverStoreParameters =
 				},
 
 				removeSession: (namespace: string) => {
+					// Saved filterable database views belong to this session's parameters.
+					useFilterableDatabaseStateStore
+						.getState()
+						.removeNamespace(namespace);
+
 					const {
 						parameterStores: parametersPerSession,
 						exportStores: exportsPerSession,

@@ -14,6 +14,8 @@ interface FilterableSelectComponentProps
 	extends SelectComponentProps, FilterableSelectComponentThemePropsType {
 	database: IFilterableDatabaseSettings;
 	type?: SelectComponentType;
+	/** Keeps filters, loaded pages, and search across unmount. `namespace:parameterId`. */
+	persistenceKey?: string;
 }
 
 /**
@@ -28,6 +30,7 @@ export default function FilterableSelectComponent(
 		database,
 		itemData,
 		limit,
+		persistenceKey,
 		items: _items,
 		rootStackProps,
 		loadingGroupProps,
@@ -46,6 +49,7 @@ export default function FilterableSelectComponent(
 			database={database}
 			itemData={itemData}
 			limit={limit}
+			persistenceKey={persistenceKey}
 			resolveCatalog={!paged}
 			rootStackProps={rootStackProps}
 			loadingGroupProps={loadingGroupProps}
@@ -55,13 +59,16 @@ export default function FilterableSelectComponent(
 			filtersProps={filtersProps}
 			activeFilterTagsProps={activeFilterTagsProps}
 		>
-			{({catalog, scrollingApi}) => {
+			{({catalog, scrollingApi, listPersistence, viewVersion}) => {
 				if (paged && scrollingApi) {
 					return (
 						<SelectComponentAsync
+							// A new list (changed definition) starts with its own search.
+							key={viewVersion}
 							{...selectProps}
 							type={type}
 							scrollingApi={scrollingApi}
+							persistence={listPersistence}
 							multiselect={false}
 						/>
 					);
