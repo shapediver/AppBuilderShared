@@ -487,6 +487,52 @@ describe("useFilterableDatabase filter groups", () => {
 		expect(saved.selection).toEqual({});
 	});
 
+	it.each([
+		[
+			"cancelled",
+			() => new Promise<string>(() => undefined), // never settles
+		],
+		["failed", () => Promise.reject(new Error("offline"))],
+	])(
+		"shows the list again when a %s definition change is reverted",
+		async (_case, nextFetch) => {
+			mockFetchRawText.mockResolvedValue(fourRows);
+			const persistenceKey = "session:elements_select";
+			const changedSettings = {
+				...colorSettings,
+				filters: [{...colorSettings.filters[0], label: "Colour"}],
+			};
+
+			const view = renderHook(
+				({settings}) =>
+					useFilterableDatabase(settings, {
+						persistenceKey,
+						pageSize: 2,
+					}),
+				{initialProps: {settings: colorSettings}},
+			);
+			await filterAndLoadMore(view.result);
+
+			mockFetchRawText.mockImplementationOnce(nextFetch);
+			view.rerender({settings: changedSettings});
+			await waitFor(() => {
+				expect(
+					view.result.current.loading || !!view.result.current.error,
+				).toBe(true);
+			});
+
+			view.rerender({settings: colorSettings});
+			await waitFor(() => {
+				expect(view.result.current.loading).toBe(false);
+			});
+			expect(view.result.current.error).toBeUndefined();
+			expect(view.result.current.selection).toEqual({0: ["#277DA1"]});
+			expect(
+				view.result.current.scrollingApi?.items.length,
+			).toBeGreaterThan(0);
+		},
+	);
+
 	it("keeps writes of the old list out of a changed definition while it loads", async () => {
 		mockFetchRawText.mockResolvedValue(fourRows);
 		const persistenceKey = "session:elements_select";
