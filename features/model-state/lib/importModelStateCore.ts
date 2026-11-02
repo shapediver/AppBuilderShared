@@ -1,4 +1,5 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import type {IBatchParameterValueUpdateOptions} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {
 	filterAndValidateModelStateParameters,
 	generateParameterFeedback,
@@ -27,6 +28,9 @@ export interface ImportModelStateCoreArgs {
 	getParameterStates: (namespace: string) => IShapeDiverParameter<unknown>[];
 	batchParameterValueUpdate: (
 		updates: Record<string, Record<string, unknown>>,
+		skipHistory?: boolean,
+		skipUrlUpdate?: boolean,
+		options?: IBatchParameterValueUpdateOptions,
 	) => Promise<void>;
 	clearUnsavedChanges: () => void;
 	props: IImportModelStateData;
@@ -130,9 +134,15 @@ export async function importModelStateCore(
 		};
 	}
 
-	await batchParameterValueUpdate({
-		[namespace]: validationResult.validParameters,
-	});
+	// the model state replaces pending changes of the parameter components
+	await batchParameterValueUpdate(
+		{
+			[namespace]: validationResult.validParameters,
+		},
+		undefined,
+		undefined,
+		{scheduledChanges: "discard"},
+	);
 
 	// importing a model state reverts the unsaved changes flag
 	clearUnsavedChanges();

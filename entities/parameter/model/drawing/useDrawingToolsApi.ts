@@ -62,6 +62,9 @@ export function useDrawingToolsApi(
 				{onUpdate, onCancel},
 				drawingToolsSettings,
 			);
+			// editing is paused during a computation (see also the pause of
+			// ParameterDrawingComponent)
+			drawingToolsApi.pauseWhileBusy = true;
 
 			/**
 			 * The following code is used to update the drawing tools options or update the drawing tools themselves.

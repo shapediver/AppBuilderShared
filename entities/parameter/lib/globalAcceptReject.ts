@@ -73,10 +73,25 @@ export function hasGlobalPendingParameterChanges(parameterChanges: {
 	});
 }
 
+/**
+ * Accept queued changes (undefined ids: all of the namespace). The request
+ * takes the pending changes of the parameter components along (see
+ * `parameterChangeScheduler`), like any immediate computation.
+ */
+function acceptQueuedChanges(accept: {
+	[namespace: string]: string[] | undefined;
+}): Promise<void> {
+	if (Object.keys(accept).length === 0) return Promise.resolve();
+	return useShapeDiverStoreParameters
+		.getState()
+		.batchParameterValueUpdate({}, undefined, undefined, {accept});
+}
+
 export async function acceptQueuedParameterIds(
 	entries: {namespace: string; changes: IParameterChanges}[],
 	parameterIds: {namespace: string; parameterId: string}[],
 ): Promise<void> {
+	const accept: {[namespace: string]: string[] | undefined} = {};
 	for (const entry of entries) {
 		const ids = parameterIds
 			.filter((item) => item.namespace === entry.namespace)
@@ -85,8 +100,9 @@ export async function acceptQueuedParameterIds(
 		if (ids.length === 0) continue;
 		const acceptAll =
 			ids.length === Object.keys(entry.changes.values).length;
-		await entry.changes.accept(undefined, acceptAll ? undefined : ids);
+		accept[entry.namespace] = acceptAll ? undefined : ids;
 	}
+	await acceptQueuedChanges(accept);
 }
 
 export function rejectQueuedParameterIds(
@@ -123,6 +139,7 @@ export function rejectQueuedParameterIds(
 export async function acceptGlobalParameterChanges(
 	entries: {namespace: string; changes: IParameterChanges}[],
 ): Promise<void> {
+	const accept: {[namespace: string]: string[] | undefined} = {};
 	for (const entry of entries) {
 		const parameterIds = globalPendingParameterIds(
 			entry.namespace,
@@ -131,11 +148,9 @@ export async function acceptGlobalParameterChanges(
 		if (parameterIds.length === 0) continue;
 		const acceptAll =
 			parameterIds.length === Object.keys(entry.changes.values).length;
-		await entry.changes.accept(
-			undefined,
-			acceptAll ? undefined : parameterIds,
-		);
+		accept[entry.namespace] = acceptAll ? undefined : parameterIds;
 	}
+	await acceptQueuedChanges(accept);
 }
 
 export function rejectGlobalParameterChanges(

@@ -217,12 +217,15 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 					// skipUrlUpdate: batchParameterValueUpdate would otherwise
 					// remove savedStateId from the URL, which clears selection
 					// via the URL listener below before we re-apply it.
+					// The saved state replaces pending changes of the
+					// parameter components.
 					await batchParameterValueUpdate(
 						{
 							[namespace]: savedStateItem.data.parameters,
 						},
 						false,
 						true,
+						{scheduledChanges: "discard"},
 					);
 				}
 

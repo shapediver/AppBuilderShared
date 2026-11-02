@@ -1,22 +1,32 @@
-import {AutomaticSceneUpdateScheduler} from "../automaticSceneUpdateScheduler";
+import {
+	ParameterChangeScheduler,
+	ScheduledParameterChanges,
+} from "../parameterChangeScheduler";
 
 jest.mock("@AppBuilderLib/shared/lib/logger", () => ({
 	Logger: {warn: jest.fn()},
 }));
-jest.mock("../useShapeDiverStoreParameters", () => ({
-	useShapeDiverStoreParameters: {
-		getState: () => ({batchParameterValueUpdate: jest.fn()}),
-	},
-}));
 
-describe("AutomaticSceneUpdateScheduler", () => {
+describe("ParameterChangeScheduler", () => {
+	/** Values of the requests, the sender takes the pending changes like the store. */
 	let flush: jest.Mock;
-	let scheduler: AutomaticSceneUpdateScheduler;
+	let scheduler: ParameterChangeScheduler;
+
+	const createScheduler = (releaseTarget?: EventTarget) => {
+		const created: ParameterChangeScheduler = new ParameterChangeScheduler(
+			async () => {
+				const {state} = created.take().mergeInto({});
+				await flush(state);
+			},
+			releaseTarget,
+		);
+		return created;
+	};
 
 	beforeEach(() => {
 		jest.useFakeTimers();
 		flush = jest.fn().mockResolvedValue(undefined);
-		scheduler = new AutomaticSceneUpdateScheduler(flush);
+		scheduler = createScheduler();
 	});
 
 	afterEach(() => {
@@ -64,6 +74,60 @@ describe("AutomaticSceneUpdateScheduler", () => {
 		expect(flush).not.toHaveBeenCalled();
 		jest.advanceTimersByTime(1);
 		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("sends all pending values right away for a timeout of 0", () => {
+		schedule("A", "a1", 3000);
+		schedule("B", "b1", 0);
+		// (the fake timers queue the microtasks)
+		jest.runAllTicks();
+		expect(flush).toHaveBeenCalledTimes(1);
+		expect(flush).toHaveBeenCalledWith({
+			s_appbuilder: {A: "a1", B: "b1"},
+		});
+		jest.advanceTimersByTime(3000);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("sends the values with a timeout of 0 of the same task in one request", () => {
+		schedule("A", "a1", 0);
+		schedule("B", "b1", 0);
+		// a value with a timeout of its own scheduled meanwhile goes along
+		schedule("C", "c1", 3000);
+		// (the fake timers queue the microtasks)
+		jest.runAllTicks();
+		expect(flush).toHaveBeenCalledTimes(1);
+		expect(flush).toHaveBeenCalledWith({
+			s_appbuilder: {A: "a1", B: "b1", C: "c1"},
+		});
+		jest.advanceTimersByTime(3000);
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("sends right away for a timeout of 0 while a pointer is pressed", () => {
+		scheduler.holdPointer(1);
+		schedule("A", "a1", 0);
+		// (the fake timers queue the microtasks)
+		jest.runAllTicks();
+		expect(flush).toHaveBeenCalledTimes(1);
+	});
+
+	it("notifies the listeners of changes of the pending values", () => {
+		const listener = jest.fn();
+		const unsubscribe = scheduler.subscribe(listener);
+		schedule("A", "a1", 500);
+		expect(listener).toHaveBeenCalledTimes(1);
+		expect(scheduler.hasPendingIn(["s_appbuilder"])).toBe(true);
+		expect(scheduler.hasPendingIn(["s"])).toBe(false);
+		scheduler.cancel("s_appbuilder", "B");
+		expect(listener).toHaveBeenCalledTimes(1);
+		jest.advanceTimersByTime(500);
+		// the values were taken to be sent
+		expect(listener).toHaveBeenCalledTimes(2);
+		expect(scheduler.hasPendingIn(["s_appbuilder"])).toBe(false);
+		unsubscribe();
+		schedule("A", "a2", 500);
+		expect(listener).toHaveBeenCalledTimes(2);
 	});
 
 	it("replaces the pending value of a parameter", () => {
@@ -145,14 +209,14 @@ describe("AutomaticSceneUpdateScheduler", () => {
 
 	describe("observes the release of held pointers", () => {
 		let target: EventTarget;
-		let observed: AutomaticSceneUpdateScheduler;
+		let observed: ParameterChangeScheduler;
 
 		const release = (type: string, pointerId: number) =>
 			target.dispatchEvent(Object.assign(new Event(type), {pointerId}));
 
 		beforeEach(() => {
 			target = new EventTarget();
-			observed = new AutomaticSceneUpdateScheduler(flush, target);
+			observed = createScheduler(target);
 		});
 
 		afterEach(() => observed.reset());
@@ -173,7 +237,7 @@ describe("AutomaticSceneUpdateScheduler", () => {
 			expect(flush).toHaveBeenCalledWith({s_appbuilder: {A: "a1"}});
 		});
 
-		it("restarts the countdown on pointercancel and blur", () => {
+		it("restarts the countdown on pointercancel and blur", async () => {
 			observed.schedule({
 				namespace: "s_appbuilder",
 				parameterId: "A",
@@ -227,18 +291,57 @@ describe("AutomaticSceneUpdateScheduler", () => {
 		});
 	});
 
-	it("runs the afterSend callbacks once the values were sent", async () => {
-		const afterSend = jest.fn().mockResolvedValue(undefined);
+	it("takes the pending values to send them with another request", () => {
+		schedule("A", "a1", 500);
+		const taken = scheduler.take();
+		expect(scheduler.size).toBe(0);
+		expect(taken.mergeInto({}).state).toEqual({s_appbuilder: {A: "a1"}});
+		// the countdown stopped
+		jest.advanceTimersByTime(500);
+		expect(flush).not.toHaveBeenCalled();
+	});
+
+	it("discards the pending values", () => {
+		const onDiscard = jest.fn();
+		const onSent = jest.fn();
 		scheduler.schedule({
 			namespace: "s_appbuilder",
 			parameterId: "A",
 			value: "a1",
-			timeout: 0,
-			afterSend,
+			timeout: 500,
+			onDiscard,
+			onSent,
 		});
-		await scheduler.flush();
-		expect(flush).toHaveBeenCalledTimes(1);
-		expect(afterSend).toHaveBeenCalledWith("a1");
+		scheduler.discard();
+		expect(onDiscard).toHaveBeenCalledTimes(1);
+		expect(scheduler.size).toBe(0);
+		jest.advanceTimersByTime(500);
+		expect(flush).not.toHaveBeenCalled();
+		expect(onSent).not.toHaveBeenCalled();
+	});
+
+	it("discards the pending values of some namespaces only", () => {
+		const onDiscard = jest.fn();
+		schedule("A", "a1", 500);
+		scheduler.schedule({
+			namespace: "other",
+			parameterId: "C",
+			value: "c1",
+			timeout: 500,
+			onDiscard,
+		});
+		scheduler.discard(["other"]);
+		expect(onDiscard).toHaveBeenCalledTimes(1);
+		expect(scheduler.isPending("other", "C")).toBe(false);
+		// the countdown of the other values goes on
+		jest.advanceTimersByTime(500);
+		expect(flush).toHaveBeenCalledWith({s_appbuilder: {A: "a1"}});
+	});
+
+	it("provides the pending value of a parameter", () => {
+		expect(scheduler.pendingValue("s_appbuilder", "A")).toBeUndefined();
+		schedule("A", "a1", 500);
+		expect(scheduler.pendingValue("s_appbuilder", "A")).toBe("a1");
 	});
 
 	it("flushes on demand and logs a failed send", async () => {
@@ -248,5 +351,74 @@ describe("AutomaticSceneUpdateScheduler", () => {
 		expect(scheduler.size).toBe(0);
 		jest.advanceTimersByTime(500);
 		expect(flush).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe("ScheduledParameterChanges", () => {
+	it("merges the values into a request, the values of the request win", () => {
+		const changes = new ScheduledParameterChanges([
+			{namespace: "a", parameterId: "x", value: "pending", timeout: 0},
+			{namespace: "a", parameterId: "y", value: "y1", timeout: 0},
+			{
+				namespace: "b",
+				parameterId: "z",
+				value: "z1",
+				timeout: 0,
+				forceSameValue: true,
+			},
+		]);
+		const {state, forceSameValue, included, overridden} = changes.mergeInto(
+			{a: {x: "requested"}, c: {w: "w1"}},
+			{c: ["w"]},
+		);
+		expect(state).toEqual({
+			a: {x: "requested", y: "y1"},
+			b: {z: "z1"},
+			c: {w: "w1"},
+		});
+		expect(forceSameValue).toEqual({b: ["z"], c: ["w"]});
+		// the overridden change is not sent
+		expect(included.changes.map((c) => c.parameterId)).toEqual(["y", "z"]);
+		expect(overridden.map((c) => c.parameterId)).toEqual(["x"]);
+	});
+
+	it("runs the callbacks along the request", async () => {
+		const order: string[] = [];
+		let endRequest: () => void = () => {};
+		const request = new Promise<void>((resolve) => {
+			endRequest = () => {
+				order.push("request ended");
+				resolve();
+			};
+		});
+		const changes = new ScheduledParameterChanges([
+			{
+				namespace: "a",
+				parameterId: "x",
+				value: "x1",
+				timeout: 0,
+				onSend: async (value) => {
+					order.push(`send ${value}`);
+				},
+				onSent: () => order.push("sent"),
+			},
+		]);
+		const sent = changes.sendAlong(request);
+		// the delegates run together with the request
+		expect(order).toEqual(["send x1"]);
+		endRequest();
+		await sent;
+		expect(order).toEqual(["send x1", "request ended", "sent"]);
+	});
+
+	it("runs onSent when the request failed", async () => {
+		const onSent = jest.fn();
+		const changes = new ScheduledParameterChanges([
+			{namespace: "a", parameterId: "x", value: "x1", timeout: 0, onSent},
+		]);
+		await expect(
+			changes.sendAlong(Promise.reject(new Error("failed"))),
+		).rejects.toThrow("failed");
+		expect(onSent).toHaveBeenCalledTimes(1);
 	});
 });

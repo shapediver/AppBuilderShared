@@ -43,7 +43,8 @@ export default function AppBuilderActionSetParameterValuesComponent(
 	const [loading, setLoading] = useState(false);
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	// (changes of the parameter components waiting to be sent: the values are sent together with them)
+	const hasPendingChanges = useHasPendingParameterChanges(namespace, false);
 	const resolvedDisabled = disabled || hasPendingChanges;
 	const onClick = createActionClickHandler(
 		() =>

@@ -97,6 +97,9 @@ export interface IGumballState {
  * 					before the scene is updated) is recreated once the execution ended:
  * 					the nodes have no bounds before that and a gizmo on several nodes
  * 					cannot be placed.
+ * @param paused Whether the gizmo is paused (e.g. while a computation runs, see
+ * 					GumballTransform.pause): it stays visible, but ignores the user's
+ * 					interactions, a move in progress is cancelled.
  */
 export function useGumball(
 	sessionIds: string[],
@@ -106,6 +109,7 @@ export function useGumball(
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
 	strictNaming = true,
 	executing = false,
+	paused = false,
 ): IGumballState {
 	// get the session API
 	const sessionApis = useShapeDiverStoreSession((state) => state.sessions);
@@ -222,6 +226,8 @@ export function useGumball(
 		createdWhileExecutingRef.current = false;
 		setGizmoRevision((revision) => revision + 1);
 	}, [executing]);
+	const pausedRef = useRef(paused);
+	pausedRef.current = paused;
 
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
@@ -293,6 +299,8 @@ export function useGumball(
 
 			const props = {
 				...gumballProps,
+				// editing is paused during a computation (see also "paused")
+				pauseWhileBusy: true,
 				restrictions:
 					Object.values(restrictionsToUse).length === 0
 						? undefined
@@ -309,6 +317,7 @@ export function useGumball(
 				props,
 				componentId,
 			);
+			if (pausedRef.current) gumball.pause();
 			gumballRef.current = gumball;
 			createdWhileExecutingRef.current = executing;
 		}
@@ -330,6 +339,14 @@ export function useGumball(
 		restrictions,
 		componentId,
 	]);
+
+	// a pause cancels a move in progress, the gizmo stays visible
+	useEffect(() => {
+		const gumball = gumballRef.current;
+		if (!gumball || gumball.closed) return;
+		if (paused) gumball.pause();
+		else gumball.continue();
+	}, [paused]);
 
 	const closeTransform = useCallback(() => {
 		gumballRef.current?.close();

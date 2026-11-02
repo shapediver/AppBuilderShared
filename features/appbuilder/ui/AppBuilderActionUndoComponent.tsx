@@ -25,7 +25,8 @@ export default function AppBuilderActionUndoComponent(props: Props) {
 	const canGoBack = useShapeDiverStoreParameters(
 		(state) => state.historyIndex > 0,
 	);
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	// (changes of the parameter components waiting to be sent: restores a state replacing them)
+	const hasPendingChanges = useHasPendingParameterChanges(namespace, false);
 	const resolvedDisabled = disabled || hasPendingChanges || !canGoBack;
 	const onClick = createActionClickHandler(() => runAppBuilderActionUndo(), {
 		disabled: resolvedDisabled,

@@ -94,11 +94,11 @@ export default function ParameterDrawingComponent(
 		actions,
 		definition,
 		handleChange,
-		scheduleChange,
-		cancelScheduledChange,
+		cancelPendingChange,
 		isScheduledChangePending,
 		onCancel,
 		disabled,
+		busy,
 		showReset,
 		resetToDefault,
 		state,
@@ -283,9 +283,13 @@ export default function ParameterDrawingComponent(
 			);
 			if (value === serializedValue) return;
 			sentValuesRef.current.record(serializedValue);
-			if (automaticSceneUpdate && !immediate)
-				scheduleChange(serializedValue, automaticSceneUpdateTimeout);
-			else handleChange(serializedValue, 0);
+			// sent together with the pending changes of the other parameters
+			handleChange(
+				serializedValue,
+				automaticSceneUpdate && !immediate
+					? automaticSceneUpdateTimeout
+					: 0,
+			);
 		},
 		[
 			alwaysActive,
@@ -353,6 +357,22 @@ export default function ParameterDrawingComponent(
 	useEffect(() => {
 		drawingToolsApiRef.current = drawingToolsApi;
 	}, [drawingToolsApi]);
+	// Editing is paused during a computation, like the other parameters: the
+	// drawing stays visible, but ignores the user's interactions. The Viewer
+	// pauses the drawing while the viewport is busy too (pauseWhileBusy, see
+	// useDrawingToolsApi); `continue` only ends the pause of this effect.
+	const pausedWhileBusyRef = useRef<typeof drawingToolsApi>(undefined);
+	useEffect(() => {
+		if (!drawingToolsApi || drawingToolsApi.closed) return;
+		if (busy) {
+			if (pausedWhileBusyRef.current === drawingToolsApi) return;
+			drawingToolsApi.pause();
+			pausedWhileBusyRef.current = drawingToolsApi;
+		} else if (pausedWhileBusyRef.current === drawingToolsApi) {
+			pausedWhileBusyRef.current = undefined;
+			drawingToolsApi.continue();
+		}
+	}, [busy, drawingToolsApi]);
 	const resetDrawingToCommitted = useCallback(() => {
 		const committedPoints = parsePointsData(state.commitValue);
 		setPointsData(committedPoints);
@@ -385,7 +405,7 @@ export default function ParameterDrawingComponent(
 			!ownCommit &&
 			commitEffectMountedRef.current
 		)
-			cancelScheduledChange();
+			cancelPendingChange();
 		commitEffectMountedRef.current = true;
 		if (newerPending) return;
 		if (state.commitValue === state.execValue) return;

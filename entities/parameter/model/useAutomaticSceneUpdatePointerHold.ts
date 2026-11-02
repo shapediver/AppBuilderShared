@@ -1,10 +1,10 @@
 import {useViewportCanvas} from "@AppBuilderLib/entities/viewport/model/useViewportCanvas";
 import {useEffect} from "react";
-import {automaticSceneUpdateScheduler} from "./automaticSceneUpdateScheduler";
+import {parameterChangeScheduler} from "./parameterChangeScheduler";
 
 /**
- * Pause the countdown of the automatic scene updates while a pointer is
- * pressed in the viewport (see `AutomaticSceneUpdateScheduler.holdPointer`):
+ * Pause the countdown of the pending parameter changes while a pointer is
+ * pressed in the viewport (see `ParameterChangeScheduler.holdPointer`):
  * a new move, e.g. of another object controlled by another parameter, must
  * not be interrupted by the update of an earlier move. The countdown restarts
  * with the full timeout once the pointer is released.
@@ -26,7 +26,7 @@ export function useAutomaticSceneUpdatePointerHold(
 	useEffect(() => {
 		if (!enabled || !canvas) return;
 		const onPointerDown = (event: PointerEvent) =>
-			automaticSceneUpdateScheduler.holdPointer(event.pointerId);
+			parameterChangeScheduler.holdPointer(event.pointerId);
 
 		canvas.addEventListener("pointerdown", onPointerDown, {capture: true});
 		return () =>
