@@ -3,7 +3,7 @@ import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
-import React, {useCallback, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import classes from "./useSelectAsync.module.css";
 
@@ -20,6 +20,9 @@ export const useSelectAsync = (
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
 ) => {
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const pendingSearchRef = useRef<string[] | undefined>(undefined);
+	const scrollingApiRef = useRef(scrollingApi);
+	scrollingApiRef.current = scrollingApi;
 	const loadingMoreRef = useRef(false);
 	// Bumped after setSearchTerms so useMemo re-reads scrollingApi.items (API mutates in place).
 	const [searchRevision, setSearchRevision] = useState(0);
@@ -48,13 +51,28 @@ export const useSelectAsync = (
 	const debouncedOnSearch = useCallback(
 		(searchTerms: string[], timeout: number = 500) => {
 			clearTimeout(debounceRef.current);
+			pendingSearchRef.current = searchTerms;
 			debounceRef.current = setTimeout(async () => {
-				await scrollingApi?.setSearchTerms?.(searchTerms);
+				pendingSearchRef.current = undefined;
+				await scrollingApiRef.current?.setSearchTerms?.(searchTerms);
 				setSearchRevision((revision) => revision + 1);
 			}, timeout);
 		},
-		[scrollingApi],
+		[],
 	);
+
+	// Commit a search that is still waiting when the widget hides or unmounts.
+	// The scrolling API may live in the filterable-database store after that.
+	useEffect(() => {
+		return () => {
+			clearTimeout(debounceRef.current);
+			const pending = pendingSearchRef.current;
+			pendingSearchRef.current = undefined;
+			if (pending) {
+				void scrollingApiRef.current?.setSearchTerms?.(pending);
+			}
+		};
+	}, []);
 
 	const [infiniteRef, {rootRef}] = useInfiniteScroll({
 		loading: !!scrollingApi?.loading || loadingMore,

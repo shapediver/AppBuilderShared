@@ -45,6 +45,8 @@ export interface SelectGridComponentStyleProps {
 export type SelectGridComponentProps = UniversalMultiSelectComponentProps &
 	Partial<SelectGridComponentStyleProps> & {
 		scrollRootRef?: React.Ref<HTMLDivElement>;
+		/** When set, the search field is controlled by the parent. */
+		searchValue?: string;
 	};
 
 export const defaultStyleProps: Partial<SelectGridComponentStyleProps> = {
@@ -93,6 +95,7 @@ export default function SelectGridComponent(props: SelectGridComponentProps) {
 		topSection = <></>,
 		onSearch,
 		scrollRootRef,
+		searchValue,
 		...styleProps
 	} = props;
 
@@ -117,7 +120,8 @@ export default function SelectGridComponent(props: SelectGridComponentProps) {
 	} = useProps("SelectGridComponent", defaultStyleProps, styleProps);
 
 	const showLabel = settings?.showLabel ?? _showLabel;
-	const [searchTerm, setSearchTerm] = useState("");
+	const [uncontrolledSearchTerm, setUncontrolledSearchTerm] = useState("");
+	const searchTerm = searchValue ?? uncontrolledSearchTerm;
 
 	// Transform items array into the format expected by the component
 	const gridItems = useMemo(
@@ -164,7 +168,9 @@ export default function SelectGridComponent(props: SelectGridComponentProps) {
 				value={searchTerm}
 				onChange={(e) => {
 					const term = e.currentTarget.value;
-					setSearchTerm(term);
+					if (searchValue === undefined) {
+						setUncontrolledSearchTerm(term);
+					}
 					onSearch?.(term);
 				}}
 				placeholder="Search"

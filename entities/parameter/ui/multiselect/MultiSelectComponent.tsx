@@ -51,6 +51,11 @@ export interface MultiSelectComponentProps {
 	 * Checklist widgets render the filtered catalog directly.
 	 */
 	database?: IFilterableDatabaseSettings;
+	/**
+	 * Keeps the database filter selection while this control is unmounted
+	 * or idle. Pass `namespace:parameterId`.
+	 */
+	persistenceKey?: string;
 	/** Enable search (only used by dropdown type). */
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
@@ -66,7 +71,7 @@ export type UniversalMultiSelectComponentProps =
  * Multiple items can be selected at a time.
  */
 export default function MultiSelectComponent(props: MultiSelectComponentProps) {
-	const {type, database, itemData, items, ...rest} = props;
+	const {type, database, persistenceKey, itemData, items, ...rest} = props;
 
 	if (database) {
 		return (
@@ -74,6 +79,7 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 				database={database}
 				itemData={itemData}
 				limit={rest.limit}
+				persistenceKey={persistenceKey}
 			>
 				{({catalog}) => (
 					<MultiSelectComponent

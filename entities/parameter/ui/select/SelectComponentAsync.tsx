@@ -4,6 +4,8 @@ import {
 	emitSelectValue,
 	resolveDisplayValueForCards,
 } from "../../lib/select/selectComponentAsyncValue";
+import type {FilterableDatabaseListPersistence} from "../../model/filterableDatabase/useFilterableDatabase";
+import {useRestoredScrollTop} from "../../model/select/useRestoredScrollTop";
 import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
@@ -28,6 +30,8 @@ interface SelectComponentAsyncProps extends Omit<
 	items?: SelectComponentProps["items"];
 	/** Ignored. Item data comes from `scrollingApi`. */
 	itemData?: SelectComponentProps["itemData"];
+	/** Saves and restores search text, anchors, and scroll offset across unmount. */
+	persistence?: FilterableDatabaseListPersistence;
 }
 
 /**
@@ -46,6 +50,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		prependTopSection,
 		items: _items,
 		itemData: _itemData,
+		persistence,
 		...propsDefault
 	} = props;
 
@@ -64,8 +69,46 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		[value, items, itemsData],
 	);
 
-	// stack of search terms
-	const [searchTerms, setSearchTerms] = useState<string[]>([]);
+	// stack of search terms, restored when the parameter control remounts
+	const [restored] = useState(() => persistence?.read());
+	const [searchTerms, setSearchTerms] = useState<string[]>(
+		restored?.searchAnchors ?? [],
+	);
+	const [searchText, setSearchText] = useState(restored?.searchText ?? "");
+
+	/**
+	 * Show anchors and field text, and apply `applied` to the list.
+	 * Saves what the list applies, which is not always anchors + text,
+	 * so a remount rebuilds exactly the list the user saw.
+	 */
+	const applySearch = useCallback(
+		(
+			anchors: string[],
+			text: string,
+			applied: string[],
+			timeout?: number,
+		) => {
+			setSearchTerms(anchors);
+			setSearchText(text);
+			persistence?.save({
+				searchText: text,
+				searchAnchors: anchors,
+				appliedSearchTerms: applied,
+			});
+			debouncedOnSearch(applied, timeout);
+		},
+		[persistence, debouncedOnSearch],
+	);
+
+	const saveScrollTop = useCallback(
+		(scrollTop: number) => persistence?.save({scrollTop}),
+		[persistence],
+	);
+	const scrollRootRefWithRestore = useRestoredScrollTop(
+		scrollRootRef,
+		restored?.scrollTop ?? 0,
+		saveScrollTop,
+	);
 
 	const _onChange = useCallback(
 		(v: string | null) => {
@@ -74,13 +117,13 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 			// to the stack of search terms
 			if (v?.startsWith(SEARCH_PREFIX)) {
 				const term = v.substring(SEARCH_PREFIX.length);
-				setSearchTerms((prev) => [...prev, term]);
-				debouncedOnSearch([...searchTerms, term], 0);
+				const anchors = [...searchTerms, term];
+				applySearch(anchors, searchText, anchors, 0);
 			} else {
 				onChange(emitSelectValue(v, emitValue, itemsData));
 			}
 		},
-		[onChange, itemsData, debouncedOnSearch, searchTerms, emitValue],
+		[onChange, itemsData, searchTerms, searchText, emitValue, applySearch],
 	);
 
 	// show stack of search terms and allow to remove them
@@ -94,8 +137,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 							key={index}
 							onClick={() => {
 								const terms = searchTerms.slice(0, index);
-								setSearchTerms(terms);
-								debouncedOnSearch(terms, 0);
+								applySearch(terms, searchText, terms, 0);
 							}}
 						>
 							{term}
@@ -116,12 +158,15 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 					loading && items.length === 0 ? <Loader /> : bottomSection
 				}
 				topSection={topSection}
-				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
+				onSearch={(s) => {
+					applySearch(searchTerms, s, [...searchTerms, s]);
+				}}
+				searchValue={searchText}
 				items={items}
 				itemData={itemsData}
 				disabled={loading || disabled}
 				multiselect={false}
-				scrollRootRef={scrollRootRef}
+				scrollRootRef={scrollRootRefWithRestore}
 			/>
 		);
 	} else if (type === "grid") {
@@ -134,12 +179,15 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 					loading && items.length === 0 ? <Loader /> : bottomSection
 				}
 				topSection={topSection}
-				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
+				onSearch={(s) => {
+					applySearch(searchTerms, s, [...searchTerms, s]);
+				}}
+				searchValue={searchText}
 				items={items}
 				itemData={itemsData}
 				disabled={loading || disabled}
 				multiselect={false}
-				scrollRootRef={scrollRootRef}
+				scrollRootRef={scrollRootRefWithRestore}
 			/>
 		);
 	} else return <></>;
