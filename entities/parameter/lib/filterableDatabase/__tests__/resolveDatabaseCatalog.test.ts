@@ -73,6 +73,26 @@ describe("resolveDatabaseCatalog", () => {
 		expect(catalog.itemData.missing).toBeUndefined();
 	});
 
+	it("keeps search suggestion rows that are not in items", () => {
+		const catalog = resolveDatabaseCatalog(
+			{
+				rows: [
+					["search:Granite", "More granite", "#888888"],
+					...table.rows,
+				],
+			},
+			settings,
+			{},
+			undefined,
+			["slate", "granite"],
+		);
+
+		expect(catalog.items).toEqual(["slate", "granite", "search:Granite"]);
+		expect(catalog.itemData["search:Granite"].displayname).toBe(
+			"More granite",
+		);
+	});
+
 	it("shows no rows when items is empty", () => {
 		const catalog = resolveDatabaseCatalog(
 			table,
