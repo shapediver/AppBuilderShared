@@ -114,12 +114,20 @@ export class ScheduledParameterChanges {
 }
 
 /**
+ * Time in ms a send waits at most for the end of a pointer gesture (see
+ * {@link ParameterChangeScheduler}).
+ */
+export const MAX_GESTURE_DEFERRAL = 1000;
+
+/**
  * Pending parameter changes of all sessions, sent together.
  *
  * Parameter components schedule their changes here instead of executing them
  * after a timeout of their own (except in accept/reject mode). Every scheduled
- * change restarts a single countdown with the longest timeout of the pending
- * changes. When it elapses, all pending changes are sent in one request.
+ * change restarts a single countdown with its own timeout: the latest change
+ * decides how long to wait (like a change with a timeout of 0, which sends
+ * right away), also for the changes scheduled before it. When it elapses,
+ * all pending changes are sent in one request.
  * Changing several parameters (e.g. typing a text and moving an object)
  * thus results in one computation, and a computation never sends a stale
  * value of another parameter.
@@ -132,6 +140,14 @@ export class ScheduledParameterChanges {
  * The pending changes live here, not in the components: a component which is
  * unmounted while its change is pending (e.g. the container of the parameter
  * closes) does not lose the change.
+ *
+ * No send starts during a pointer gesture (a pointer pressed anywhere in the
+ * window): it waits for the end of the gesture, i.e. for the click it causes,
+ * at most {@link MAX_GESTURE_DEFERRAL} ms. Pressing a control blurs the
+ * focused one, which may send its change right away (e.g. a text input), and
+ * a computation disables the controls: the click on the pressed control
+ * would be ignored. Its change is sent together with the change of the
+ * blurred control instead.
  */
 export class ParameterChangeScheduler {
 	readonly #pending = new Map<string, IScheduledParameterChange>();
@@ -145,6 +161,12 @@ export class ParameterChangeScheduler {
 	readonly #listeners = new Set<() => void>();
 	/** A send of the changes with a timeout of 0 is queued (see {@link schedule}). */
 	#flushQueued = false;
+	/** Pointers pressed anywhere in the window (the current pointer gesture). */
+	readonly #gesturePointers = new Set<number>();
+	/** A send waits for the end of the pointer gesture. */
+	#flushAfterGesture = false;
+	/** Sends the changes after the gesture, or once it lasted too long. */
+	#gestureTimer: ReturnType<typeof setTimeout> | undefined;
 
 	/**
 	 * @param send Sends the pending changes, see {@link take}.
@@ -159,6 +181,21 @@ export class ParameterChangeScheduler {
 	) {
 		this.#send = send;
 		this.#releaseTarget = releaseTarget;
+		// (observed before any handler of the page, which might stop the event)
+		releaseTarget?.addEventListener(
+			"pointerdown",
+			this.#onGesturePointerDown,
+			{capture: true},
+		);
+		releaseTarget?.addEventListener("pointerup", this.#onGesturePointerUp, {
+			capture: true,
+		});
+		releaseTarget?.addEventListener(
+			"pointercancel",
+			this.#onGesturePointerUp,
+			{capture: true},
+		);
+		releaseTarget?.addEventListener("blur", this.#onGestureBlur);
 	}
 
 	/**
@@ -173,14 +210,17 @@ export class ParameterChangeScheduler {
 	 * Schedule a change: it replaces a pending change of the parameter. A
 	 * timeout of 0 sends all pending changes right away (once the current
 	 * task scheduled its changes: changes with a timeout of 0 of the same
-	 * task are sent in one request), otherwise the countdown restarts with
-	 * the longest timeout of all pending changes.
+	 * task are sent in one request; during a pointer gesture once it ended),
+	 * otherwise the countdown restarts with the timeout of this change.
 	 */
 	schedule(change: IScheduledParameterChange): void {
-		this.#pending.set(
-			ParameterChangeScheduler.key(change.namespace, change.parameterId),
-			change,
+		const key = ParameterChangeScheduler.key(
+			change.namespace,
+			change.parameterId,
 		);
+		// the latest change is the last entry (see #restart)
+		this.#pending.delete(key);
+		this.#pending.set(key, change);
 		this.#notify();
 		if (change.timeout <= 0) {
 			this.#clearTimer();
@@ -188,9 +228,13 @@ export class ParameterChangeScheduler {
 			this.#flushQueued = true;
 			queueMicrotask(() => {
 				this.#flushQueued = false;
-				void this.flush();
+				this.#flushUnlessGesture();
 			});
-		} else if (this.#heldPointers.size === 0 && !this.#flushQueued)
+		} else if (
+			this.#heldPointers.size === 0 &&
+			!this.#flushQueued &&
+			!this.#flushAfterGesture
+		)
 			this.#restart();
 	}
 
@@ -208,9 +252,9 @@ export class ParameterChangeScheduler {
 	/**
 	 * A pointer was pressed in a viewport (the user starts a new move, e.g. of
 	 * another object controlled by another parameter): the countdown pauses
-	 * until the pointer is released, then restarts with the longest timeout of
-	 * the pending changes. Otherwise a pending change of an earlier move could
-	 * be sent in the middle of the new move.
+	 * until the pointer is released, then restarts with the timeout of the
+	 * latest pending change. Otherwise a pending change of an earlier move
+	 * could be sent in the middle of the new move.
 	 *
 	 * The scheduler observes the release itself: the press may unmount the
 	 * component which reported it (e.g. a click into the scene closes the
@@ -286,6 +330,8 @@ export class ParameterChangeScheduler {
 	/** Send all pending changes now. */
 	async flush(): Promise<void> {
 		this.#clearTimer();
+		this.#clearGestureTimer();
+		this.#flushAfterGesture = false;
 		if (this.#pending.size === 0) return;
 		if (!this.#send) {
 			Logger.warn("No sender for the pending parameter changes.");
@@ -334,6 +380,9 @@ export class ParameterChangeScheduler {
 	/** Drop all pending changes and held pointers (tests). */
 	reset(): void {
 		this.#clearTimer();
+		this.#clearGestureTimer();
+		this.#flushAfterGesture = false;
+		this.#gesturePointers.clear();
 		this.#pending.clear();
 		this.#heldPointers.clear();
 		this.#observeRelease(false);
@@ -362,14 +411,16 @@ export class ParameterChangeScheduler {
 		target[method]("blur", this.#onBlur);
 	}
 
+	/**
+	 * Restart the countdown with the timeout of the latest pending change
+	 * (the last entry, see {@link schedule}).
+	 */
 	#restart(): void {
 		this.#clearTimer();
-		const timeout = Math.max(
-			...[...this.#pending.values()].map((change) => change.timeout),
-		);
+		const timeout = [...this.#pending.values()].at(-1)?.timeout ?? 0;
 		this.#timer = setTimeout(() => {
 			this.#timer = undefined;
-			void this.flush();
+			this.#flushUnlessGesture();
 		}, timeout);
 	}
 
@@ -377,6 +428,54 @@ export class ParameterChangeScheduler {
 		if (this.#timer === undefined) return;
 		clearTimeout(this.#timer);
 		this.#timer = undefined;
+	}
+
+	/** Send the pending changes now, or at the end of the pointer gesture. */
+	#flushUnlessGesture(): void {
+		if (this.#gesturePointers.size === 0) {
+			void this.flush();
+			return;
+		}
+		if (this.#flushAfterGesture) return;
+		this.#flushAfterGesture = true;
+		// a release which is never observed (e.g. outside of the window) must
+		// not hold the changes back
+		this.#gestureTimer = setTimeout(
+			() => void this.flush(),
+			MAX_GESTURE_DEFERRAL,
+		);
+	}
+
+	readonly #onGesturePointerDown = (event: Event) =>
+		this.#gesturePointers.add((event as PointerEvent).pointerId);
+
+	readonly #onGesturePointerUp = (event: Event) => {
+		if (!this.#gesturePointers.delete((event as PointerEvent).pointerId))
+			return;
+		if (this.#gesturePointers.size === 0) this.#endGesture();
+	};
+
+	readonly #onGestureBlur = () => {
+		if (this.#gesturePointers.size === 0) return;
+		this.#gesturePointers.clear();
+		this.#endGesture();
+	};
+
+	/**
+	 * The pointer gesture ended: a send waiting for it starts after the
+	 * click caused by the gesture (dispatched after the release), which may
+	 * schedule a change of its own.
+	 */
+	#endGesture(): void {
+		if (!this.#flushAfterGesture) return;
+		this.#clearGestureTimer();
+		this.#gestureTimer = setTimeout(() => void this.flush(), 0);
+	}
+
+	#clearGestureTimer(): void {
+		if (this.#gestureTimer === undefined) return;
+		clearTimeout(this.#gestureTimer);
+		this.#gestureTimer = undefined;
 	}
 
 	private static key(namespace: string, parameterId: string): string {

@@ -1,4 +1,5 @@
 import {
+	MAX_GESTURE_DEFERRAL,
 	ParameterChangeScheduler,
 	ScheduledParameterChanges,
 } from "../parameterChangeScheduler";
@@ -65,15 +66,60 @@ describe("ParameterChangeScheduler", () => {
 		});
 	});
 
-	it("restarts the countdown with the longest pending timeout", () => {
-		schedule("A", "a1", 3000);
-		jest.advanceTimersByTime(2000);
-		// the shorter timeout of B does not shorten the wait
-		schedule("B", "b1", 500);
-		jest.advanceTimersByTime(2999);
-		expect(flush).not.toHaveBeenCalled();
-		jest.advanceTimersByTime(1);
-		expect(flush).toHaveBeenCalledTimes(1);
+	describe("restarts the countdown with the timeout of the latest change", () => {
+		/** Expect the one request to be sent at the given time (in ms). */
+		const expectSentAt = (time: number, elapsed: number) => {
+			jest.advanceTimersByTime(time - elapsed - 1);
+			expect(flush).not.toHaveBeenCalled();
+			jest.advanceTimersByTime(1);
+			expect(flush).toHaveBeenCalledTimes(1);
+			expect(flush).toHaveBeenCalledWith({
+				s_appbuilder: {T: "t1", S: "s1"},
+			});
+		};
+
+		it("a shorter timeout shortens the wait (move, then type soon)", () => {
+			schedule("T", "t1", 5000);
+			jest.advanceTimersByTime(1000);
+			schedule("S", "s1", 2000);
+			expectSentAt(3000, 1000);
+		});
+
+		it("does not prolong the wait (move, then type later)", () => {
+			schedule("T", "t1", 5000);
+			jest.advanceTimersByTime(4000);
+			schedule("S", "s1", 2000);
+			expectSentAt(6000, 4000);
+		});
+
+		it("a longer timeout prolongs the wait (type, then move)", () => {
+			schedule("S", "s1", 2000);
+			jest.advanceTimersByTime(1000);
+			schedule("T", "t1", 5000);
+			expectSentAt(6000, 1000);
+		});
+
+		it("uses the timeout of the latest change of a parameter scheduled before", () => {
+			schedule("T", "t1", 5000);
+			jest.advanceTimersByTime(1000);
+			schedule("S", "s0", 2000);
+			jest.advanceTimersByTime(1000);
+			schedule("S", "s1", 2000);
+			jest.advanceTimersByTime(1500);
+			// the replaced change of S is the latest, not the change of T
+			schedule("S", "s1", 2000);
+			expectSentAt(5500, 3500);
+		});
+
+		it("after the release of a held pointer", () => {
+			schedule("S", "s1", 2000);
+			scheduler.holdPointer(1);
+			schedule("T", "t1", 5000);
+			jest.advanceTimersByTime(10000);
+			expect(flush).not.toHaveBeenCalled();
+			scheduler.releasePointer(1);
+			expectSentAt(5000, 0);
+		});
 	});
 
 	it("sends all pending values right away for a timeout of 0", () => {
@@ -273,6 +319,108 @@ describe("ParameterChangeScheduler", () => {
 			const releasePointer = jest.spyOn(observed, "releasePointer");
 			release("pointerup", 1);
 			expect(releasePointer).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("waits for the end of a pointer gesture", () => {
+		let target: EventTarget;
+		let observed: ParameterChangeScheduler;
+
+		const pointer = (type: string, pointerId = 1) =>
+			target.dispatchEvent(Object.assign(new Event(type), {pointerId}));
+		const scheduleObserved = (
+			parameterId: string,
+			value: string,
+			timeout: number,
+		) =>
+			observed.schedule({
+				namespace: "s_appbuilder",
+				parameterId,
+				value,
+				timeout,
+			});
+
+		beforeEach(() => {
+			target = new EventTarget();
+			observed = createScheduler(target);
+		});
+
+		afterEach(() => observed.reset());
+
+		it("sends a change of the press together with the one of the click", () => {
+			// pressing a chip blurs a text input, which sends its change
+			pointer("pointerdown");
+			scheduleObserved("A", "a1", 0);
+			// (the fake timers queue the microtasks)
+			jest.runAllTicks();
+			expect(flush).not.toHaveBeenCalled();
+			// the click on the chip follows the release
+			pointer("pointerup");
+			scheduleObserved("B", "b1", 0);
+			jest.runAllTicks();
+			jest.advanceTimersByTime(0);
+			expect(flush).toHaveBeenCalledTimes(1);
+			expect(flush).toHaveBeenCalledWith({
+				s_appbuilder: {A: "a1", B: "b1"},
+			});
+		});
+
+		it("sends after the release when no click schedules a change", () => {
+			pointer("pointerdown");
+			scheduleObserved("A", "a1", 0);
+			jest.runAllTicks();
+			pointer("pointerup");
+			expect(flush).not.toHaveBeenCalled();
+			jest.advanceTimersByTime(0);
+			expect(flush).toHaveBeenCalledWith({s_appbuilder: {A: "a1"}});
+		});
+
+		it("defers a countdown elapsing during the gesture", () => {
+			scheduleObserved("A", "a1", 500);
+			pointer("pointerdown");
+			jest.advanceTimersByTime(500);
+			expect(flush).not.toHaveBeenCalled();
+			// a change with a timeout of its own goes along
+			scheduleObserved("B", "b1", 3000);
+			pointer("pointercancel");
+			jest.advanceTimersByTime(0);
+			expect(flush).toHaveBeenCalledTimes(1);
+			expect(flush).toHaveBeenCalledWith({
+				s_appbuilder: {A: "a1", B: "b1"},
+			});
+			jest.advanceTimersByTime(3000);
+			expect(flush).toHaveBeenCalledTimes(1);
+		});
+
+		it("waits for the release of all pressed pointers, or a blur", () => {
+			pointer("pointerdown", 1);
+			pointer("pointerdown", 2);
+			scheduleObserved("A", "a1", 0);
+			jest.runAllTicks();
+			pointer("pointerup", 1);
+			jest.advanceTimersByTime(0);
+			expect(flush).not.toHaveBeenCalled();
+			target.dispatchEvent(new Event("blur"));
+			jest.advanceTimersByTime(0);
+			expect(flush).toHaveBeenCalledTimes(1);
+		});
+
+		it(`sends after ${MAX_GESTURE_DEFERRAL} ms without a release`, () => {
+			pointer("pointerdown");
+			scheduleObserved("A", "a1", 0);
+			jest.runAllTicks();
+			jest.advanceTimersByTime(MAX_GESTURE_DEFERRAL - 1);
+			expect(flush).not.toHaveBeenCalled();
+			jest.advanceTimersByTime(1);
+			expect(flush).toHaveBeenCalledTimes(1);
+		});
+
+		it("sends right away after the gesture", () => {
+			pointer("pointerdown");
+			pointer("pointerup");
+			scheduleObserved("A", "a1", 0);
+			jest.runAllTicks();
+			expect(flush).toHaveBeenCalledTimes(1);
 		});
 	});
 
