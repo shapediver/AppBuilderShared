@@ -422,6 +422,27 @@ describe("ParameterChangeScheduler", () => {
 			jest.runAllTicks();
 			expect(flush).toHaveBeenCalledTimes(1);
 		});
+
+	it.each([
+		["takes", () => observed.take()],
+		["discards", () => observed.discard()],
+	])(
+		"%s clears a deferred gesture flush",
+		(_operation, consumePendingChanges) => {
+			pointer("pointerdown");
+			scheduleObserved("A", "a1", 0);
+			jest.runAllTicks();
+
+			consumePendingChanges();
+			scheduleObserved("B", "b1", 500);
+			pointer("pointerup");
+			jest.advanceTimersByTime(0);
+			expect(flush).not.toHaveBeenCalled();
+
+			jest.advanceTimersByTime(500);
+			expect(flush).toHaveBeenCalledWith({s_appbuilder: {B: "b1"}});
+		},
+	);
 	});
 
 	it("groups the values by namespace", () => {

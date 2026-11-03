@@ -350,6 +350,8 @@ export class ParameterChangeScheduler {
 	 */
 	take(): ScheduledParameterChanges {
 		this.#clearTimer();
+		this.#clearGestureTimer();
+		this.#flushAfterGesture = false;
 		const changes = [...this.#pending.values()];
 		this.#pending.clear();
 		if (changes.length > 0) this.#notify();
@@ -372,7 +374,11 @@ export class ParameterChangeScheduler {
 			this.#pending.delete(key);
 			discarded.push(change);
 		}
-		if (this.#pending.size === 0) this.#clearTimer();
+		if (this.#pending.size === 0) {
+			this.#clearTimer();
+			this.#clearGestureTimer();
+			this.#flushAfterGesture = false;
+		}
 		if (discarded.length > 0) this.#notify();
 		discarded.forEach((change) => change.onDiscard?.());
 	}
