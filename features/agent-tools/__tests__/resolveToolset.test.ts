@@ -6,7 +6,9 @@ describe("resolveToolset", () => {
 	it("returns all in-scope generic tools when agent is undefined", () => {
 		const names = resolveToolset(undefined).map((t) => t.name);
 		expect(names).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
+		expect(names).toContain("get_output");
 		expect(names).not.toContain("ask_user_question");
+		expect(names).not.toContain("get_metric");
 	});
 
 	it("ignores specificTools", () => {
@@ -60,7 +62,7 @@ describe("resolveToolset", () => {
 		);
 	});
 
-	it("drops ask_user_question even if listed", () => {
+	it("drops ask_user_question and get_metric even if listed", () => {
 		const agent: IAppBuilderAgent = {
 			id: "a",
 			name: "A",
@@ -69,8 +71,11 @@ describe("resolveToolset", () => {
 			genericTools: [
 				{name: "ask_user_question"},
 				{name: "get_metric"},
+				{name: "get_output"},
 			],
 		};
-		expect(resolveToolset(agent).map((t) => t.name)).toEqual(["get_metric"]);
+		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
+			"get_output",
+		]);
 	});
 });

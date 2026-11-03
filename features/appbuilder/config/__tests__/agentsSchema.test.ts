@@ -121,6 +121,18 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts saved get_metric and the get_output tool", () => {
+		const result = validateAppBuilder(
+			layout([
+				{
+					...validAgent,
+					genericTools: [{name: "get_metric"}, {name: "get_output"}],
+				},
+			]),
+		);
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects an unknown generic tool name", () => {
 		const result = validateAppBuilder(
 			layout([

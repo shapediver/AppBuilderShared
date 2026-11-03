@@ -62,7 +62,7 @@ function stubHandlers(): IToolsApiHandlerMap {
 		set_camera: unused,
 		get_camera: unused,
 		get_screenshot: unused,
-		get_metric: unused,
+		get_output: unused,
 	};
 }
 

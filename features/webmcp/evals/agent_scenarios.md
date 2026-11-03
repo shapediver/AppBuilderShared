@@ -13,7 +13,7 @@ Goal: exercise **every in-scope generic tool** and **every parameter type this m
     - First arg is the **RegisteredTool** from `getTools()`, not a string name.
     - Second arg is a **JSON string**.
     - Chrome 154+: `tool.inputSchema` is an **object**. Older Chrome: string. Normalize with `typeof tool.inputSchema === "string" ? JSON.parse(tool.inputSchema) : tool.inputSchema`.
-5. Default toolset (9 names, snake_case): `list_parameter_definitions`, `get_parameter_values`, `set_parameter_values`, `list_action_controls`, `trigger_action_control`, `set_camera`, `get_camera`, `get_screenshot`, `get_metric`. No `create_model_state` / `import_model_state` / `ask_user_question` tools.
+5. Default toolset (9 names, snake_case): `list_parameter_definitions`, `get_parameter_values`, `set_parameter_values`, `list_action_controls`, `trigger_action_control`, `set_camera`, `get_camera`, `get_screenshot`, `get_output`. No `create_model_state` / `import_model_state` / `ask_user_question` / `get_metric` tools.
 
 **Schema reject:** invalid input returns JSON (`errors: [{ name: "*", message }]` or `{ success: false, message }` or `{ found: false, message }`) — does **not** throw.
 
@@ -51,7 +51,7 @@ Session JSON is ticket-only. Parameters come from the live ShapeDiver model.
 
 **Actions** from `list_action_controls` `{}`: camera views (`Zoom extents`, `Perspective`, `Top`, …), `Undo`, `Redo`, `Reset to default parameters`, `Create model state`, `Import model state`. Save/restore go through these actions, not deleted create/import tools.
 
-**Outputs:** `get_metric` `{}` → `{ found: false }` (no `AgentMetric` output).
+**Outputs:** `get_output` `{"output":"AgentMetric"}` → `{ found: false }` (no `AgentMetric` output). Saved apps may still list `get_metric`; that name is not a tool.
 
 StringList values are **0-based integer indices**, never labels, never `{index:N}`.
 
@@ -314,15 +314,15 @@ Expect: `{success: true, image_url}` data URL (`data:image/`).
 `{"foo":1}`
 Expect: schema reject / `{success: false}`.
 
-#### 48. get_metric_missing
+#### 48. get_output_missing
 
-`get_metric` `{}`
+`get_output` `{"output":"AgentMetric"}`
 Expect: `{found: false}` (no `message` required).
 
-#### 49. get_metric_reject
+#### 49. get_output_reject
 
-`{"name":"AgentMetric"}`
-Expect: `{found: false, message}` schema reject, not a fake metric.
+`get_output` `{}`
+Expect: `{found: false, message}` schema reject, because `output` is required.
 
 ### G. Workflow
 
@@ -338,7 +338,7 @@ Expect: `{found: false, message}` schema reject, not a fake metric.
 #### 51. tool_inventory
 
 `getTools()` names sorted equal:
-`get_camera`, `get_metric`, `get_parameter_values`, `get_screenshot`, `list_action_controls`, `list_parameter_definitions`, `set_camera`, `set_parameter_values`, `trigger_action_control`.
+`get_camera`, `get_output`, `get_parameter_values`, `get_screenshot`, `list_action_controls`, `list_parameter_definitions`, `set_camera`, `set_parameter_values`, `trigger_action_control`.
 
 ## Report format
 

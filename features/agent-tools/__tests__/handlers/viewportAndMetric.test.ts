@@ -1,6 +1,6 @@
 import type {AgentToolsDeps} from "../../model/agentToolsDeps";
 import {handleGetCamera} from "../../model/handlers/getCamera";
-import {handleGetMetric} from "../../model/handlers/getMetric";
+import {handleGetOutput} from "../../model/handlers/getOutput";
 import {handleGetScreenshot} from "../../model/handlers/getScreenshot";
 import {handleSetCamera} from "../../model/handlers/setCamera";
 
@@ -270,32 +270,58 @@ describe("handleGetScreenshot", () => {
 	});
 });
 
-describe("handleGetMetric", () => {
-	it("returns found false without a message when AgentMetric is missing", async () => {
-		const result = await handleGetMetric({}, createDeps());
+describe("handleGetOutput", () => {
+	it("returns found false without a message when the output is missing", async () => {
+		const result = await handleGetOutput(
+			{output: "AgentMetric"},
+			createDeps(),
+		);
 
 		expect(result).toEqual({found: false});
 	});
 
-	it("returns found false with a message when extra keys are present", async () => {
-		const result = await handleGetMetric({extra: true}, createDeps());
+	it("returns found false with a message when output is missing", async () => {
+		const result = await handleGetOutput({}, createDeps());
 
 		expect(result.found).toBe(false);
 		expect(typeof result.message).toBe("string");
 	});
 
-	it("returns found true with the AgentMetric content", async () => {
-		const content = {price: 12};
-		const result = await handleGetMetric(
-			{},
-			createDeps({
-				getOutputByName: (namespace, name) =>
-					namespace === "c" && name === "AgentMetric"
-						? {content}
-						: undefined,
-			}),
+	it("returns found false with a message when extra keys are present", async () => {
+		const result = await handleGetOutput(
+			{output: "AgentMetric", extra: true},
+			createDeps(),
 		);
 
-		expect(result).toEqual({found: true, value: content});
+		expect(result.found).toBe(false);
+		expect(typeof result.message).toBe("string");
+	});
+
+	it("reads the controller session when namespace is omitted", async () => {
+		const content = {price: 12};
+		const getOutputByName = jest.fn((namespace: string, name: string) =>
+			namespace === "c" && name === "AgentMetric" ? {content} : undefined,
+		);
+		const result = await handleGetOutput(
+			{output: "AgentMetric"},
+			createDeps({getOutputByName}),
+		);
+
+		expect(getOutputByName).toHaveBeenCalledWith("c", "AgentMetric");
+		expect(result).toEqual({found: true, content});
+	});
+
+	it("reads the requested namespace", async () => {
+		const content = [{href: "https://example.com"}];
+		const getOutputByName = jest.fn((namespace: string, name: string) =>
+			namespace === "other" && name === "Drawing" ? {content} : undefined,
+		);
+		const result = await handleGetOutput(
+			{output: "Drawing", namespace: "other"},
+			createDeps({getOutputByName}),
+		);
+
+		expect(getOutputByName).toHaveBeenCalledWith("other", "Drawing");
+		expect(result).toEqual({found: true, content});
 	});
 });

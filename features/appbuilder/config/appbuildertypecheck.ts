@@ -1713,6 +1713,9 @@ const GenericToolSettingsSchema = z.discriminatedUnion("name", [
 	z.strictObject({
 		name: z.literal(GenericToolName.GetMetric),
 	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.GetOutput),
+	}),
 ]);
 
 /**
