@@ -1,4 +1,5 @@
 import {GenericToolName} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {AGENT_METRIC_OUTPUT_NAME} from "./getOutput";
 import type {InScopeGenericToolName} from "./inScopeGenericTools";
 
 export type AgentToolMeta = {
@@ -86,11 +87,13 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Success: { success: true, image_url } with a data URL. Failure: { success: false, message }.",
 		annotations: {readOnlyHint: true},
 	},
-	[GenericToolName.GetMetric]: {
+	[GenericToolName.GetOutput]: {
 		description:
-			"Read the model's AgentMetric data output. " +
-			"Call with no arguments. " +
-			"If the output exists: { found: true, value } where value is the output content. " +
+			"Read one model output by id, name, or displayname. " +
+			"Input: { output, namespace? }. output is required. " +
+			"Omit namespace to read the controller session. " +
+			`The model's ${AGENT_METRIC_OUTPUT_NAME} data output, when present, is read with output "${AGENT_METRIC_OUTPUT_NAME}". ` +
+			"If the output exists: { found: true, content } where content is the latest output content. " +
 			"If missing: { found: false }.",
 		annotations: {readOnlyHint: true},
 	},

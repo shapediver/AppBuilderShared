@@ -235,7 +235,7 @@ describe("resolveSpecificTools", () => {
 				description: "later",
 				inputSchema: {type: "object"},
 			},
-			{name: "get_metric", inputSchema: {type: "object"}},
+			{name: "get_output", inputSchema: {type: "object"}},
 		],
 	};
 
@@ -263,7 +263,7 @@ describe("resolveSpecificTools", () => {
 	});
 
 	it("keeps the last specific tool and skips a registered generic name", () => {
-		const tools = resolveSpecificTools(agent, ["get_metric"]);
+		const tools = resolveSpecificTools(agent, ["get_output"]);
 		expect(tools).toEqual([
 			{
 				name: "set_length",

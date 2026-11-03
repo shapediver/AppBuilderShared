@@ -24,7 +24,7 @@ import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {buildAgentToolsDeps} from "./buildAgentToolsDeps";
 import {handleGetCamera} from "./handlers/getCamera";
-import {handleGetMetric} from "./handlers/getMetric";
+import {handleGetOutput} from "./handlers/getOutput";
 import {handleGetParameterValues} from "./handlers/getParameterValues";
 import {handleGetScreenshot} from "./handlers/getScreenshot";
 import {handleListActionControls} from "./handlers/listActionControls";
@@ -50,7 +50,7 @@ function settingsForTool<N extends InScopeGenericToolName>(
 
 /**
  * Builds the live handler map for in-scope generic tools (parameters, actions,
- * camera, screenshot, metric). Map identity is stable (`useMemo` []); deps are
+ * camera, screenshot, output). Map identity is stable (`useMemo` []); deps are
  * read from a ref so WebMCP and ToolsApi can share one object.
  *
  * This is execution, not transport. {@link useWebMcpTools} and
@@ -155,8 +155,8 @@ export function useAgentToolHandlers(args: {
 				handleGetCamera(input, depsRef.current),
 			[GenericToolName.GetScreenshot]: (input) =>
 				handleGetScreenshot(input, depsRef.current),
-			[GenericToolName.GetMetric]: (input) =>
-				handleGetMetric(input, depsRef.current),
+			[GenericToolName.GetOutput]: (input) =>
+				handleGetOutput(input, depsRef.current),
 		}),
 		[],
 	);
