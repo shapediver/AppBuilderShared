@@ -389,4 +389,158 @@ describe("applyParameterUpdates", () => {
 		});
 		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
+
+	it("writes the slider step and reports the snap", async () => {
+		const param = createMockParameter({
+			definition: {
+				id: "planks-width",
+				name: "planks width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 1000,
+				step: 50,
+				decimalplaces: 0,
+				defval: 200,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 200} as IShapeDiverParameter<any>["state"],
+		});
+
+		const result = await applyParameterUpdates(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "planks width", value: 230}],
+			batchParameterValueUpdate,
+		);
+
+		expect(result).toEqual({
+			applied: ["planks-width"],
+			errors: [],
+			adjustments: [{name: "planks width", requested: 230, value: 250}],
+		});
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			[namespace]: {"planks-width": 250},
+		});
+	});
+
+	it("uses the slider settings step and marks", async () => {
+		const param = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.INT,
+				min: 0,
+				max: 400,
+				step: 10,
+				defval: 200,
+				settings: {
+					step: 50,
+					marks: [{value: 200}, {value: 250}],
+					restrictToMarks: true,
+				},
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 200} as IShapeDiverParameter<any>["state"],
+		});
+
+		const result = await applyParameterUpdates(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "Width", value: 230}],
+			batchParameterValueUpdate,
+		);
+
+		expect(result.adjustments).toEqual([
+			{name: "Width", requested: 230, value: 250},
+		]);
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			[namespace]: {width: 250},
+		});
+	});
+
+	it("rounds extra decimal places and omits adjustments when the value already fits", async () => {
+		const param = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 10,
+				decimalplaces: 1,
+				defval: 1,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 1} as IShapeDiverParameter<any>["state"],
+		});
+
+		const snapped = await applyParameterUpdates(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "Width", value: 1.26}],
+			batchParameterValueUpdate,
+		);
+		expect(snapped.adjustments).toEqual([
+			{name: "Width", requested: 1.26, value: 1.3},
+		]);
+
+		batchParameterValueUpdate.mockClear();
+		const exact = await applyParameterUpdates(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "Width", value: 1.3}],
+			batchParameterValueUpdate,
+		);
+		expect(exact).toEqual({applied: ["width"], errors: []});
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			[namespace]: {width: 1.3},
+		});
+	});
+
+	it("does not report a snap when complete mode writes nothing", async () => {
+		const width = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 1000,
+				step: 50,
+				decimalplaces: 0,
+				defval: 200,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 200} as IShapeDiverParameter<any>["state"],
+		});
+		const missing = createMockParameter({
+			definition: {
+				id: "other",
+				name: "Other",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 1,
+				defval: 0,
+			} as IShapeDiverParameter<any>["definition"],
+			actions: {
+				isValid: () => false,
+			} as IShapeDiverParameter<any>["actions"],
+		});
+
+		const result = await applyParameterUpdates(
+			namespace,
+			getParametersFor({[namespace]: [width, missing]}),
+			[
+				{name: "Width", value: 230},
+				{name: "Other", value: 5},
+			],
+			batchParameterValueUpdate,
+			"complete",
+		);
+
+		expect(result).toEqual({
+			applied: [],
+			errors: [
+				{
+					name: "Other",
+					message: expect.any(String),
+				},
+			],
+		});
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
 });

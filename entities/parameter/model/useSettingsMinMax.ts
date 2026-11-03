@@ -2,6 +2,7 @@ import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilde
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {useEffect, useMemo} from "react";
 import {IShapeDiverParameterDefinition} from "../config/parameter";
+import {narrowSliderBounds} from "../lib/numericSliderValue";
 
 /**
  * Validates number parameter settings and derives slider-only min/max bounds
@@ -24,23 +25,10 @@ export function useSettingsMinMax(definition: IShapeDiverParameterDefinition) {
 		? validatedSettings.data.max
 		: undefined;
 
-	const {effectiveMin, effectiveMax} = useMemo(() => {
-		let clampedMin =
-			settingsMin !== undefined
-				? Math.min(defMax, Math.max(defMin, settingsMin))
-				: defMin;
-		let clampedMax =
-			settingsMax !== undefined
-				? Math.max(defMin, Math.min(defMax, settingsMax))
-				: defMax;
-		if (clampedMin > clampedMax) {
-			[clampedMin, clampedMax] = [clampedMax, clampedMin];
-		}
-		return {
-			effectiveMin: clampedMin,
-			effectiveMax: clampedMax,
-		};
-	}, [defMin, defMax, settingsMin, settingsMax]);
+	const {min: effectiveMin, max: effectiveMax} = useMemo(
+		() => narrowSliderBounds(defMin, defMax, settingsMin, settingsMax),
+		[defMin, defMax, settingsMin, settingsMax],
+	);
 
 	useEffect(() => {
 		if (settingsMin !== undefined && settingsMin < defMin) {

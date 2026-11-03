@@ -1,7 +1,9 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {projectNumericSliderValue} from "@AppBuilderLib/entities/parameter/lib/numericSliderValue";
 import type {
 	ParameterUpdateInput,
+	ParameterValueAdjustment,
 	SetParameterValuesError,
 	SetParameterValuesOutput,
 } from "@AppBuilderLib/features/agent-tools/config/setParameterValues";
@@ -17,8 +19,18 @@ type PrepareOneUpdateResult =
 			paramId: string;
 			namespace: string;
 			storeValue: unknown;
+			adjustment?: ParameterValueAdjustment;
 	  }
 	| {ok: false; error: SetParameterValuesError};
+
+function finiteNumber(value: unknown): number | undefined {
+	if (typeof value === "number" && Number.isFinite(value)) return value;
+	if (typeof value === "string" && value.trim() !== "") {
+		const parsed = Number(value);
+		if (Number.isFinite(parsed)) return parsed;
+	}
+	return undefined;
+}
 
 function prepareOneUpdate(
 	update: ParameterUpdateInput,
@@ -77,6 +89,27 @@ function prepareOneUpdate(
 		};
 	}
 
+	const requested = finiteNumber(prepared.storeValue);
+	if (requested !== undefined) {
+		const projected = projectNumericSliderValue(
+			parameter.definition,
+			requested,
+		);
+		if (projected !== undefined && projected !== requested) {
+			return {
+				ok: true,
+				paramId,
+				namespace: targetNamespace,
+				storeValue: projected,
+				adjustment: {
+					name: update.name,
+					requested,
+					value: projected,
+				},
+			};
+		}
+	}
+
 	return {
 		ok: true,
 		paramId,
@@ -102,6 +135,7 @@ export async function applyParameterUpdates(
 	context: ParameterValuePrepareContext = {},
 ): Promise<SetParameterValuesOutput> {
 	const errors: SetParameterValuesError[] = [];
+	const adjustments: ParameterValueAdjustment[] = [];
 	const valuesByNamespace: Record<string, Record<string, unknown>> = {};
 	const processedIds = new Set<string>();
 
@@ -120,6 +154,7 @@ export async function applyParameterUpdates(
 
 		(valuesByNamespace[prepared.namespace] ??= {})[prepared.paramId] =
 			prepared.storeValue;
+		if (prepared.adjustment) adjustments.push(prepared.adjustment);
 	}
 
 	const blockAll = updateMode === "complete" && errors.length > 0;
@@ -130,5 +165,9 @@ export async function applyParameterUpdates(
 		await batchUpdate(valuesByNamespace);
 	}
 
-	return {applied, errors};
+	return {
+		applied,
+		errors,
+		...(blockAll || adjustments.length === 0 ? {} : {adjustments}),
+	};
 }

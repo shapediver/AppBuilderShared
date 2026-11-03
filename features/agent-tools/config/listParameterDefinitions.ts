@@ -50,6 +50,8 @@ const ListParameterDefinitionItemSchema = z.object({
 	tooltip: z.string().optional(),
 	min: z.number().nullable().optional(),
 	max: z.number().nullable().optional(),
+	/** Slider step for Float, Int, Even, and Odd. */
+	step: z.number().optional(),
 	decimalplaces: z.number().nullable().optional(),
 	choices: z.array(z.string()).optional(),
 	settings: parameterSettingsSchema.optional(),
