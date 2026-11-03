@@ -16,7 +16,12 @@ export enum GenericToolName {
 	GetCamera = "get_camera",
 	GetScreenshot = "get_screenshot",
 	AskUserQuestion = "ask_user_question",
+	/**
+	 * Kept so saved agent JSON that names this tool still validates.
+	 * The tool is not exposed. Read outputs with {@link GenericToolName.GetOutput}.
+	 */
 	GetMetric = "get_metric",
+	GetOutput = "get_output",
 }
 
 /** Agent-specific reference for a parameter */
@@ -174,6 +179,10 @@ export type GetMetricToolSettings = {
 	name: GenericToolName.GetMetric;
 };
 
+export type GetOutputToolSettings = {
+	name: GenericToolName.GetOutput;
+};
+
 export type GenericToolSettings =
 	| ListParameterDefinitionsToolSettings
 	| GetParameterValuesToolSettings
@@ -184,7 +193,8 @@ export type GenericToolSettings =
 	| GetCameraToolSettings
 	| GetScreenshotToolSettings
 	| AskUserQuestionToolSettings
-	| GetMetricToolSettings;
+	| GetMetricToolSettings
+	| GetOutputToolSettings;
 
 /**
  * Settings of a tool to be executed remotely, typically by an API call,

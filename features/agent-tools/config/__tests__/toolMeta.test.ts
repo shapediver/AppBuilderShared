@@ -3,7 +3,6 @@ import {AGENT_TOOL_META} from "../toolMeta";
 const noArgumentTools = [
 	"list_parameter_definitions",
 	"list_action_controls",
-	"get_metric",
 	"get_camera",
 ] as const;
 
@@ -26,6 +25,15 @@ describe("AGENT_TOOL_META", () => {
 			);
 		},
 	);
+
+	it("get_output describes the lookup, AgentMetric, and raw content", () => {
+		const description = AGENT_TOOL_META.get_output.description;
+		expect(description).toMatch(/output/);
+		expect(description).toMatch(/namespace/);
+		expect(description).toMatch(/AgentMetric/);
+		expect(description).toMatch(/content/);
+		expect(description).toMatch(/found: false/);
+	});
 
 	it("get_screenshot describes image_url and optional capture options", () => {
 		const description = AGENT_TOOL_META.get_screenshot.description;

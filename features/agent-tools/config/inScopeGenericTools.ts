@@ -3,10 +3,14 @@ import {
 	type GenericToolSettings,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 
-/** Generic tools Step 1 exposes. Excludes `GenericToolName.AskUserQuestion`. */
+/**
+ * Generic tools the agent can call.
+ * Excludes `ask_user_question` and `get_metric`.
+ * `get_metric` stays in the agent schema so saved apps still load, and is ignored.
+ */
 export type InScopeGenericToolName = Exclude<
 	GenericToolName,
-	GenericToolName.AskUserQuestion
+	GenericToolName.AskUserQuestion | GenericToolName.GetMetric
 >;
 
 export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [
@@ -18,7 +22,7 @@ export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [
 	GenericToolName.SetCamera,
 	GenericToolName.GetCamera,
 	GenericToolName.GetScreenshot,
-	GenericToolName.GetMetric,
+	GenericToolName.GetOutput,
 ];
 
 const IN_SCOPE_GENERIC_TOOL_NAME_SET = new Set<string>(
@@ -65,7 +69,7 @@ const DEFAULT_GENERIC_TOOL_SETTINGS: DefaultGenericToolSettings = {
 	},
 	[GenericToolName.GetCamera]: {name: GenericToolName.GetCamera},
 	[GenericToolName.GetScreenshot]: {name: GenericToolName.GetScreenshot},
-	[GenericToolName.GetMetric]: {name: GenericToolName.GetMetric},
+	[GenericToolName.GetOutput]: {name: GenericToolName.GetOutput},
 };
 
 /** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */

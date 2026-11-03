@@ -8,7 +8,7 @@ export type GetOutputContentResult = {
 
 /**
  * Latest output content by id, name, or displayname.
- * Shared by e-commerce getOutput and tools getMetric.
+ * Shared by e-commerce getOutput and the get_output tool.
  */
 export function getOutputContent(
 	namespace: string,
