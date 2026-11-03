@@ -18,6 +18,8 @@ export type UseAgentToolTransportsProps = {
 	agentWindow?: Window | null;
 	/** Controller session fields for ToolsApi `getSessionInfo`. */
 	sessionInfo?: IAgentSessionInfo;
+	/** Viewer session `refreshJwtToken`, forwarded to ToolsApi. */
+	refreshJwtToken?: () => Promise<string>;
 	/**
 	 * Resolved `AgentUi.showThreadHistory`, sent on `getAgentConfig` when the
 	 * peer connects. Omitted by callers that predate the agent chrome.
@@ -50,6 +52,7 @@ export function useAgentToolTransports(
 		appBuilderParseSettled,
 		agentWindow = null,
 		sessionInfo,
+		refreshJwtToken,
 		showThreadHistory,
 		createThreadOnLoad,
 		agentId,
@@ -86,6 +89,7 @@ export function useAgentToolTransports(
 		snapshotComplete: runtime.snapshotComplete,
 		agentConfig: runtime.agentConfig,
 		sessionInfo,
+		refreshJwtToken,
 		showThreadHistory,
 		createThreadOnLoad,
 		modelState,

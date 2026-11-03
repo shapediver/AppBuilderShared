@@ -39,6 +39,13 @@ export const MESSAGE_TYPE_GET_AGENT_CONFIG = "GET_AGENT_CONFIG";
 export const MESSAGE_TYPE_GET_SESSION_INFO = "GET_SESSION_INFO";
 
 /**
+ * CrossWindow message type: agent asks App Builder for a new geometry JWT.
+ * Payload is unused. Reply is `{ jwtToken }`. Throws when this session has
+ * no `refreshJwtToken` callback.
+ */
+export const MESSAGE_TYPE_REFRESH_JWT_TOKEN = "REFRESH_JWT_TOKEN";
+
+/**
  * CrossWindow message type: agent asks App Builder for the complete theme
  * created by `useCustomTheme`. Payload is unused. Reply is {@link IAgentTheme}
  * (`{}` until that hook has published a theme). Never throws across the wire.
@@ -68,7 +75,7 @@ export const MESSAGE_TYPE_IMPORT_MODEL_STATE = "IMPORT_MODEL_STATE";
 /**
  * CrossWindow handshake name for ToolsApi (same role as ECommerce's ready handshake).
  * Listeners for LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO /
- * GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE must be registered **before** this runs,
+ * REFRESH_JWT_TOKEN / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE must be registered **before** this runs,
  * or the agent can send into a window that is not listening yet.
  */
 export const MESSAGE_TYPE_TOOLS_API_HANDSHAKE = "TOOLS_API_HANDSHAKE";
@@ -229,6 +236,12 @@ export interface IToolsApi {
 	execute(data: IExecuteToolData): Promise<unknown>;
 	getAgentConfig(): Promise<IAgentConfigReply | null>;
 	getSessionInfo(): Promise<IAgentSessionInfo>;
+	/**
+	 * New geometry JWT from the viewer session's `refreshJwtToken` callback.
+	 * App Builder also stores it with `setJwtToken`. Throws when this session
+	 * cannot refresh.
+	 */
+	refreshJwtToken(): Promise<{jwtToken: string}>;
 	/** Complete theme from `useCustomTheme`. `{}` until that hook has published. */
 	getTheme(): Promise<IAgentTheme>;
 	/**

@@ -15,6 +15,7 @@ import {
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
 	MESSAGE_TYPE_GET_THEME,
+	MESSAGE_TYPE_REFRESH_JWT_TOKEN,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_THEME_UPDATED,
@@ -42,7 +43,7 @@ function withDefaultTimeout(
 
 /**
  * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- * GET_SESSION_INFO / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE over CrossWindow
+ * GET_SESSION_INFO / REFRESH_JWT_TOKEN / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE over CrossWindow
  * after handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers — App Builder
  * does. Model-state calls are not agent tools.
  *
@@ -143,6 +144,19 @@ export class ToolsApi implements IToolsApi {
 		await this.peerIsReady;
 		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_GET_SESSION_INFO,
+			undefined,
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Ask App Builder for a new geometry JWT. The host runs the viewer
+	 * session's `refreshJwtToken` callback and stores the result.
+	 */
+	async refreshJwtToken(): Promise<{jwtToken: string}> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_REFRESH_JWT_TOKEN,
 			undefined,
 			this.#timeout,
 		);

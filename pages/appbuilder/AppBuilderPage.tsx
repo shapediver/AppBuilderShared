@@ -5,6 +5,8 @@ import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {useInitialAutoAdjust} from "@AppBuilderLib/entities/viewport/model/useInitialAutoAdjust";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {agentSessionInfoForHost} from "@AppBuilderLib/features/agent-tools/lib/agentSessionInfoForHost";
+import {refreshSessionJwtToken} from "@AppBuilderLib/features/agent-tools/lib/refreshSessionJwtToken";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
@@ -32,7 +34,7 @@ import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/Vi
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {useContext, useEffect, useMemo} from "react";
+import {useContext, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -260,17 +262,29 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	useECommerceApiConnectorActions({namespace});
 
+	const sessionApiRef = useRef(sessionApi);
+	sessionApiRef.current = sessionApi;
+	const controllerSessionRef = useRef(controllerSession);
+	controllerSessionRef.current = controllerSession;
+
 	const agentHost = useAppBuilderAgentHost({
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
-		sessionInfo: controllerSession
-			? {
-					jwtToken: controllerSession.jwtToken,
-					slug: controllerSession.slug,
-					modelStateId: controllerSession.modelStateId,
-				}
-			: undefined,
+		sessionInfo: agentSessionInfoForHost(
+			controllerSession,
+			sessionApi?.jwtToken,
+		),
+		refreshJwtToken: async () => {
+			const jwtToken = await refreshSessionJwtToken(
+				sessionApiRef.current,
+			);
+			const session = controllerSessionRef.current;
+			if (session) {
+				session.jwtToken = jwtToken;
+			}
+			return jwtToken;
+		},
 	});
 
 	const showMarkdown =

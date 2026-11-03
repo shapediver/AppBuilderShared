@@ -424,6 +424,49 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
+	it("refreshJwtToken stores the session callback result", async () => {
+		const mock = createMockCrossWindowApi();
+		const sessionInfo = {jwtToken: "old", slug: "my-model"};
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+			sessionInfo,
+			[],
+			undefined,
+			undefined,
+			undefined,
+			async () => "next-token",
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.refreshJwtToken()).resolves.toEqual({
+			jwtToken: "next-token",
+		});
+		await expect(client.getSessionInfo()).resolves.toEqual({
+			jwtToken: "next-token",
+			slug: "my-model",
+		});
+		connector.cancel();
+	});
+
+	it("refreshJwtToken throws when the session cannot refresh", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.refreshJwtToken()).rejects.toThrow(
+			"App Builder cannot refresh the JWT for this session.",
+		);
+		connector.cancel();
+	});
+
 	it("getSessionInfo omits empty and missing fields", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
