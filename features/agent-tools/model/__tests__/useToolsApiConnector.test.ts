@@ -236,6 +236,25 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][11]).toBe(modelState);
 	});
 
+	it("passes refreshJwtToken as getConnectorApi 13th argument", async () => {
+		const refreshJwtToken = async () => "next-token";
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedGenericTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+				refreshJwtToken,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		const refresh = getConnectorApi.mock.calls[0][12] as () => Promise<
+			string
+		>;
+		await expect(refresh()).resolves.toBe("next-token");
+	});
+
 	it("cancels on unmount while peerIsReady is still pending", async () => {
 		const cancel = jest.fn();
 		const peerIsReady = new Promise<{origin: string; name: string}>(() => {

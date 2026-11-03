@@ -5,6 +5,7 @@ import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {useInitialAutoAdjust} from "@AppBuilderLib/entities/viewport/model/useInitialAutoAdjust";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {refreshSessionJwtToken} from "@AppBuilderLib/features/agent-tools/lib/refreshSessionJwtToken";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
@@ -32,7 +33,7 @@ import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/Vi
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {useContext, useEffect, useMemo} from "react";
+import {useContext, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -260,6 +261,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	useECommerceApiConnectorActions({namespace});
 
+	const sessionApiRef = useRef(sessionApi);
+	sessionApiRef.current = sessionApi;
+
 	const agentHost = useAppBuilderAgentHost({
 		namespace,
 		appBuilderData,
@@ -271,6 +275,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					modelStateId: controllerSession.modelStateId,
 				}
 			: undefined,
+		refreshJwtToken: () => refreshSessionJwtToken(sessionApiRef.current),
 	});
 
 	const showMarkdown =

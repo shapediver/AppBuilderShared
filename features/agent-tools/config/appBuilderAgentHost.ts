@@ -9,6 +9,8 @@ export type UseAppBuilderAgentHostProps = {
 	appBuilderParseSettled?: boolean;
 	/** Controller session fields for ToolsApi `getSessionInfo`. */
 	sessionInfo?: IAgentSessionInfo;
+	/** Viewer session `refreshJwtToken`, forwarded to ToolsApi. */
+	refreshJwtToken?: () => Promise<string>;
 };
 
 /**

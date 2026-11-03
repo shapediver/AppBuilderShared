@@ -17,6 +17,7 @@ import {
 	MESSAGE_TYPE_GET_THEME,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
+	MESSAGE_TYPE_REFRESH_JWT_TOKEN,
 	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -54,7 +55,7 @@ function withDefaultTimeout(
 
 /**
  * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG,
- * GET_SESSION_INFO, GET_THEME, CREATE_MODEL_STATE, and IMPORT_MODEL_STATE **before**
+ * GET_SESSION_INFO, REFRESH_JWT_TOKEN, GET_THEME, CREATE_MODEL_STATE, and IMPORT_MODEL_STATE **before**
  * handshake so an eager client cannot race.
  * `cancel()` removes listeners and aborts handshake.
  *
@@ -62,6 +63,7 @@ function withDefaultTimeout(
  * EXECUTE_TOOL → {@link parseExecuteToolData} then {@link executeResolvedTool}.
  * GET_AGENT_CONFIG → {@link agentConfigReplyFrom} (`null` if no Agent config).
  * GET_SESSION_INFO → {@link agentSessionInfoFrom} (`{}` if no session fields).
+ * REFRESH_JWT_TOKEN → `refreshJwtToken`, then `{ jwtToken }`.
  * GET_THEME → the theme `useCustomTheme` published (`{}` until then).
  * CREATE_MODEL_STATE / IMPORT_MODEL_STATE → `modelState` handlers (not agent tools).
  * Malformed EXECUTE_TOOL (missing string `name`) → unknown-tool JSON, not a throw.
@@ -85,6 +87,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		showThreadHistory?: boolean,
 		createThreadOnLoad?: boolean,
 		modelState?: IToolsApiModelStateHandlers,
+		refreshJwtToken?: () => Promise<string>,
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
@@ -126,6 +129,23 @@ export class ToolsApiConnector implements IToolsApiConnector {
 			crossWindowApi.on(MESSAGE_TYPE_GET_SESSION_INFO, async () =>
 				agentSessionInfoFrom(sessionInfo),
 			),
+		);
+		this.#listenerCancels.push(
+			crossWindowApi.on(MESSAGE_TYPE_REFRESH_JWT_TOKEN, async () => {
+				if (!refreshJwtToken) {
+					throw new Error(
+						"App Builder cannot refresh the JWT for this session.",
+					);
+				}
+				const jwtToken = (await refreshJwtToken()).trim();
+				if (!jwtToken) {
+					throw new Error("App Builder returned an empty JWT.");
+				}
+				if (sessionInfo) {
+					sessionInfo.jwtToken = jwtToken;
+				}
+				return {jwtToken};
+			}),
 		);
 		this.#listenerCancels.push(
 			crossWindowApi.on(
@@ -217,6 +237,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 		showThreadHistory?: boolean,
 		createThreadOnLoad?: boolean,
 		modelState?: IToolsApiModelStateHandlers,
+		refreshJwtToken?: () => Promise<string>,
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -236,6 +257,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 			showThreadHistory,
 			createThreadOnLoad,
 			modelState,
+			refreshJwtToken,
 		);
 	}
 }

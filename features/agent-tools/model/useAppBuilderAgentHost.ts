@@ -28,8 +28,13 @@ import {useHostedAgentFrameStore} from "./useHostedAgentFrameStore";
 export function useAppBuilderAgentHost(
 	props: UseAppBuilderAgentHostProps,
 ): AppBuilderAgentOverlayProps {
-	const {namespace, appBuilderData, appBuilderParseSettled, sessionInfo} =
-		props;
+	const {
+		namespace,
+		appBuilderData,
+		appBuilderParseSettled,
+		sessionInfo,
+		refreshJwtToken,
+	} = props;
 	const {viewportId} = useViewportId();
 	const themeProps = useProps("AgentUi", {mode: "iframe" as const}, {});
 	const {mode, showThreadHistory, createThreadOnLoad} =
@@ -56,6 +61,7 @@ export function useAppBuilderAgentHost(
 			appBuilderParseSettled,
 			agentWindow,
 			sessionInfo,
+			refreshJwtToken,
 			showThreadHistory,
 			createThreadOnLoad,
 		});

@@ -67,6 +67,12 @@ export type UseToolsApiConnectorProps = {
 	 * Not part of the agent tool list.
 	 */
 	modelState?: IToolsApiModelStateHandlers;
+	/**
+	 * Viewer session `refreshJwtToken`. The connector reads it when the agent
+	 * asks, so a session that appears after handshake still refreshes.
+	 * Omit → that call throws.
+	 */
+	refreshJwtToken?: () => Promise<string>;
 };
 
 /**
@@ -89,6 +95,7 @@ export type UseToolsApiConnectorProps = {
  *              EXECUTE_TOOL → executeResolvedTool → handlers or tool.execute
  *              GET_AGENT_CONFIG → { id, name, message, profileName? } | null
  *              GET_SESSION_INFO → { jwtToken, slug, modelStateId }
+ *              REFRESH_JWT_TOKEN → refreshJwtToken, then { jwtToken }
  *              GET_THEME → complete theme from useCustomTheme
  *              CREATE_MODEL_STATE / IMPORT_MODEL_STATE → modelState handlers
  * ```
@@ -106,7 +113,7 @@ export type UseToolsApiConnectorProps = {
  * **Lifecycle.**
  * 1. `ToolsApiConnectorFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
  * 2. Connector registers LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- *    GET_SESSION_INFO / GET_THEME **then** starts handshake.
+ *    GET_SESSION_INFO / REFRESH_JWT_TOKEN / GET_THEME **then** starts handshake.
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
  *    unhandled rejection. Transport throw → empty catch (no fake toolset).
  * 4. Cleanup sets `effectAbandoned` and `cancel()`s listeners + handshake.
@@ -139,6 +146,7 @@ export function useToolsApiConnector(
 		showThreadHistory,
 		createThreadOnLoad,
 		modelState,
+		refreshJwtToken,
 	} = props;
 
 	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
@@ -157,6 +165,8 @@ export function useToolsApiConnector(
 	createThreadOnLoadRef.current = createThreadOnLoad;
 	const modelStateRef = useRef(modelState);
 	modelStateRef.current = modelState;
+	const refreshJwtTokenRef = useRef(refreshJwtToken);
+	refreshJwtTokenRef.current = refreshJwtToken;
 	const [peerConnected, setPeerConnected] = useState(false);
 
 	useEffect(() => {
@@ -182,6 +192,15 @@ export function useToolsApiConnector(
 					showThreadHistoryRef.current,
 					createThreadOnLoadRef.current,
 					modelStateRef.current,
+					() => {
+						const refresh = refreshJwtTokenRef.current;
+						if (!refresh) {
+							throw new Error(
+								"App Builder cannot refresh the JWT for this session.",
+							);
+						}
+						return refresh();
+					},
 				);
 				if (effectAbandoned) {
 					// cancel() rejects an in-flight handshake. Attach a handler
