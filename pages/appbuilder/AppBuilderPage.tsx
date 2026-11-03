@@ -5,6 +5,7 @@ import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {useInitialAutoAdjust} from "@AppBuilderLib/entities/viewport/model/useInitialAutoAdjust";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {agentSessionInfoForHost} from "@AppBuilderLib/features/agent-tools/lib/agentSessionInfoForHost";
 import {refreshSessionJwtToken} from "@AppBuilderLib/features/agent-tools/lib/refreshSessionJwtToken";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
@@ -263,19 +264,27 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	const sessionApiRef = useRef(sessionApi);
 	sessionApiRef.current = sessionApi;
+	const controllerSessionRef = useRef(controllerSession);
+	controllerSessionRef.current = controllerSession;
 
 	const agentHost = useAppBuilderAgentHost({
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
-		sessionInfo: controllerSession
-			? {
-					jwtToken: controllerSession.jwtToken,
-					slug: controllerSession.slug,
-					modelStateId: controllerSession.modelStateId,
-				}
-			: undefined,
-		refreshJwtToken: () => refreshSessionJwtToken(sessionApiRef.current),
+		sessionInfo: agentSessionInfoForHost(
+			controllerSession,
+			sessionApi?.jwtToken,
+		),
+		refreshJwtToken: async () => {
+			const jwtToken = await refreshSessionJwtToken(
+				sessionApiRef.current,
+			);
+			const session = controllerSessionRef.current;
+			if (session) {
+				session.jwtToken = jwtToken;
+			}
+			return jwtToken;
+		},
 	});
 
 	const showMarkdown =
