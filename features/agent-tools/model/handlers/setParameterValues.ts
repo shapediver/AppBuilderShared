@@ -1,4 +1,7 @@
-import {setParameterValuesInputSchema} from "../../config/setParameterValues";
+import {
+	setParameterValuesInputSchema,
+	type SetParameterValuesOutput,
+} from "../../config/setParameterValues";
 import {formatToolInputError} from "../../lib/formatToolInputError";
 import {applyParameterUpdates} from "../../lib/resolveSetParameterUpdates";
 import type {AgentToolsDeps} from "../agentToolsDeps";
@@ -6,7 +9,7 @@ import type {AgentToolsDeps} from "../agentToolsDeps";
 export async function handleSetParameterValues(
 	input: unknown,
 	deps: AgentToolsDeps,
-): Promise<{applied: string[]; errors: {name: string; message: string}[]}> {
+): Promise<SetParameterValuesOutput> {
 	try {
 		const parsed = setParameterValuesInputSchema.parse(input);
 		return await applyParameterUpdates(

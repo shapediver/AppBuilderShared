@@ -100,6 +100,7 @@ describe("mapParameterDefinition", () => {
 			settable: true,
 			min: 0,
 			max: 100,
+			step: 0.01,
 			decimalplaces: 2,
 			currentValue: 42.5,
 			defaultValue: 10,
@@ -152,6 +153,7 @@ describe("mapParameterDefinition", () => {
 			tooltip: "Model width",
 			min: 0,
 			max: 10,
+			step: 1,
 			currentValue: 7,
 			defaultValue: 5,
 		});

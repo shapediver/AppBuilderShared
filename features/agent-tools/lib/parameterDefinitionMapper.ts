@@ -1,4 +1,8 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {
+	isNumericSliderParameter,
+	numericSliderStep,
+} from "@AppBuilderLib/entities/parameter/lib/numericSliderValue";
 import type {ListParameterDefinitionItem} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
 import {decomposeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
@@ -62,6 +66,9 @@ export function mapParameterDefinition(
 	) {
 		if (def.type !== ResParameterType.STRING) {
 			item.min = def.min ?? null;
+			if (isNumericSliderParameter(def.type)) {
+				item.step = numericSliderStep(def);
+			}
 		}
 		item.max = def.max ?? null;
 		if (def.type === ResParameterType.FLOAT) {

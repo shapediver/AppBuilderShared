@@ -27,7 +27,15 @@ export const setParameterValuesInputSchema = z.strictObject({
 
 export type ParameterUpdateInput = z.infer<typeof setParameterUpdateSchema>;
 export type SetParameterValuesError = z.infer<typeof nameMessageSchema>;
+/** A numeric update the slider projected onto a different value. */
+export type ParameterValueAdjustment = {
+	name: string;
+	requested: number;
+	value: number;
+};
 export type SetParameterValuesOutput = {
 	applied: string[];
 	errors: SetParameterValuesError[];
+	/** Present only when at least one written value differs from the request. */
+	adjustments?: ParameterValueAdjustment[];
 };

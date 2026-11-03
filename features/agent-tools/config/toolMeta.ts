@@ -13,7 +13,8 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Read configurator parameters before changing anything. " +
 			"Call with no arguments. Which parameters appear is agent settings, not a tool argument. " +
-			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max, settings, currentValue, and description when the agent settings provide one. " +
+			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max/step, settings, currentValue, and description when the agent settings provide one. " +
+			"step is the slider step for Float, Int, Even, and Odd. " +
 			"settable=false means read-only via set_parameter_values (unsupported type). " +
 			"Selection parameters have type Interaction and settings { type: 'selection', props: { minimumSelection, maximumSelection } } (number of nodes to select); values are {names: string[]}. " +
 			"Their selectable node names are not listed here: read props.availableNodes with get_parameter_values. " +
@@ -36,11 +37,12 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Change configurator parameters. " +
 			"Input shape: { updates: [{ name, value }] } — use updates and name, not parameters/id. " +
-			"Value rules: Bool=boolean; Int/Float/Even/Odd=number in range; String=text; " +
+			"Value rules: Bool=boolean; Int/Float/Even/Odd=number in range, written as the slider value (step, decimal places, or nearest mark); String=text; " +
 			"StringList=0-based integer index only (1 = second choice), never the label and never {index:N}; " +
 			"Color={red,green,blue,alpha} 0-255; " +
 			"selection (Interaction)={names:[...]} with unique node names from props.availableNodes of get_parameter_values, count within settings.props minimumSelection/maximumSelection ({names:[]} clears when minimumSelection is 0). " +
-			"Returns { applied: string[], errors: [{ name, message }] }. Valid updates still apply when others fail.",
+			"Returns { applied: string[], errors: [{ name, message }], adjustments?: [{ name, requested, value }] }. " +
+			"adjustments lists numbers that were snapped. Valid updates still apply when others fail.",
 		annotations: {readOnlyHint: false},
 	},
 	[GenericToolName.ListActionControls]: {

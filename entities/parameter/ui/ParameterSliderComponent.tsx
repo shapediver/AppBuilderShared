@@ -8,17 +8,14 @@ import {
 	Slider,
 	useProps,
 } from "@mantine/core";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
-import {
-	getAdjacentMarkValue,
-	roundAndClampParameterValue,
-} from "../lib/parameterSliderMarks";
+import {numericSliderControls} from "../lib/numericSliderValue";
+import {getAdjacentMarkValue} from "../lib/parameterSliderMarks";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useSettingsMinMax} from "../model/useSettingsMinMax";
@@ -89,74 +86,17 @@ export default function ParameterSliderComponent(
 		props,
 	);
 
-	const {validatedSettings, min, max} = useSettingsMinMax(definition);
+	const {min, max} = useSettingsMinMax(definition);
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
-	// calculate the step size which depends on the parameter type
-	const step = useMemo(() => {
-		const _step = validatedSettings.success
-			? (validatedSettings.data.step ?? definition.step)
-			: definition.step;
-		if (definition.type === PARAMETER_TYPE.INT) {
-			return _step !== undefined && _step % 1 === 0 ? _step : 1;
-		} else if (
-			definition.type === PARAMETER_TYPE.EVEN ||
-			definition.type === PARAMETER_TYPE.ODD
-		) {
-			return _step !== undefined && _step % 2 === 0 ? _step : 2;
-		} else {
-			return _step !== undefined
-				? +_step.toFixed(definition.decimalplaces!)
-				: 1 / Math.pow(10, definition.decimalplaces!);
-		}
-	}, [definition, validatedSettings]);
-
-	const settingsMarks = useMemo(
-		() =>
-			validatedSettings.success
-				? validatedSettings.data.marks
-				: undefined,
-		[validatedSettings],
+	const slider = useMemo(
+		() => numericSliderControls(definition),
+		[definition],
 	);
-
-	// Prefer provided marks; otherwise fall back to min/max and keep only marks within range
-	const sliderMarks = useMemo(() => {
-		const providedMarks =
-			settingsMarks && settingsMarks.length > 0
-				? settingsMarks
-				: undefined;
-		const fallbackMarks = [
-			{value: +min!, label: min + ""},
-			{value: +max!, label: max + ""},
-		];
-		// pick provided marks or fallback, then drop anything outside min/max
-		return (providedMarks ?? fallbackMarks).filter((mark) => {
-			return mark.value >= +min! && mark.value <= +max!;
-		});
-	}, [settingsMarks, definition, min, max]);
-
-	const restrictToMarks = useMemo(
-		() =>
-			!!(
-				validatedSettings.success &&
-				validatedSettings.data.restrictToMarks &&
-				sliderMarks.length
-			),
-		[validatedSettings, sliderMarks],
-	);
-
+	const {step, marks: sliderMarks, restrictToMarks} = slider;
 	const roundAndClamp = useCallback(
-		(n: number) =>
-			roundAndClampParameterValue(
-				+definition.min!,
-				+definition.max!,
-				+definition.decimalplaces!,
-				step,
-				n,
-				restrictToMarks,
-				sliderMarks,
-			),
-		[definition, step, restrictToMarks, sliderMarks],
+		(n: number) => slider.project(n),
+		[slider],
 	);
 
 	const valueClamped = roundAndClamp(+value);
