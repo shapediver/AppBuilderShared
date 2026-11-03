@@ -3,6 +3,7 @@ import type {
 	ISelectComponentItemDataType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {filterHiddenSelectItems} from "../select/filterHiddenSelectItems";
+import {SEARCH_PREFIX} from "../select/selectComponentAsyncValue";
 import {applyFilters} from "./filterLogic";
 import {mapRowsToSelectItems} from "./itemMapping";
 import type {DatabaseTable, FilterSelection} from "./types";
@@ -12,6 +13,8 @@ import type {DatabaseTable, FilterSelection} from "./types";
  * A repeated item counts once. Items with no row are ignored.
  * `undefined` keeps every row. An empty list keeps none.
  * Matching uses the trimmed value column, same as {@link mapRowsToSelectItems}.
+ * Search suggestion rows (value starts with {@link SEARCH_PREFIX}) are never
+ * parameter values, so they are kept after the listed rows, in table order.
  */
 export function narrowDatabaseTableByItems(
 	table: DatabaseTable,
@@ -36,16 +39,18 @@ export function narrowDatabaseTableByItems(
 	}
 
 	const buckets: string[][][] = Array.from({length: order.size}, () => []);
+	const searchRows: string[][] = [];
 	for (const row of table.rows) {
 		const value = row[valueColumn]?.trim() ?? "";
 		const index = order.get(value);
-		if (index === undefined) {
-			continue;
+		if (index !== undefined) {
+			buckets[index].push(row);
+		} else if (value.startsWith(SEARCH_PREFIX)) {
+			searchRows.push(row);
 		}
-		buckets[index].push(row);
 	}
 
-	return {rows: buckets.flat()};
+	return {rows: [...buckets.flat(), ...searchRows]};
 }
 
 /**

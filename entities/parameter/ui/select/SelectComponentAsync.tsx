@@ -3,6 +3,7 @@ import {useCallback, useMemo, useState, type ReactNode} from "react";
 import {
 	emitSelectValue,
 	resolveDisplayValueForCards,
+	SEARCH_PREFIX,
 } from "../../lib/select/selectComponentAsyncValue";
 import type {FilterableDatabaseListPersistence} from "../../model/filterableDatabase/useFilterableDatabase";
 import {useRestoredScrollTop} from "../../model/select/useRestoredScrollTop";
@@ -10,8 +11,6 @@ import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
-
-const SEARCH_PREFIX = "search:";
 
 type SelectComponentAsyncType = "grid" | "fullwidthcards";
 

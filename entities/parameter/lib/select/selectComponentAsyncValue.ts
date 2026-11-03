@@ -1,6 +1,12 @@
 import type {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 /**
+ * Items whose value starts with this prefix are search suggestions, not
+ * values: choosing one pushes the rest of the value as a search term.
+ */
+export const SEARCH_PREFIX = "search:";
+
+/**
  * Value committed when an item is chosen.
  * `itemData` stores `JSON.stringify(itemData.data)` when that object exists.
  * Otherwise the item key is stored.
