@@ -28,6 +28,28 @@ const scrollingApiDefaultValues = {
 };
 
 /**
+ * Folder path and search of one e-commerce source.
+ * Folders are search anchors (`search:` items). The parent page keeps the
+ * open folder on that source; this remembers it for the breadcrumb after
+ * the select unmounts.
+ */
+export interface SourceSelectListView {
+	searchText: string;
+	searchAnchors: string[];
+	appliedSearchTerms: string[];
+	scrollTop: number;
+}
+
+function blankSourceSelectListView(): SourceSelectListView {
+	return {
+		searchText: "",
+		searchAnchors: [],
+		appliedSearchTerms: [],
+		scrollTop: 0,
+	};
+}
+
+/**
  * Store for scrolling APIs.
  */
 interface IScrollingApiStore {
@@ -36,6 +58,17 @@ interface IScrollingApiStore {
 	};
 
 	scrollingApisInitialized: Array<string>;
+
+	/**
+	 * Last folder and search per source. Survives unmount of the select.
+	 * Removed together with the API.
+	 */
+	listViews: Record<string, SourceSelectListView>;
+
+	saveListView: (
+		source: string,
+		patch: Partial<SourceSelectListView>,
+	) => void;
 
 	addScrollingApiSelect: (
 		source: string,
@@ -50,6 +83,27 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 			scrollingApisSelect: {},
 
 			scrollingApisInitialized: [],
+
+			listViews: {},
+
+			saveListView: (source, patch) => {
+				if (!source) {
+					return;
+				}
+
+				const prev =
+					get().listViews[source] ?? blankSourceSelectListView();
+				set(
+					{
+						listViews: {
+							...get().listViews,
+							[source]: {...prev, ...patch},
+						},
+					},
+					false,
+					`saveListView ${source}`,
+				);
+			},
 
 			addScrollingApiSelect: (source) => {
 				const {scrollingApisSelect} = get();
@@ -395,12 +449,15 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 					(state) => {
 						const newState = {...state.scrollingApisSelect};
 						delete newState[source];
+						const listViews = {...state.listViews};
+						delete listViews[source];
 						return {
 							scrollingApisSelect: newState,
 							scrollingApisInitialized:
 								state.scrollingApisInitialized.filter(
 									(s) => s !== source,
 								),
+							listViews,
 						};
 					},
 					false,
