@@ -19,8 +19,9 @@ import {
 	StackProps,
 	TextProps,
 } from "@mantine/core";
-import React, {useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
+import type {FilterableDatabaseListPersistence} from "../../model/filterableDatabase/useFilterableDatabase";
 import {useScrollingApiStore} from "../../model/useScrollingApiStore";
 import FilterableSelectComponent from "./FilterableSelectComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
@@ -174,24 +175,38 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 		props;
 
 	// scrolling API
-	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
-		useScrollingApiStore(
-			useShallow((state) => ({
-				scrollingApi: state.scrollingApisSelect[source ?? ""],
-				addScrollingApiSelect: state.addScrollingApiSelect,
-				removeScrollingApiSelect: state.removeScrollingApiSelect,
-			})),
-		);
+	const {scrollingApi, addScrollingApiSelect} = useScrollingApiStore(
+		useShallow((state) => ({
+			scrollingApi: state.scrollingApisSelect[source ?? ""],
+			addScrollingApiSelect: state.addScrollingApiSelect,
+		})),
+	);
 
-	// if source changes, get new scrolling API
+	// Keep the API when this control unmounts. A new one calls
+	// scrollingApiSetParameters without search terms, and the parent page
+	// treats that as "back to the root folder".
 	useEffect(() => {
 		if (source) {
 			addScrollingApiSelect(source);
 		}
-		return () => {
-			removeScrollingApiSelect(source ?? "");
-		};
-	}, [source]);
+	}, [source, addScrollingApiSelect]);
+
+	const listPersistence = useMemo<
+		FilterableDatabaseListPersistence | undefined
+	>(
+		() =>
+			source
+				? {
+						read: () =>
+							useScrollingApiStore.getState().listViews[source],
+						save: (patch) =>
+							useScrollingApiStore
+								.getState()
+								.saveListView(source, patch),
+					}
+				: undefined,
+		[source],
+	);
 
 	if (database) {
 		return (
@@ -212,6 +227,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 				{...rest}
 				type={type}
 				scrollingApi={scrollingApi}
+				persistence={listPersistence}
 				multiselect={false}
 			/>
 		);

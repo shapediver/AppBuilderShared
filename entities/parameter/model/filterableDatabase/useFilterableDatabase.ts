@@ -24,6 +24,7 @@ import type {
 	DatabaseTable,
 	FilterSelection,
 } from "../../lib/filterableDatabase/types";
+import type {SourceSelectListView} from "../useScrollingApiStore";
 import {
 	filterableDatabaseSettingsKey,
 	readFilterableDatabaseTable,
@@ -59,15 +60,10 @@ function itemsKeyOf(items: readonly string[] | undefined): string {
 	return items === undefined ? "" : JSON.stringify(items);
 }
 
-/** Search and scroll state of the paged list, saved per parameter. */
+/** Search and scroll state of the paged list, saved per parameter or source. */
 export interface FilterableDatabaseListPersistence {
-	read(): FilterableDatabaseViewState | undefined;
-	save(
-		patch: Pick<
-			FilterableDatabaseViewPatch,
-			"searchText" | "searchAnchors" | "appliedSearchTerms" | "scrollTop"
-		>,
-	): void;
+	read(): SourceSelectListView | undefined;
+	save(patch: Partial<SourceSelectListView>): void;
 }
 
 function createScrollingApiForView(
