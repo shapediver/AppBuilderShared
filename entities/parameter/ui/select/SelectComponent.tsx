@@ -224,6 +224,10 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	if (scrollingApi && (type === "fullwidthcards" || type === "grid")) {
 		return (
 			<SelectComponentAsync
+				// A new source starts from that source's saved folder.
+				// Without this, a cached source keeps the previous
+				// breadcrumb and the next save writes it into the new source.
+				key={source}
 				{...rest}
 				type={type}
 				scrollingApi={scrollingApi}

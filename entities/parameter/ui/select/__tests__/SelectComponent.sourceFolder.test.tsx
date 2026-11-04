@@ -95,4 +95,88 @@ describe("SelectComponent source folder", () => {
 		).toEqual(["Art"]);
 		expect(screen.queryByText("Option 000")).toBeNull();
 	});
+
+	it("reads the new source's folder when the source changes", async () => {
+		const graphics = useScrollingApiStore
+			.getState()
+			.addScrollingApiSelect("graphics");
+		const borders = useScrollingApiStore
+			.getState()
+			.addScrollingApiSelect("borders");
+		act(() => {
+			useScrollingApiStore.setState((state) => ({
+				scrollingApisSelect: {
+					...state.scrollingApisSelect,
+					graphics: {
+						...graphics,
+						items: [
+							{
+								item: "search:Art",
+								data: {displayname: "Art"},
+							},
+						],
+						hasNextPage: false,
+						loading: false,
+						resetState: 1,
+					},
+					borders: {
+						...borders,
+						items: [
+							{
+								item: "Panel",
+								data: {displayname: "Panel"},
+							},
+						],
+						hasNextPage: false,
+						loading: false,
+						resetState: 1,
+					},
+				},
+			}));
+		});
+		useScrollingApiStore.getState().saveListView("borders", {
+			searchText: "",
+			searchAnchors: ["Edge"],
+			appliedSearchTerms: ["Edge"],
+			scrollTop: 0,
+		});
+
+		const {rerender} = render(
+			<MantineProvider>
+				<SelectComponent
+					type="grid"
+					source="graphics"
+					items={[]}
+					value={null}
+					onChange={jest.fn()}
+				/>
+			</MantineProvider>,
+		);
+		fireEvent.click(await screen.findByText("Art"));
+		expect(
+			useScrollingApiStore.getState().listViews.graphics?.searchAnchors,
+		).toEqual(["Art"]);
+
+		rerender(
+			<MantineProvider>
+				<SelectComponent
+					type="grid"
+					source="borders"
+					items={[]}
+					value={null}
+					onChange={jest.fn()}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(await screen.findByText("Panel")).toBeTruthy();
+		expect(screen.getByText("Edge")).toBeTruthy();
+		expect(screen.queryByText("Art")).toBeNull();
+		expect(
+			useScrollingApiStore.getState().listViews.borders?.searchAnchors,
+		).toEqual(["Edge"]);
+		expect(
+			useScrollingApiStore.getState().listViews.graphics?.searchAnchors,
+		).toEqual(["Art"]);
+	});
 });
