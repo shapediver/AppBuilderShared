@@ -392,8 +392,9 @@ function createGenericParameterExecutorForSession(
 		} catch (e: any) {
 			// cancel process manager
 			reject();
-			// parameters of a failed customization are handed to the
-			// computation events by the viewer task, drop any left over
+			// a customization that failed or was superseded after its viewer
+			// task started is handled by the task events, only forget
+			// parameters that never reached a task
 			unmarkParametersInCustomization(session.id, markedParameterIds);
 			// in case of an error, restore the previous values
 			Object.keys(previousValues).forEach(

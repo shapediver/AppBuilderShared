@@ -193,6 +193,23 @@ describe("parameterComputationEvents", () => {
 		expect(events.end).toEqual([{sessionId: "s1", parameterIds: ["b"]}]);
 	});
 
+	it("keeps the parameters of a started task when its call is unmarked", () => {
+		const events = record();
+		markParametersInCustomization("s1", ["a"]);
+		emit("task.start", {sessionId: "s1"});
+
+		// the viewer superseded the customization, its call rejects
+		emit("task.cancel", {sessionId: "s1", status: SUPERSEDED});
+		markParametersInCustomization("s1", ["b"]);
+		unmarkParametersInCustomization("s1", ["a"]);
+
+		emit("task.start", {sessionId: "s1"});
+		emit("task.end", {sessionId: "s1"});
+		expect(events.end).toEqual([
+			{sessionId: "s1", parameterIds: ["a", "b"]},
+		]);
+	});
+
 	it("stops reporting to a removed listener", () => {
 		const listener = jest.fn();
 		const remove = addParameterComputationListener("end", listener);

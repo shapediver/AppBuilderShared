@@ -47,8 +47,11 @@ export type ParameterComputationListener = (
 	event: ParameterComputationEvent,
 ) => void;
 
-/** Pending parameter ids per session id. */
-const pending = new Map<string, Set<string>>();
+/**
+ * Pending parameter ids per session id. The value tells whether a viewer
+ * task has started since the id was reported.
+ */
+const pending = new Map<string, Map<string, boolean>>();
 
 const listeners: Record<
 	ParameterComputationEventType,
@@ -91,8 +94,9 @@ function handleTaskEvent(
 	if (!sessionId) return;
 	const ids = pending.get(sessionId);
 	if (!ids || ids.size === 0) return;
-	const parameterIds = [...ids];
+	const parameterIds = [...ids.keys()];
 	if (isFinal) pending.delete(sessionId);
+	else parameterIds.forEach((id) => ids.set(id, true));
 	emit(type, sessionId, parameterIds);
 }
 
@@ -130,16 +134,21 @@ export function markParametersInCustomization(
 	ensureTaskListeners();
 	let ids = pending.get(sessionId);
 	if (!ids) {
-		ids = new Set();
+		ids = new Map();
 		pending.set(sessionId, ids);
 	}
-	parameterIds.forEach((id) => ids.add(id));
+	// keep the flag of an id that is already pending
+	parameterIds.forEach((id) => {
+		if (!ids.has(id)) ids.set(id, false);
+	});
 }
 
 /**
  * Forget parameters that were reported but never reached a viewer task
  * (for example because the executor threw before customizing).
- * Does nothing for parameters that were already handed to a listener.
+ * Does nothing for parameters that were already handed to a listener or
+ * that belong to a task which started. Such a task ends, fails or is
+ * superseded, and the viewer events decide what happens to them.
  */
 export function unmarkParametersInCustomization(
 	sessionId: string,
@@ -147,7 +156,9 @@ export function unmarkParametersInCustomization(
 ) {
 	const ids = pending.get(sessionId);
 	if (!ids) return;
-	parameterIds.forEach((id) => ids.delete(id));
+	parameterIds.forEach((id) => {
+		if (ids.get(id) === false) ids.delete(id);
+	});
 	if (ids.size === 0) pending.delete(sessionId);
 }
 
