@@ -174,3 +174,21 @@ A slot has one `action`. For several, use an `executeActions` action. To react t
 - **Without a filter,** only the controller counts. An instance computation only runs the slots when the filter names the instance's session.
 - **Default exports and instance computations** count too.
 - **A cancelled customization** runs `computationstart`, but neither `computationend` nor `computationerror`. Exception: default exports still run `computationend`.
+
+## Slots of parameter controls
+
+A parameter control can use the same three slots (see [Parameter controls](action-slots.md#parameter-controls)). They listen to the same viewer events, but run only for the parameters of the customization.
+
+The task events carry only the session id. The App Builder therefore remembers which parameter values it sends: the parameter executor of the session reports them right before `session.customize` (or `session.requestExports`), and keeps them until the task ends.
+
+| Event of the customization                            | Slots of a parameter control that was part of it                                                               |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `task.start`                                          | `computationstart`. The parameters stay remembered.                                                            |
+| `task.end` (after the session scene node is replaced) | `computationend`. The parameters are forgotten.                                                                |
+| `task.cancel`: `Session customization failed`         | `computationerror`. The parameters are forgotten.                                                              |
+| `task.cancel`: `The request was exceeded by…`         | None. The parameters stay remembered: the newer customization sends every current value, so they belong to it. |
+
+- **No change:** a customization in which no value changed emits no event, and the parameter is not remembered.
+- **Accept mode:** the executor runs only when the accepted change is computed. A queued change runs nothing.
+- **Instances** (`customize_parallel`) change neither the values nor the scene node of the session. They run no parameter control slots.
+- **Overlapping default exports:** the first `task.end` hands over every parameter remembered so far.

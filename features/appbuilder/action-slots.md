@@ -16,6 +16,43 @@ Here you can see a table of all slots that are allowed on App Builder nodes. Wid
 | `pointerleave`      | Pointer leaves the node.                                                                                                                                   | None                  |
 | `custom:kebab-case` | The host calls `useDispatchAppBuilderCustomEvent` with that name, for example `custom:item-selected`. A miss bubbles to the parent node, then to the root. | None                  |
 
+### Parameter controls
+
+A control of `type: "parameter"` may also use the three computation slots of the root. They sit on the control, next to `type` and `props`, not inside `props.overrides`. The control's `name` and `sessionId` identify the parameter, so these slots have **no `eventProps`**, and the action stays static JSON (the event is not passed into `action.props`). Type: `IAppBuilderParameterControlActionSlots`.
+
+| Slot               | When it runs                                                                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `computationstart` | A customization that includes this parameter starts.                                                                                                                                                |
+| `computationend`   | That customization has finished and the session scene node has been replaced.                                                                                                                       |
+| `computationerror` | That customization failed. A customization that a newer one superseded is not an error. Its parameters are part of the newer customization, which then runs `computationend` or `computationerror`. |
+
+```json
+{
+	"type": "parameter",
+	"actionSlots": {
+		"computationend": {
+			"action": {
+				"type": "setContainerVisibility",
+				"props": {
+					"container": {
+						"name": "anchor2d",
+						"props": {"id": "Artwork"}
+					},
+					"mode": "close"
+				}
+			}
+		}
+	},
+	"props": {"name": "elements_select", "sessionId": "default_appbuilder"}
+}
+```
+
+- **Which computation.** The slot runs only when the control's parameter was one of the values the customization sent. A customization of another parameter of the same session does not run it. One customization that changes several parameters runs the slots of each of them. Several controls for the same parameter each run.
+- **Accept and reject.** With `acceptRejectMode`, the slots run when the accepted change is computed, not when it is queued. A rejected change computes nothing and runs nothing.
+- **Root slots stay.** A root `computationend` still runs for every customization of its session, including one that also runs a parameter control's slot.
+- **Only parameter controls.** Export, output, and action controls do not gain these events, and Zod rejects them there. Toolbar items do not either. Custom parameters (`sessionId` of the App Builder itself) are not computed by a session, so their slots never run.
+- **Validation.** Zod rejects `eventProps` on these slots, and rejects `actionSlots` inside `props.overrides`.
+
 ## Root
 
 Here you can see all action slots that are allowed on the App Builder definition root. Type: `IAppBuilderRootActionSlots`.
