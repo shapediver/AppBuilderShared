@@ -3,10 +3,7 @@ import type {
 	IGumballTransformParameterProps,
 	ISelectionParameterProps,
 } from "@shapediver/viewer.shared.types";
-import type {
-	ParameterInteractionConfirmCancelClearThemeProps,
-	ParameterInteractionConfirmCancelThemeProps,
-} from "./parameterInteractionButtonTheme";
+import type {ParameterInteractionConfirmCancelClearThemeProps} from "./parameterInteractionButtonTheme";
 
 /**
  * @docAttached
@@ -17,7 +14,7 @@ import type {
 export interface ParameterDraggingComponentThemeDefaultProps
 	extends
 		IDraggingParameterProps,
-		ParameterInteractionConfirmCancelThemeProps {}
+		ParameterInteractionConfirmCancelClearThemeProps {}
 
 /**
  * @docAttached
