@@ -80,7 +80,12 @@ describe("isParameterControlEmpty", () => {
 	});
 
 	it("is empty for always active interaction parameters in the toolbar", () => {
-		for (const type of ["selection", "gumball", "rectangleTransform"]) {
+		for (const type of [
+			"selection",
+			"gumball",
+			"rectangleTransform",
+			"dragging",
+		]) {
 			expect(
 				isParameterControlEmpty(
 					interaction(type, {activeMode: "alwaysActive"}),
@@ -141,31 +146,6 @@ describe("isParameterControlEmpty", () => {
 					...ref,
 					overrides: {settings: {props: {presentation: "widget"}}},
 				},
-			),
-		).toBe(false);
-	});
-
-	it("treats dragging as content unless presented in the toolbar", () => {
-		// dragging defaults to the widget presentation, also when always active
-		expect(
-			isParameterControlEmpty(
-				interaction("dragging", {activeMode: "alwaysActive"}),
-				ref,
-			),
-		).toBe(false);
-		expect(
-			isParameterControlEmpty(
-				interaction("dragging", {presentation: "toolbar"}),
-				ref,
-			),
-		).toBe(true);
-	});
-
-	it("has content for other interaction parameters", () => {
-		expect(
-			isParameterControlEmpty(
-				interaction("dragging", {activeMode: "alwaysActive"}),
-				ref,
 			),
 		).toBe(false);
 	});
