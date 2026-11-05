@@ -44,6 +44,11 @@ export function useSelection(
 	 * removed by an output update are pruned from the selection.
 	 */
 	onPrune?: (names: string[]) => void,
+	/**
+	 * A deselection by the user which would drop a non-empty selection below
+	 * this number is refused (see useSelectManagerEvents).
+	 */
+	keptMinimumSelection = 0,
 ): ISelectionState & {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
@@ -142,6 +147,7 @@ export function useSelection(
 			strictNaming,
 			activate,
 			selectManager,
+			keptMinimumSelection,
 		);
 	const [restoreRevision, requestSelectionRestore] = React.useReducer(
 		(revision: number) => revision + 1,
