@@ -17,9 +17,14 @@ import {
 	getExportComponent,
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
-import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
+import {
+	APP_BUILDER_SLOT_EVENTS,
+	omitParameterComputationSlots,
+	pickParameterComputationSlots,
+} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
+import AppBuilderParameterActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderParameterActionSlots";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {MantineThemeComponent, Paper, Stack, useProps} from "@mantine/core";
@@ -160,6 +165,50 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 		return map;
 	}, [parameters, componentContext, elementPaperProps]);
 
+	// Ids of the referenced parameters as used by the session (the control may
+	// reference a name or displayname). Hidden parameters are included: their
+	// computation slots still run.
+	const parameterIdMap = useMemo(() => {
+		const map = new Map<string, string>();
+		parameters.forEach((param, index) => {
+			if (!param) return;
+			map.set(
+				parameterMapKey(
+					parameterProps[index].namespace,
+					parameterProps[index].parameterId,
+				),
+				param.definition.id,
+			);
+		});
+		return map;
+	}, [parameters, parameterProps]);
+
+	// Computation slots of parameter controls (computationstart, computationend,
+	// computationerror). They are not tied to the rendered element.
+	const parameterComputationSlots = useMemo(() => {
+		const components: ReactElement[] = [];
+		controls.forEach((control, index) => {
+			if (!isParameterRefControl(control)) return;
+			if (pickParameterComputationSlots(control.actionSlots).length === 0)
+				return;
+			const sessionId = control.props.sessionId ?? namespace;
+			const parameterId = parameterIdMap.get(
+				parameterMapKey(sessionId, control.props.name),
+			);
+			if (!parameterId) return;
+			components.push(
+				<AppBuilderParameterActionSlots
+					key={`control-parameter-action-slots-${index}`}
+					actionSlots={control.actionSlots}
+					namespace={namespace}
+					sessionId={sessionId}
+					parameterId={parameterId}
+				/>,
+			);
+		});
+		return components;
+	}, [controls, namespace, parameterIdMap]);
+
 	// Create export map for quick lookup
 	const exportMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
@@ -229,7 +278,11 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 			components.push(
 				<AppBuilderActionSlots
 					key={`control-action-slots-${index}`}
-					actionSlots={control.actionSlots}
+					actionSlots={
+						isParameterRefControl(control)
+							? omitParameterComputationSlots(control.actionSlots)
+							: control.actionSlots
+					}
 					allowedEvents={APP_BUILDER_SLOT_EVENTS.control}
 					namespace={namespace}
 				>
@@ -242,14 +295,24 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	}, [controls, parameterMap, exportMap, namespace, componentContext]);
 
 	if (orderedComponents.length === 0) {
-		return <></>;
+		return <>{parameterComputationSlots}</>;
 	}
 
 	// If we only have one component, return it directly
 	if (orderedComponents.length === 1) {
-		return orderedComponents[0];
+		return (
+			<>
+				{parameterComputationSlots}
+				{orderedComponents[0]}
+			</>
+		);
 	}
 
 	// Return all components in a stack
-	return <Stack {...stackProps}>{orderedComponents}</Stack>;
+	return (
+		<>
+			{parameterComputationSlots}
+			<Stack {...stackProps}>{orderedComponents}</Stack>
+		</>
+	);
 }

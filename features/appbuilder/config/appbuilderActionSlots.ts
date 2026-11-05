@@ -7,7 +7,8 @@ import type {IAppBuilderActionDefinition} from "./appbuilder";
  * Which events a node may use, and which `eventProps.type` that event
  * allows, is part of this schema and of the Zod schemas in
  * `appbuildertypecheck.ts`. UI nodes allow pointer, click, contextmenu,
- * and `custom:*`. The root also allows application events.
+ * and `custom:*`. A parameter control also allows the computation events
+ * of its parameter. The root also allows application events.
  */
 
 /** Types of action-slot event filters. */
@@ -204,6 +205,33 @@ export interface IAppBuilderNodeActionSlots {
 	pointerenter?: PlainActionSlotList;
 	pointerleave?: PlainActionSlotList;
 	[eventName: AppBuilderCustomEventName]: PlainActionSlotList | undefined;
+}
+
+/**
+ * Computation events of a parameter control. Same names as the root events,
+ * but the slot runs only when the customization changed the parameter of
+ * the control.
+ */
+export type AppBuilderParameterComputationEvent =
+	"computationstart" | "computationend" | "computationerror";
+
+/**
+ * Slots on a control of `type: "parameter"`: everything a node allows, plus
+ * the computation events of that parameter. The control's `name` and
+ * `sessionId` identify the parameter, so these slots take no `eventProps`
+ * and the event payload is not passed into `action.props`.
+ *
+ * Zod allows the computation events on parameter controls only.
+ *
+ * @see [Action slots](../action-slots.md)
+ */
+export interface IAppBuilderParameterControlActionSlots extends IAppBuilderNodeActionSlots {
+	/** A customization that changes this parameter starts. */
+	computationstart?: PlainActionSlotList;
+	/** A customization that changed this parameter has finished and replaced the session scene node. */
+	computationend?: PlainActionSlotList;
+	/** A customization that changed this parameter failed. A superseded customization does not count. */
+	computationerror?: PlainActionSlotList;
 }
 
 /**

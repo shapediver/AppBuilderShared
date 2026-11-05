@@ -4,11 +4,13 @@ import {
 	type AppBuilderApplicationEvent,
 	type AppBuilderCustomEventName,
 	type AppBuilderInteractionEvent,
+	type AppBuilderParameterComputationEvent,
 	type AppBuilderUiEvent,
 	type IAppBuilderActionSlot,
 	type IAppBuilderActionSlotEventProps,
 	type IAppBuilderActionSlotEventPropsSelection,
 	type IAppBuilderActionSlots,
+	type IAppBuilderParameterControlActionSlots,
 } from "../config/appbuilderActionSlots";
 
 /**
@@ -270,25 +272,22 @@ function warnIncompatibleActionSlotEventProps(
 	);
 }
 
-/** Viewer `TASK_TYPE.SESSION_CUSTOMIZATION` (string to avoid importing the viewer here). */
-export const SESSION_CUSTOMIZATION_TASK_TYPE = "session_customization";
+export {
+	isSessionCustomizationFailedTask,
+	SESSION_CUSTOMIZATION_FAILED_STATUS,
+	SESSION_CUSTOMIZATION_TASK_TYPE,
+} from "@AppBuilderLib/shared/lib/sessionCustomizationTask";
 
 /**
- * `ITaskEvent.status` on `TASK_CANCEL` when a session customize actually
- * failed. Other cancels (superseded customizes) use a different status.
+ * Computation events of a parameter control (the root has the same names,
+ * see {@link APP_BUILDER_APPLICATION_EVENTS}). They are run by
+ * `AppBuilderParameterActionSlots`, not by the DOM wrapper of the control.
  */
-export const SESSION_CUSTOMIZATION_FAILED_STATUS =
-	"Session customization failed";
-
-export function isSessionCustomizationFailedTask(event: {
-	type?: string;
-	status?: string;
-}): boolean {
-	return (
-		event.type === SESSION_CUSTOMIZATION_TASK_TYPE &&
-		event.status === SESSION_CUSTOMIZATION_FAILED_STATUS
-	);
-}
+export const APP_BUILDER_PARAMETER_COMPUTATION_EVENTS = [
+	"computationstart",
+	"computationend",
+	"computationerror",
+] as const satisfies readonly AppBuilderParameterComputationEvent[];
 
 /**
  * Events valid on the App Builder root: application events plus viewport
@@ -309,6 +308,10 @@ export const APP_BUILDER_SLOT_EVENTS = {
 	tab: APP_BUILDER_UI_EVENTS,
 	container: APP_BUILDER_UI_EVENTS,
 	control: APP_BUILDER_UI_EVENTS,
+	parameterControl: [
+		...APP_BUILDER_UI_EVENTS,
+		...APP_BUILDER_PARAMETER_COMPUTATION_EVENTS,
+	],
 	toolbar: APP_BUILDER_UI_EVENTS,
 	viewport: APP_BUILDER_UI_EVENTS,
 	application: APP_BUILDER_APPLICATION_EVENTS,
@@ -477,6 +480,46 @@ export function pickAllowedActionSlots(
 		}
 	}
 	return resolved;
+}
+
+/**
+ * Computation slots of a parameter control. The control's name and session
+ * identify the parameter, so a slot with `eventProps` is incompatible: it is
+ * warned and skipped.
+ */
+export function pickParameterComputationSlots(
+	actionSlots: IAppBuilderParameterControlActionSlots | undefined,
+): ResolvedActionSlot[] {
+	if (!actionSlots) return [];
+	const resolved: ResolvedActionSlot[] = [];
+	for (const eventName of APP_BUILDER_PARAMETER_COMPUTATION_EVENTS) {
+		for (const slot of listActionSlots(actionSlots[eventName])) {
+			if (readSlotEventProps(slot)) {
+				Logger.warn(
+					`Action slot "${eventName}" of a parameter control does not support eventProps and will be ignored.`,
+				);
+				continue;
+			}
+			resolved.push({eventName, slot, index: resolved.length});
+		}
+	}
+	return resolved;
+}
+
+/**
+ * The slots of a parameter control without its computation events. The
+ * computation events are run by `AppBuilderParameterActionSlots`, so the DOM
+ * wrapper of the control neither runs nor warns about them.
+ */
+export function omitParameterComputationSlots(
+	actionSlots: IAppBuilderParameterControlActionSlots | undefined,
+): IAppBuilderParameterControlActionSlots | undefined {
+	if (!actionSlots) return undefined;
+	const rest = {...actionSlots};
+	for (const eventName of APP_BUILDER_PARAMETER_COMPUTATION_EVENTS) {
+		delete rest[eventName];
+	}
+	return rest;
 }
 
 /**
