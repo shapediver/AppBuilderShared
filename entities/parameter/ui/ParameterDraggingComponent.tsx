@@ -1,9 +1,12 @@
+import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
+import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
 	createToolbarCheckboxItem,
 	createToolbarCommand,
 } from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {AppBuilderLabeledActionIcon} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -26,24 +29,25 @@ import {
 } from "../config/propsParameter";
 import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
 import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
+import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
+import {consumeSentDrag, type SentDrag} from "../lib/sentDragCommit";
+import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useDragging} from "../model/interaction/useDragging";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
+import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
+type DragObjects = DraggingParameterValue["objects"];
+
 /**
- * Parse the value of a dragging parameter and extract the dragged objects
- * @param value
- * @returns
+ * Parse the value of a dragging parameter and extract the dragged objects.
  */
-const parseDraggedNodes = (
-	value?: string,
-): DraggingParameterValue["objects"] => {
+const parseDraggedNodes = (value?: string): DragObjects => {
 	if (!value) return [];
 	try {
 		const parsed = JSON.parse(value);
@@ -54,6 +58,14 @@ const parseDraggedNodes = (
 		return [];
 	}
 };
+
+const serializeDraggedNodes = (
+	executed: DragObjects,
+	gestures: DragObjects,
+): string =>
+	JSON.stringify({
+		objects: calculateCombinedDraggedNodes(executed, gestures),
+	} satisfies DraggingParameterValue);
 
 const defaultStyleProps: StyleProps = {
 	draggingColor: {
@@ -95,9 +107,10 @@ export default function ParameterDraggingComponent(
 		onCancel,
 		disabled,
 		busy,
+		executing,
+		cancelPendingChange,
 		showReset,
 		resetToDefault,
-		value,
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
@@ -110,6 +123,7 @@ export default function ParameterDraggingComponent(
 		hoverColor,
 		confirmButton: confirmButtonTheme,
 		cancelButton: cancelButtonTheme,
+		clearButton: clearButtonTheme,
 	} = useProps("ParameterDraggingComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
@@ -118,22 +132,18 @@ export default function ParameterDraggingComponent(
 		props,
 	);
 
-	// get the interaction request management
-	const {addInteractionRequest, removeInteractionRequest} =
-		useShapeDiverStoreInteractionRequestManagement();
-
-	// get the notification store
 	const notifications = useNotificationStore();
 
-	// settings validation
 	const draggingProps = useMemo(() => {
 		const result = validateDraggingParameterSettings(definition.settings);
 		if (result.success) {
-			const props = result.data.props as IDraggingParameterProps;
-			if (!props.draggingColor) props.draggingColor = draggingColor;
-			if (!props.availableColor) props.availableColor = availableColor;
-			if (!props.hoverColor) props.hoverColor = hoverColor;
-			return props;
+			const validated = result.data.props as IDraggingParameterProps;
+			if (!validated.draggingColor)
+				validated.draggingColor = draggingColor;
+			if (!validated.availableColor)
+				validated.availableColor = availableColor;
+			if (!validated.hoverColor) validated.hoverColor = hoverColor;
+			return validated;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -148,28 +158,28 @@ export default function ParameterDraggingComponent(
 				hoverColor,
 			} as IDraggingParameterProps;
 		}
-	}, [definition.settings, draggingColor, availableColor]);
+	}, [definition.settings, draggingColor, availableColor, hoverColor]);
 
-	// is the dragging active or not?
-	const draggingPresentation = draggingProps.presentation ?? "widget";
+	const alwaysActive = draggingProps.activeMode === "alwaysActive";
+	const {
+		enabled: automaticSceneUpdate,
+		timeout: automaticSceneUpdateTimeout,
+	} = resolveAutomaticSceneUpdate(draggingProps, alwaysActive);
+	const draggingPresentation = resolveInteractionPresentation(
+		draggingProps.presentation,
+		alwaysActive,
+	);
 	const [draggingActive, setDraggingActive] = useState(false);
-	// state for the dirty flag
-	const [dirty, setDirty] = useState<boolean>(false);
-	// parsed execValue
-	const [parsedExecValue, setParsedExecValue] = useState<
-		DraggingParameterValue["objects"]
-	>([]);
-	const [parsedUiValue, setParsedUiValue] = useState<
-		DraggingParameterValue["objects"]
-	>(parseDraggedNodes(state.uiValue));
-	// reference to manage the interaction request token
-	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+	const [draggingSuspended, setDraggingSuspended] = useState(false);
+	const [parsedExecValue, setParsedExecValue] = useState<DragObjects>(() =>
+		parseDraggedNodes(state.commitValue),
+	);
+	const [parsedUiValue, setParsedUiValue] = useState<DragObjects>(() =>
+		parseDraggedNodes(state.uiValue),
+	);
 
-	// get the viewport ID
 	const {viewportId} = useViewportId();
-
-	// editing is paused during a computation, like the other parameters: a
-	// drag in progress is cancelled
+	useAutomaticSceneUpdatePointerHold(viewportId, automaticSceneUpdate);
 	useInteractionEnginePause(viewportId, busy);
 
 	const {candidateNodes, draggedNodes, setDraggedNodes, restoreDraggedNodes} =
@@ -177,7 +187,7 @@ export default function ParameterDraggingComponent(
 			sessionDependencies,
 			viewportId,
 			draggingProps,
-			draggingActive,
+			draggingActive && !draggingSuspended,
 			parsedUiValue,
 		);
 
@@ -192,207 +202,322 @@ export default function ParameterDraggingComponent(
 		cancelButtonTheme,
 		{label: "Cancel", icon: "tabler:x"},
 	);
+	const clearButton = resolveParameterInteractionButtonTheme(
+		clearButtonTheme,
+		{label: "Clear", icon: "tabler:circle-off"},
+	);
 
-	const automaticallyActivated = draggingProps.activeMode === "activeOnStart";
+	const automaticallyActivated =
+		alwaysActive || draggingProps.activeMode === "activeOnStart";
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: `${namespace}-${definition.id}-${viewportId}`,
 		ownerLabel: draggingLabel,
 		type: "dragging",
+		// An always-active drag can be suspended by a user-requested tool,
+		// the same way a persistent gumball can.
 		alwaysActive: false,
 		automaticallyActivated,
 		candidateNodes,
 		active: draggingActive,
 	});
-	const effectiveDraggingActive = draggingActive && !ownershipBlocked;
+	const draggingRegistered = draggingActive && !ownershipBlocked;
+	const effectiveDraggingActive = draggingRegistered && !draggingSuspended;
 	useEffect(() => {
-		if (ownershipBlocked) setDraggingActive(false);
-		else if (automaticallyActivated) setDraggingActive(true);
+		if (ownershipBlocked) {
+			setDraggingSuspended(false);
+			setDraggingActive(false);
+		} else if (automaticallyActivated) setDraggingActive(true);
 	}, [automaticallyActivated, ownershipBlocked]);
 
-	// reference to the last confirmed value
-	const lastConfirmedValueRef = useRef<DraggingParameterValue["objects"]>(
-		parseDraggedNodes(value),
+	const parsedExecRef = useRef(parsedExecValue);
+	const draggedNodesRef = useRef(draggedNodes);
+	const uiValueRef = useRef(state.uiValue);
+	const restoreDraggedNodesRef = useRef(restoreDraggedNodes);
+	parsedExecRef.current = parsedExecValue;
+	draggedNodesRef.current = draggedNodes;
+	uiValueRef.current = state.uiValue;
+	restoreDraggedNodesRef.current = restoreDraggedNodes;
+
+	// Gestures confirmed in this session, before the execution bakes them
+	// into the parameter value. Cancel restores these matrices.
+	const lastConfirmedValueRef = useRef<DragObjects>([]);
+	const sentValuesRef = useRef(new SentValues());
+	const sentGesturesRef = useRef<SentDrag<DragObjects[number]>[]>([]);
+	const pendingClearRef = useRef<
+		{parsed: DragObjects; consumedNames: string[]} | undefined
+	>(undefined);
+	const processedCommitRef = useRef<string | undefined>(undefined);
+
+	const serializedCombined = serializeDraggedNodes(
+		parsedExecValue,
+		draggedNodes,
 	);
+	const dirty =
+		draggedNodes.length > 0 && serializedCombined !== state.uiValue;
+	const committedObjects = parseDraggedNodes(state.commitValue);
+	const showClearButton =
+		(draggingProps.buttons?.clear ?? true) &&
+		(committedObjects.length > 0 || dirty);
 
-	// reset the dragged nodes when the definition changes
-	useEffect(() => {
-		const parsed = parseDraggedNodes(state.execValue);
-		if (
-			JSON.stringify(parsed) !==
-			JSON.stringify(lastConfirmedValueRef.current)
-		) {
-			setParsedExecValue(parsed);
-			setDraggedNodes([]);
-			lastConfirmedValueRef.current = [];
-		}
-	}, [JSON.stringify(definition)]);
-
-	useEffect(() => {
-		const parsed = parseDraggedNodes(state.uiValue);
-		setParsedUiValue(parsed);
-	}, [state.uiValue]);
-
-	useEffect(() => {
-		const parsed = parseDraggedNodes(state.execValue);
-		setParsedExecValue(parsed);
-		setDraggedNodes([]);
-		lastConfirmedValueRef.current = [];
-	}, [state.execValue]);
-
-	useEffect(() => {
-		const parsed = parseDraggedNodes(state.uiValue);
-
-		// compare uiValue to draggedNodes
-		if (
-			parsed.length !== draggedNodes.length ||
-			!parsed.every(
-				(n, i) => JSON.stringify(n) === JSON.stringify(draggedNodes[i]),
-			)
-		) {
-			setDirty(true);
-		} else {
-			setDirty(false);
-		}
-	}, [state.uiValue, draggedNodes]);
-
-	/**
-	 * Callback function to change the value of the parameter.
-	 * This function is called when the dragging is confirmed (by the user, or automatically).
-	 * It also ends the dragging process.
-	 */
-	const changeValue = useCallback(() => {
-		setDraggingActive(false);
-		const objects = calculateCombinedDraggedNodes(
-			parsedExecValue,
-			draggedNodes,
+	const dropConsumedGestures = useCallback((names: string[]) => {
+		if (names.length === 0) return;
+		const nameSet = new Set(names);
+		const remaining = draggedNodesRef.current.filter(
+			(node) => !nameSet.has(node.name),
 		);
-		const parameterValue: DraggingParameterValue = {objects: objects};
-		lastConfirmedValueRef.current = structuredClone(draggedNodes);
+		draggedNodesRef.current = remaining;
+		setDraggedNodes(remaining);
+		lastConfirmedValueRef.current = lastConfirmedValueRef.current.filter(
+			(node) => !nameSet.has(node.name),
+		);
+	}, []);
 
-		// if the value is already the same, do not change it
-		if (value === JSON.stringify(parameterValue)) return;
-		handleChange(JSON.stringify(parameterValue), 0);
-	}, [parsedExecValue, draggedNodes, value]);
+	const applyParsedExec = useCallback((parsed: DragObjects) => {
+		parsedExecRef.current = parsed;
+		setParsedExecValue(parsed);
+	}, []);
 
 	/**
-	 * Callback function to reset the dragged nodes.
-	 * This function is called when the dragging is aborted by the user.
-	 * It also ends the dragging process.
+	 * Send the gestures multiplied onto the last executed value.
+	 * The gesture matrix is relative to that geometry, so a value that was
+	 * sent but not yet executed is not the baseline.
 	 */
-	const resetValue = useCallback(
-		(resetValue?: DraggingParameterValue["objects"]) => {
-			restoreDraggedNodes(
-				structuredClone(resetValue),
-				structuredClone(draggedNodes),
+	const changeValue = useCallback(
+		(timeout = 0) => {
+			const gestures = draggedNodesRef.current;
+			if (gestures.length === 0) return;
+			if (!alwaysActive) setDraggingActive(false);
+			const serialized = serializeDraggedNodes(
+				parsedExecRef.current,
+				gestures,
 			);
-			setDraggingActive(false);
-			setDraggedNodes(resetValue ?? []);
-			lastConfirmedValueRef.current = [...(resetValue ?? [])];
+			lastConfirmedValueRef.current = structuredClone(gestures);
+			if (uiValueRef.current === serialized) return;
+			const lastSent =
+				sentGesturesRef.current[sentGesturesRef.current.length - 1];
+			if (lastSent?.value === serialized) return;
+			sentValuesRef.current.record(serialized);
+			sentGesturesRef.current.push({
+				value: serialized,
+				gestures: structuredClone(gestures),
+			});
+			handleChange(serialized, timeout);
 		},
-		[draggedNodes],
+		[alwaysActive, handleChange],
 	);
 
 	const cancel = useCallback(() => {
-		// reset the dragged nodes to the last confirmed value
-		resetValue(lastConfirmedValueRef.current);
-	}, [resetValue]);
+		const restoreTo = structuredClone(lastConfirmedValueRef.current);
+		restoreDraggedNodesRef.current(
+			restoreTo,
+			structuredClone(draggedNodesRef.current),
+		);
+		draggedNodesRef.current = restoreTo;
+		setDraggedNodes(restoreTo);
+		if (!alwaysActive) setDraggingActive(false);
+	}, [alwaysActive]);
 
-	/**
-	 * Effect to manage the interaction request for the dragging.
-	 * It adds an interaction request when the dragging is active and removes it when the dragging is inactive.
-	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
-	 */
-	useEffect(() => {
-		actions.setDisableOtherParameters(effectiveDraggingActive);
+	const stripGestures = useCallback(() => {
+		restoreDraggedNodesRef.current(
+			[],
+			structuredClone(draggedNodesRef.current),
+		);
+		draggedNodesRef.current = [];
+		setDraggedNodes([]);
+		lastConfirmedValueRef.current = [];
+		if (!alwaysActive) setDraggingActive(false);
+	}, [alwaysActive]);
 
-		if (effectiveDraggingActive && !interactionRequestTokenRef.current) {
-			const returnedToken = addInteractionRequest({
-				type: "active",
-				viewportId,
-				allowToolbarPopoverDismissal:
-					draggingPresentation === "toolbar",
-				disable: cancel,
-			});
-			interactionRequestTokenRef.current = returnedToken;
-		} else if (
-			!effectiveDraggingActive &&
-			interactionRequestTokenRef.current
-		) {
-			removeInteractionRequest(interactionRequestTokenRef.current);
-			interactionRequestTokenRef.current = undefined;
+	const clearDragging = useCallback(() => {
+		if (automaticSceneUpdate) cancelPendingChange();
+		sentValuesRef.current.clear();
+		sentGesturesRef.current = [];
+		pendingClearRef.current = undefined;
+		if (parseDraggedNodes(state.commitValue).length === 0) {
+			stripGestures();
+			return;
 		}
+		if (!alwaysActive) setDraggingActive(false);
+		resetToDefault();
+	}, [
+		alwaysActive,
+		automaticSceneUpdate,
+		cancelPendingChange,
+		resetToDefault,
+		state.commitValue,
+		stripGestures,
+	]);
 
-		return () => {
-			actions.setDisableOtherParameters(false);
-			if (interactionRequestTokenRef.current) {
-				removeInteractionRequest(interactionRequestTokenRef.current);
-				interactionRequestTokenRef.current = undefined;
+	// An own commit keeps the drag matrix until the execution replaced the
+	// nodes, and drops only the objects that were part of that commit. A
+	// foreign commit (reset, Clear, undo, model state) is applied at once.
+	const commitEffectMountedRef = useRef(false);
+	useEffect(() => {
+		const commitKey = `${state.commitRevision}:${state.commitValue}`;
+		if (processedCommitRef.current === commitKey) return;
+		processedCommitRef.current = commitKey;
+
+		const parsed = parseDraggedNodes(state.commitValue);
+		const consumed = consumeSentDrag(
+			sentValuesRef.current,
+			sentGesturesRef.current,
+			state.commitValue ?? "",
+		);
+		sentGesturesRef.current = consumed.remaining;
+		if (
+			automaticSceneUpdate &&
+			!consumed.own &&
+			commitEffectMountedRef.current
+		)
+			cancelPendingChange();
+		const mounted = commitEffectMountedRef.current;
+		commitEffectMountedRef.current = true;
+		// A newer value was combined from these gestures onto this
+		// baseline. Moving the baseline or dropping the gestures would
+		// apply that move twice, and those objects stay unavailable
+		// until the newer value commits.
+		if (consumed.newerPending) {
+			pendingClearRef.current = undefined;
+			return;
+		}
+		if (!mounted) {
+			applyParsedExec(parsed);
+			draggedNodesRef.current = [];
+			setDraggedNodes([]);
+			lastConfirmedValueRef.current = [];
+			return;
+		}
+		if (consumed.own) {
+			if (executing) {
+				pendingClearRef.current = {
+					parsed,
+					consumedNames: consumed.consumedNames,
+				};
+				return;
 			}
-		};
-	}, [effectiveDraggingActive, draggingPresentation, cancel]);
+			pendingClearRef.current = undefined;
+			applyParsedExec(parsed);
+			dropConsumedGestures(consumed.consumedNames);
+			return;
+		}
+		pendingClearRef.current = undefined;
+		restoreDraggedNodesRef.current(
+			[],
+			structuredClone(draggedNodesRef.current),
+		);
+		applyParsedExec(parsed);
+		draggedNodesRef.current = [];
+		setDraggedNodes([]);
+		lastConfirmedValueRef.current = [];
+	}, [state.commitValue, state.commitRevision]);
 
-	/**
-	 * The content of the parameter when it is active.
-	 *
-	 * It contains a button to confirm the dragging and a button to cancel the dragging
-	 * as well as the number of dragged nodes.
-	 *
-	 * The cancel button resets the dragging to the last value.
-	 */
+	useEffect(() => {
+		if (executing || !pendingClearRef.current) return;
+		const {parsed, consumedNames} = pendingClearRef.current;
+		pendingClearRef.current = undefined;
+		applyParsedExec(parsed);
+		dropConsumedGestures(consumedNames);
+	}, [executing]);
+
+	useEffect(() => {
+		setParsedUiValue(parseDraggedNodes(state.uiValue));
+	}, [state.uiValue]);
+
+	const seenDraggedNodesRef = useRef(draggedNodes);
+	const movedWhileExecutingRef = useRef(false);
+	useEffect(() => {
+		const moved = seenDraggedNodesRef.current !== draggedNodes;
+		seenDraggedNodesRef.current = draggedNodes;
+		if (!automaticSceneUpdate || !effectiveDraggingActive) return;
+		if (executing) {
+			if (moved) movedWhileExecutingRef.current = true;
+			return;
+		}
+		if (!moved && !movedWhileExecutingRef.current) return;
+		movedWhileExecutingRef.current = false;
+		changeValue(automaticSceneUpdateTimeout);
+	}, [draggedNodes, executing]);
+
+	const _onCancelCallback = useCallback(() => {
+		stripGestures();
+	}, [stripGestures]);
+
+	useEffect(() => {
+		setOnCancelCallback(() => _onCancelCallback);
+	}, [_onCancelCallback]);
+
+	const {takeOverInteraction} = useInteractionRequestLifecycle({
+		viewportId,
+		active: draggingRegistered,
+		persistent: alwaysActive,
+		allowToolbarPopoverDismissal: draggingPresentation === "toolbar",
+		onDisable: cancel,
+		onSuspend: () => setDraggingSuspended(true),
+		onResume: () => setDraggingSuspended(false),
+		setDisableOtherParameters: actions.setDisableOtherParameters,
+	});
+
 	const contentActive = (
 		<Stack>
-			<Button
-				justify="space-between"
-				fullWidth
-				disabled={disabled}
-				className={classes.interactionButton}
-				rightSection={<Loader size="sm" type="dots" />}
-				onClick={() => resetValue(lastConfirmedValueRef.current)}
-			>
-				<Stack>
-					<TextWeighted
-						size="sm"
-						fontWeight="medium"
-						ta="left"
-						className={classes.interactionText}
-					>
-						{draggingProps.prompt?.activeTitle ??
-							`Currently dragged objects: ${lastConfirmedValueRef.current.length}`}
-					</TextWeighted>
-					<Text
-						size="sm"
-						fs="italic"
-						ta="left"
-						className={classes.interactionText}
-					>
-						{draggingProps.prompt?.activeText ??
-							"Drag objects in the scene to change their position."}
-					</Text>
-				</Stack>
-			</Button>
-			<Group justify="space-between" w="100%" wrap="nowrap">
+			<Group justify="space-between" wrap="nowrap" align="flex-start">
 				<Button
-					fullWidth={true}
-					disabled={!dirty}
-					variant="filled"
-					onClick={changeValue}
+					justify="space-between"
+					fullWidth
+					disabled={disabled}
+					className={classes.interactionButton}
+					rightSection={<Loader size="sm" type="dots" />}
+					onClick={automaticSceneUpdate ? undefined : cancel}
 				>
-					<Text>{confirmButton.label}</Text>
+					<Stack>
+						<TextWeighted
+							size="sm"
+							fontWeight="medium"
+							ta="left"
+							className={classes.interactionText}
+						>
+							{draggingProps.prompt?.activeTitle ??
+								`Currently dragged objects: ${draggedNodes.length}`}
+						</TextWeighted>
+						<Text
+							size="sm"
+							fs="italic"
+							ta="left"
+							className={classes.interactionText}
+						>
+							{draggingProps.prompt?.activeText ??
+								"Drag objects in the scene to change their position."}
+						</Text>
+					</Stack>
 				</Button>
-				<Button fullWidth={true} variant={"light"} onClick={cancel}>
-					<Text>{cancelButton.label}</Text>
-				</Button>
+				{showClearButton && (
+					<AppBuilderLabeledActionIcon
+						label={clearButton.label}
+						tooltipLabel={clearButton.tooltip}
+						icon={<Icon iconType={clearButton.icon} />}
+						onClick={clearDragging}
+						variant="light"
+					/>
+				)}
 			</Group>
+			{!automaticSceneUpdate && (
+				<Group justify="space-between" w="100%" wrap="nowrap">
+					<Button
+						fullWidth={true}
+						disabled={!dirty}
+						variant="filled"
+						onClick={() => changeValue(0)}
+					>
+						<Text>{confirmButton.label}</Text>
+					</Button>
+					<Button fullWidth={true} variant="light" onClick={cancel}>
+						<Text>{cancelButton.label}</Text>
+					</Button>
+				</Group>
+			)}
 		</Stack>
 	);
 
-	/**
-	 * The content of the parameter when it is inactive.
-	 *
-	 * It contains a button to start the dragging.
-	 * Within the button, the number of dragged nodes is displayed.
-	 */
 	const contentInactive = (
 		<Button
 			justify="space-between"
@@ -402,6 +527,7 @@ export default function ParameterDraggingComponent(
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={parsedUiValue.length === 0 ? "light" : "filled"}
 			onClick={() => {
+				takeOverInteraction();
 				if (tryAcquireClaim(true)) setDraggingActive(true);
 			}}
 		>
@@ -411,17 +537,6 @@ export default function ParameterDraggingComponent(
 			</Text>
 		</Button>
 	);
-
-	// extend the onCancel callback to reset the dragged nodes.
-	const _onCancelCallback = useCallback(() => {
-		resetValue();
-	}, []);
-
-	useEffect(() => {
-		setOnCancelCallback(() => _onCancelCallback);
-	}, [_onCancelCallback]);
-
-	// Register with interaction toolbar if presentation is "toolbar"
 
 	useInteractionToolbarContribution({
 		id: `${namespace}-${definition.id}-${viewportId}`,
@@ -440,30 +555,46 @@ export default function ParameterDraggingComponent(
 				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
 				label: draggingLabel,
 				checked: effectiveDraggingActive,
+				readOnly: alwaysActive && effectiveDraggingActive,
 				setChecked: (checked) => {
 					if (checked) {
+						takeOverInteraction();
 						if (tryAcquireClaim(true)) setDraggingActive(true);
-					} else setDraggingActive(false);
+					} else if (!alwaysActive) setDraggingActive(false);
 				},
 			}),
 		],
 		commands: [
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-				label: confirmButton.label,
-				tooltip: confirmButton.tooltip,
-				icon: confirmButton.icon,
-				disabled: !dirty,
-				execute: changeValue,
-			}),
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-				label: cancelButton.label,
-				tooltip: cancelButton.tooltip,
-				icon: cancelButton.icon,
-				disabled: !dirty,
-				execute: cancel,
-			}),
+			...(!automaticSceneUpdate
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+							label: confirmButton.label,
+							tooltip: confirmButton.tooltip,
+							icon: confirmButton.icon,
+							disabled: !dirty,
+							execute: () => changeValue(0),
+						}),
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+							label: cancelButton.label,
+							tooltip: cancelButton.tooltip,
+							icon: cancelButton.icon,
+							execute: cancel,
+						}),
+					]
+				: []),
+			...(showClearButton
+				? [
+						createToolbarCommand({
+							id: `${namespace}-${definition.id}-${viewportId}-clear`,
+							label: clearButton.label,
+							tooltip: clearButton.tooltip,
+							icon: clearButton.icon,
+							execute: clearDragging,
+						}),
+					]
+				: []),
 		],
 	});
 

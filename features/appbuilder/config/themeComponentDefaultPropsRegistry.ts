@@ -13,7 +13,6 @@ import {SelectGridComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entitie
 import {
 	ParameterDrawingComponentThemeDefaultPropsSchema,
 	parameterInteractionConfirmCancelClearThemeSchema,
-	parameterInteractionConfirmCancelThemeSchema,
 } from "@AppBuilderLib/entities/parameter/config/theme/parameterInteractionButtonTheme";
 import {ParameterSliderComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent.types";
 import {DefaultSessionThemeDefaultPropsSchema} from "@AppBuilderLib/entities/session/config/DefaultSession.theme.types";
@@ -159,7 +158,7 @@ export const themeComponentDefaultPropsRegistry = {
 	OutputStargateComponent: OutputStargateComponentThemeDefaultPropsSchema,
 	ParameterColorComponent: ParameterColorComponentThemeDefaultPropsSchema,
 	ParameterDraggingComponent: IDraggingParameterPropsJsonSchema.and(
-		parameterInteractionConfirmCancelThemeSchema,
+		parameterInteractionConfirmCancelClearThemeSchema,
 	),
 	ParameterDrawingComponent: ParameterDrawingComponentThemeDefaultPropsSchema,
 	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema.and(
