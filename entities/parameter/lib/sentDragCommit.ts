@@ -95,3 +95,30 @@ export const resolveDraggingClearCommit = (input: {
 		return {keepClearedScene: true, sendReset: true, finished: false};
 	return {keepClearedScene: true, sendReset: false, finished: true};
 };
+
+/**
+ * Remove sends that were cancelled before the request.
+ *
+ * Each cancelled value drops its newest occurrence, so an earlier send of the
+ * same value that is already in flight stays.
+ */
+export const dropCancelledSends = <T extends {value: string}>(
+	sentValues: SentValues,
+	sentGestures: readonly T[],
+	cancelled: readonly string[],
+): T[] => {
+	sentValues.dropNewestOccurrences(cancelled);
+	const pending = [...cancelled];
+	const remaining = [...sentGestures];
+	for (
+		let index = remaining.length - 1;
+		index >= 0 && pending.length > 0;
+		index--
+	) {
+		const at = pending.lastIndexOf(remaining[index].value);
+		if (at < 0) continue;
+		pending.splice(at, 1);
+		remaining.splice(index, 1);
+	}
+	return remaining;
+};

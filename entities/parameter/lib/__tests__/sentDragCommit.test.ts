@@ -1,5 +1,6 @@
 import {
 	consumeSentDrag,
+	dropCancelledSends,
 	resolveDraggingClearCommit,
 	type SentDrag,
 } from "../sentDragCommit";
@@ -122,6 +123,24 @@ describe("resolveDraggingClearCommit", () => {
 			keepClearedScene: false,
 			sendReset: false,
 			finished: true,
+		});
+	});
+});
+
+describe("dropCancelledSends", () => {
+	it("drops the cancelled send and keeps an earlier one already in flight", () => {
+		const sent = new SentValues();
+		sent.record("v1");
+		sent.record("v1");
+		const remaining = dropCancelledSends(
+			sent,
+			[entry("v1", ["A"]), entry("v1", ["A", "B"])],
+			["v1"],
+		);
+		expect(remaining).toEqual([entry("v1", ["A"])]);
+		expect(sent.takeCommit("v1")).toEqual({
+			own: true,
+			newerPending: false,
 		});
 	});
 });

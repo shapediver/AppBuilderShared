@@ -67,6 +67,15 @@ describe("SentValues", () => {
 		expect(sent.hasOutstanding()).toBe(false);
 	});
 
+	it("drops a cancelled send and keeps an earlier one of the same value", () => {
+		const sent = new SentValues();
+		sent.record("a");
+		sent.record("a");
+		sent.dropNewestOccurrences(["a"]);
+		expect(sent.hasOutstanding()).toBe(true);
+		expect(sent.takeCommit("a")).toEqual({own: true, newerPending: false});
+	});
+
 	it("forgets all sent values on clear", () => {
 		const sent = new SentValues();
 		sent.record("a");

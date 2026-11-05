@@ -32,6 +32,7 @@ import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterI
 import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
 import {
 	consumeSentDrag,
+	dropCancelledSends,
 	resolveDraggingClearCommit,
 	type SentDrag,
 } from "../lib/sentDragCommit";
@@ -113,6 +114,7 @@ export default function ParameterDraggingComponent(
 		busy,
 		executing,
 		cancelPendingChange,
+		setOnSendCallback,
 		showReset,
 		resetToDefault,
 		state,
@@ -258,6 +260,13 @@ export default function ParameterDraggingComponent(
 	const clearResetSentRef = useRef(false);
 	const resetToDefaultRef = useRef(resetToDefault);
 	resetToDefaultRef.current = resetToDefault;
+	// Recorded in changeValue, removed when the scheduler sends them. What
+	// remains was cancelled or replaced before the request.
+	const unsentValuesRef = useRef<string[]>([]);
+	setOnSendCallback((value) => {
+		const index = unsentValuesRef.current.lastIndexOf(value);
+		if (index >= 0) unsentValuesRef.current.splice(index, 1);
+	});
 
 	const serializedCombined = serializeDraggedNodes(
 		parsedExecValue,
@@ -312,6 +321,7 @@ export default function ParameterDraggingComponent(
 				value: serialized,
 				gestures: structuredClone(gestures),
 			});
+			unsentValuesRef.current.push(serialized);
 			handleChange(serialized, timeout);
 		},
 		[alwaysActive, handleChange],
@@ -341,6 +351,15 @@ export default function ParameterDraggingComponent(
 
 	const clearDragging = useCallback(() => {
 		if (automaticSceneUpdate) cancelPendingChange();
+		if (unsentValuesRef.current.length > 0) {
+			const cancelled = unsentValuesRef.current;
+			unsentValuesRef.current = [];
+			sentGesturesRef.current = dropCancelledSends(
+				sentValuesRef.current,
+				sentGesturesRef.current,
+				cancelled,
+			);
+		}
 		pendingClearRef.current = undefined;
 		const outstanding = sentValuesRef.current.hasOutstanding();
 		const commitIsDefault =

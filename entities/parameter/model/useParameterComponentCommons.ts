@@ -151,6 +151,15 @@ export function useParameterComponentCommons<T>(
 	// (e.g. the form widget).
 	const scheduled = !acceptRejectMode && !props.customActions?.execute;
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const onSendCallbackRef = useRef<((value: T | string) => void) | undefined>(
+		undefined,
+	);
+	const setOnSendCallback = useCallback(
+		(callback: (value: T | string) => void) => {
+			onSendCallbackRef.current = callback;
+		},
+		[],
+	);
 	const delegatesInitializedRef = useRef(false);
 	const clearDebounceTimer = useCallback(() => {
 		clearTimeout(debounceRef.current);
@@ -237,17 +246,13 @@ export function useParameterComponentCommons<T>(
 					value: curval,
 					timeout: timeout === undefined ? debounceTimeout : timeout,
 					forceSameValue,
-					onSend:
-						delegates.length > 0
-							? () =>
-									Promise.all(
-										executeDelegates(
-											curval,
-											true,
-											forceSameValue,
-										),
-									)
-							: undefined,
+					onSend: () => {
+						onSendCallbackRef.current?.(curval);
+						if (delegates.length === 0) return Promise.resolve();
+						return Promise.all(
+							executeDelegates(curval, true, forceSameValue),
+						);
+					},
 					onSent: cb,
 					// A restored state or a value of another request replaced the
 					// change (e.g. undo): show the committed value again. It is
@@ -468,6 +473,7 @@ export function useParameterComponentCommons<T>(
 		handleChange,
 		cancelPendingChange,
 		isScheduledChangePending,
+		setOnSendCallback,
 		setOnCancelCallback,
 		onCancel,
 		disabled,
