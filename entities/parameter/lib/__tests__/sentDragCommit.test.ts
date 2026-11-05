@@ -1,4 +1,8 @@
-import {consumeSentDrag, type SentDrag} from "../sentDragCommit";
+import {
+	consumeSentDrag,
+	resolveDraggingClearCommit,
+	type SentDrag,
+} from "../sentDragCommit";
 import {SentValues} from "../sentValues";
 
 const entry = (value: string, names: string[]): SentDrag<{name: string}> => ({
@@ -55,5 +59,69 @@ describe("consumeSentDrag", () => {
 		expect(result.newerPending).toBe(false);
 		expect(result.consumedNames).toEqual(["A", "B"]);
 		expect(result.remaining).toEqual([]);
+	});
+});
+
+describe("resolveDraggingClearCommit", () => {
+	const base = {
+		clearRequested: true,
+		resetSent: false,
+		own: true,
+		newerPending: false,
+		commitIsDefault: false,
+	};
+
+	it("ignores a commit while no clear is waiting", () => {
+		expect(
+			resolveDraggingClearCommit({...base, clearRequested: false}),
+		).toEqual({
+			keepClearedScene: false,
+			sendReset: false,
+			finished: false,
+		});
+	});
+
+	it("keeps the cleared scene and sends the reset when the drag commits", () => {
+		expect(resolveDraggingClearCommit(base)).toEqual({
+			keepClearedScene: true,
+			sendReset: true,
+			finished: false,
+		});
+	});
+
+	it("waits for a newer sent drag before sending the reset", () => {
+		expect(
+			resolveDraggingClearCommit({...base, newerPending: true}),
+		).toEqual({
+			keepClearedScene: true,
+			sendReset: false,
+			finished: false,
+		});
+	});
+
+	it("does not send the reset twice", () => {
+		expect(resolveDraggingClearCommit({...base, resetSent: true})).toEqual({
+			keepClearedScene: true,
+			sendReset: false,
+			finished: false,
+		});
+	});
+
+	it("finishes when the drag commit is already the default", () => {
+		expect(
+			resolveDraggingClearCommit({...base, commitIsDefault: true}),
+		).toEqual({
+			keepClearedScene: true,
+			sendReset: false,
+			finished: true,
+		});
+	});
+
+	it("applies a foreign commit, which is the reset or an undo", () => {
+		expect(resolveDraggingClearCommit({...base, own: false})).toEqual({
+			keepClearedScene: false,
+			sendReset: false,
+			finished: true,
+		});
 	});
 });

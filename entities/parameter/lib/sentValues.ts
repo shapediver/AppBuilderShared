@@ -22,6 +22,11 @@ export class SentValues {
 		this.#values = [];
 	}
 
+	/** Whether a value sent by the component is still waiting for its commit. */
+	hasOutstanding(): boolean {
+		return this.#values.length > 0;
+	}
+
 	/**
 	 * Whether a value was sent by the component and a newer sent value is
 	 * still waiting for its commit (the scene shows that newer state).

@@ -30,7 +30,11 @@ import {
 import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
 import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
-import {consumeSentDrag, type SentDrag} from "../lib/sentDragCommit";
+import {
+	consumeSentDrag,
+	resolveDraggingClearCommit,
+	type SentDrag,
+} from "../lib/sentDragCommit";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useDragging} from "../model/interaction/useDragging";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
@@ -248,6 +252,12 @@ export default function ParameterDraggingComponent(
 		{parsed: DragObjects; consumedNames: string[]} | undefined
 	>(undefined);
 	const processedCommitRef = useRef<string | undefined>(undefined);
+	// Clear while a sent drag has not committed yet. The sent list is kept so
+	// that commit stays own and does not cancel the reset.
+	const clearRequestedRef = useRef(false);
+	const clearResetSentRef = useRef(false);
+	const resetToDefaultRef = useRef(resetToDefault);
+	resetToDefaultRef.current = resetToDefault;
 
 	const serializedCombined = serializeDraggedNodes(
 		parsedExecValue,
@@ -331,19 +341,31 @@ export default function ParameterDraggingComponent(
 
 	const clearDragging = useCallback(() => {
 		if (automaticSceneUpdate) cancelPendingChange();
-		sentValuesRef.current.clear();
-		sentGesturesRef.current = [];
 		pendingClearRef.current = undefined;
-		if (parseDraggedNodes(state.commitValue).length === 0) {
-			stripGestures();
+		const outstanding = sentValuesRef.current.hasOutstanding();
+		const commitIsDefault =
+			(state.commitValue ?? "") === (definition.defval ?? "");
+		stripGestures();
+		if (commitIsDefault && !outstanding) {
+			sentValuesRef.current.clear();
+			sentGesturesRef.current = [];
+			clearRequestedRef.current = false;
+			clearResetSentRef.current = false;
 			return;
 		}
-		if (!alwaysActive) setDraggingActive(false);
-		resetToDefault();
+		// The in-flight drag stays in the sent list. Clearing it would make
+		// that commit foreign, and a foreign commit cancels this reset.
+		clearRequestedRef.current = true;
+		if (!commitIsDefault) {
+			clearResetSentRef.current = true;
+			resetToDefault();
+			return;
+		}
+		clearResetSentRef.current = false;
 	}, [
-		alwaysActive,
 		automaticSceneUpdate,
 		cancelPendingChange,
+		definition.defval,
 		resetToDefault,
 		state.commitValue,
 		stripGestures,
@@ -365,12 +387,38 @@ export default function ParameterDraggingComponent(
 			state.commitValue ?? "",
 		);
 		sentGesturesRef.current = consumed.remaining;
+		const clearCommit = resolveDraggingClearCommit({
+			clearRequested: clearRequestedRef.current,
+			resetSent: clearResetSentRef.current,
+			own: consumed.own,
+			newerPending: consumed.newerPending,
+			commitIsDefault:
+				(state.commitValue ?? "") === (definition.defval ?? ""),
+		});
+		if (clearCommit.sendReset) {
+			clearResetSentRef.current = true;
+			resetToDefaultRef.current();
+		}
+		if (clearCommit.finished) {
+			clearRequestedRef.current = false;
+			clearResetSentRef.current = false;
+			if (consumed.own) {
+				sentValuesRef.current.clear();
+				sentGesturesRef.current = [];
+			}
+		}
 		if (
 			automaticSceneUpdate &&
 			!consumed.own &&
+			!clearRequestedRef.current &&
 			commitEffectMountedRef.current
 		)
 			cancelPendingChange();
+		if (clearCommit.keepClearedScene) {
+			pendingClearRef.current = undefined;
+			commitEffectMountedRef.current = true;
+			return;
+		}
 		const mounted = commitEffectMountedRef.current;
 		commitEffectMountedRef.current = true;
 		// A newer value was combined from these gestures onto this

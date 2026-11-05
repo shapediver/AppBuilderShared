@@ -58,6 +58,15 @@ describe("SentValues", () => {
 		expect(sent.isSuperseded("b")).toBe(false);
 	});
 
+	it("reports a sent value that is still waiting", () => {
+		const sent = new SentValues();
+		expect(sent.hasOutstanding()).toBe(false);
+		sent.record("a");
+		expect(sent.hasOutstanding()).toBe(true);
+		sent.takeCommit("a");
+		expect(sent.hasOutstanding()).toBe(false);
+	});
+
 	it("forgets all sent values on clear", () => {
 		const sent = new SentValues();
 		sent.record("a");

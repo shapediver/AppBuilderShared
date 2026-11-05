@@ -61,3 +61,37 @@ export const consumeSentDrag = <T extends {name: string}>(
 		remaining: sentGestures.slice(index + 1),
 	};
 };
+
+/**
+ * What a commit does to a Clear requested while a drag this component sent
+ * is still in flight.
+ *
+ * That drag must stay an own commit. A foreign commit cancels the pending
+ * reset, so Clear keeps the sent list until the drag commits. The reset is
+ * sent only once the committed value is not already the default: a reset to
+ * the current value is dropped, and the drag would then stay.
+ */
+export const resolveDraggingClearCommit = (input: {
+	clearRequested: boolean;
+	resetSent: boolean;
+	own: boolean;
+	newerPending: boolean;
+	commitIsDefault: boolean;
+}): {
+	/** Do not apply this commit's drag. The scene stays cleared. */
+	keepClearedScene: boolean;
+	/** Send the reset. The committed value is the drag, so it is not a no-op. */
+	sendReset: boolean;
+	/** The clear is done, or this commit is the reset (or another foreign one). */
+	finished: boolean;
+} => {
+	if (!input.clearRequested)
+		return {keepClearedScene: false, sendReset: false, finished: false};
+	if (!input.own)
+		return {keepClearedScene: false, sendReset: false, finished: true};
+	if (input.newerPending || input.resetSent)
+		return {keepClearedScene: true, sendReset: false, finished: false};
+	if (!input.commitIsDefault)
+		return {keepClearedScene: true, sendReset: true, finished: false};
+	return {keepClearedScene: true, sendReset: false, finished: true};
+};
