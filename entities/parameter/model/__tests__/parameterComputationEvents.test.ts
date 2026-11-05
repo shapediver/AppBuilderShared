@@ -36,13 +36,21 @@ function emit(
 		category?: string;
 		status?: string;
 		type?: string;
+		id?: string;
 	},
 ) {
-	const {sessionId, category = "customize", status, type: taskType} = data;
+	const {
+		sessionId,
+		category = "customize",
+		status,
+		type: taskType,
+		id,
+	} = data;
 	for (const handler of handlers[type] ?? []) {
 		handler({
 			type: taskType ?? "session_customization",
 			category,
+			id,
 			data: sessionId === undefined ? undefined : {sessionId},
 			status,
 		});
@@ -208,6 +216,41 @@ describe("parameterComputationEvents", () => {
 		expect(events.end).toEqual([
 			{sessionId: "s1", parameterIds: ["a", "b"]},
 		]);
+	});
+
+	it("gives each overlapping computation via exports its own parameters", () => {
+		const events = record();
+		const category = "customize_via_exports";
+
+		markParametersInCustomization("s1", ["a"]);
+		emit("task.start", {sessionId: "s1", category, id: "t1"});
+		markParametersInCustomization("s1", ["b"]);
+		emit("task.start", {sessionId: "s1", category, id: "t2"});
+
+		// the second request answers first
+		emit("task.end", {sessionId: "s1", category, id: "t2"});
+		expect(events.end).toEqual([{sessionId: "s1", parameterIds: ["b"]}]);
+		emit("task.end", {sessionId: "s1", category, id: "t1"});
+		expect(events.end).toEqual([
+			{sessionId: "s1", parameterIds: ["b"]},
+			{sessionId: "s1", parameterIds: ["a"]},
+		]);
+	});
+
+	it("moves the parameters of a superseded task to the newer task", () => {
+		const events = record();
+
+		markParametersInCustomization("s1", ["a"]);
+		emit("task.start", {sessionId: "s1", id: "t1"});
+		markParametersInCustomization("s1", ["b"]);
+		emit("task.start", {sessionId: "s1", id: "t2"});
+		emit("task.cancel", {sessionId: "s1", id: "t1", status: SUPERSEDED});
+		emit("task.end", {sessionId: "s1", id: "t2"});
+
+		expect(events.end).toEqual([
+			{sessionId: "s1", parameterIds: ["b", "a"]},
+		]);
+		expect(events.error).toEqual([]);
 	});
 
 	it("stops reporting to a removed listener", () => {

@@ -191,4 +191,4 @@ The task events carry only the session id. The App Builder therefore remembers w
 - **No change:** a customization in which no value changed emits no event, and the parameter is not remembered.
 - **Accept mode:** the executor runs only when the accepted change is computed. A queued change runs nothing.
 - **Instances** (`customize_parallel`) change neither the values nor the scene node of the session. They run no parameter control slots.
-- **Overlapping default exports:** the first `task.end` hands over every parameter remembered so far.
+- **Overlapping default exports:** the parameters are handed to the task that starts next, so each export computation ends with its own parameters, whatever the order of the answers. A superseded customization hands its parameters to the newest other running task.
