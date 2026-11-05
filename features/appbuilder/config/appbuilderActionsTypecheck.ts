@@ -145,6 +145,17 @@ export const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 	updateMode: z.enum(["partial", "complete"]).optional(),
 });
 
+export const IAppBuilderActionPropsSelectionSchema = z.strictObject({
+	select: z.array(z.string()).optional(),
+	deselect: z.array(z.string()).optional(),
+	parameter: z
+		.strictObject({
+			name: z.string(),
+			sessionId: z.string().optional(),
+		})
+		.optional(),
+});
+
 export const IAppBuilderActionPropsEmptySchema = z.strictObject({});
 
 export const IAppBuilderActionPropsUndoSchema =

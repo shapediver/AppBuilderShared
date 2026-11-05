@@ -45,6 +45,7 @@ import {useInteractionEnginePause} from "../model/interaction/useInteractionEngi
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterResetRow from "./ParameterResetRow";
 
@@ -211,6 +212,7 @@ export default function ParameterRectangleTransformComponent(
 		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
+		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
@@ -225,6 +227,18 @@ export default function ParameterRectangleTransformComponent(
 		// editing is paused during a computation, like the other parameters
 		busy,
 	);
+	// The "selection" action changes the selection like a user does.
+	useSelectionActionTarget({
+		ownerKey: interactionOwnerKey,
+		namespace,
+		parameterId: definition.id,
+		parameterName: definition.name,
+		candidateNodes,
+		selectedNodeNames,
+		// the same default as the selection of the rectangle transform
+		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
+		setSelectedNodeNames,
+	});
 
 	const rtLabel =
 		rectangleTransformProps.prompt?.inactiveTitle ??

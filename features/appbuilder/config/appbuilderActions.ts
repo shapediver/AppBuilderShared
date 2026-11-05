@@ -83,6 +83,10 @@ export type IAppBuilderActionDefinition =
 			props: IAppBuilderActionPropsSetContainerVisibility;
 	  }
 	| {
+			type: AppBuilderActionType.Selection;
+			props: IAppBuilderActionPropsSelection;
+	  }
+	| {
 			type: AppBuilderActionType.ExecuteActions;
 			props: IAppBuilderActionPropsExecuteActions;
 	  };
@@ -110,6 +114,45 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
 	/** Mode of the action. */
 	mode: "open" | "close" | "toggle";
 }
+
+/**
+ * Properties of a "selection" action.
+ *
+ * Selects and deselects nodes of interaction parameters that have a selection
+ * (selection, gumball, and rectangle transform; dragging has no selection).
+ * The change is applied to the parameter that owns the node, the same way a
+ * user selection is: the parameter's own rules apply (e.g. `maximumSelection`,
+ * confirmation), and the App Builder logic that reacts to a selection runs.
+ *
+ * Names are node names as used by the `nameFilter` of interaction parameters
+ * (output name, then the hierarchical node names separated by dots) and can
+ * contain the wildcard `*`. A node targeted by both {@link select} and
+ * {@link deselect} is selected.
+ *
+ * If more nodes match {@link select} than the `maximumSelection` of a
+ * parameter allows, the first matches in scene order are selected and a
+ * warning is logged. The action does not fail.
+ *
+ * @docAttached
+ * @category feature
+ * @configPath actions.selection.props
+ * @displayName IAppBuilderActionPropsSelection
+ */
+export interface IAppBuilderActionPropsSelection {
+	/** The name or names of the nodes to be selected. */
+	select?: string[];
+	/** The name or names of the nodes to be deselected. */
+	deselect?: string[];
+	/**
+	 * Optional. Limits the action to one interaction parameter.
+	 * Without it, every parameter whose candidate nodes match is changed.
+	 */
+	parameter?: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
+}
+
+/** Properties of a legacy "selection" action. */
+export type IAppBuilderLegacyActionPropsSelection =
+	IAppBuilderActionPropsSelection & IAppBuilderActionPropsCommon;
 
 /**
  * Properties of an "executeActions" action.
@@ -569,6 +612,10 @@ export type IAppBuilderLegacyActionDefinition =
 			props: IAppBuilderLegacyActionPropsMessageToParent;
 	  }
 	| {
+			type: AppBuilderActionType.Selection;
+			props: IAppBuilderLegacyActionPropsSelection;
+	  }
+	| {
 			type: AppBuilderActionType.ExecuteActions;
 			props: IAppBuilderLegacyActionPropsExecuteActions;
 	  };
@@ -808,6 +855,16 @@ export function isMessageToParentAction(
 	{type: AppBuilderActionType.MessageToParent}
 > {
 	return isActionType(action, AppBuilderActionType.MessageToParent);
+}
+
+/** assert action type "selection" */
+export function isSelectionAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Selection}
+> {
+	return isActionType(action, AppBuilderActionType.Selection);
 }
 
 /** assert action type "executeActions" */

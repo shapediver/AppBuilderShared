@@ -14,6 +14,7 @@ import {
 import {
 	addListener,
 	EVENTTYPE_VIEWPORT,
+	type ITreeNode,
 	type IViewportEvent,
 	removeListener,
 } from "@shapediver/viewer.session";
@@ -37,7 +38,7 @@ export interface IRectangleTransformState {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
 	 */
-	candidateNodes: Array<{nodeId: string; name: string}>;
+	candidateNodes: Array<{nodeId: string; name: string; node: ITreeNode}>;
 	/**
 	 * The transformed node names.
 	 */

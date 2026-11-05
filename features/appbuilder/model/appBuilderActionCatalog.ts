@@ -8,6 +8,7 @@ import {
 	isMessageToParentAction,
 	isRedoAction,
 	isResetParameterValuesAction,
+	isSelectionAction,
 	isSetBrowserLocationAction,
 	isSetContainerVisibilityAction,
 	isSetParameterValueAction,
@@ -30,6 +31,7 @@ import {runAppBuilderActionImportParameterValues} from "./runAppBuilderActionImp
 import {runAppBuilderActionMessageToParent} from "./runAppBuilderActionMessageToParent";
 import {runAppBuilderActionRedo} from "./runAppBuilderActionRedo";
 import {runAppBuilderActionResetParameterValues} from "./runAppBuilderActionResetParameterValues";
+import {runAppBuilderActionSelection} from "./runAppBuilderActionSelection";
 import {runAppBuilderActionSetBrowserLocation} from "./runAppBuilderActionSetBrowserLocation";
 import {
 	runAppBuilderActionSetContainerVisibility,
@@ -169,5 +171,12 @@ export const defaultAppBuilderActionRuns: Record<
 		isAction: isSetContainerVisibilityAction,
 		run: runSetContainerVisibility,
 		setup: setupAppBuilderActionSetContainerVisibility,
+	},
+	[AppBuilderActionType.Selection]: {
+		isAction: isSelectionAction,
+		run: (definition, context) => {
+			if (!isSelectionAction(definition)) return;
+			runAppBuilderActionSelection(definition.props, context);
+		},
 	},
 };
