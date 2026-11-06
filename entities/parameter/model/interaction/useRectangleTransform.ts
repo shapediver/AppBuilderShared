@@ -177,6 +177,8 @@ export function useRectangleTransform(
 		undefined,
 		// the minimum only applies once the user selected something
 		exclusive ? (selectionSettings.minimumSelection ?? 0) : 0,
+		// selection is off while the maximum is filled; still drop deleted nodes
+		maxReached,
 	);
 
 	const hasSelection = selectedNodeNames.length > 0;
