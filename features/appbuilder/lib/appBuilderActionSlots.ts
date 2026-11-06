@@ -1,3 +1,4 @@
+import {subscribeParameterCommitted} from "@AppBuilderLib/entities/parameter/model/parameterCommitNotice";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	APP_BUILDER_CUSTOM_EVENT_PATTERN,
@@ -317,6 +318,14 @@ export interface ComputationTaskFilter {
 	start(event: ComputationTaskEvent): boolean;
 	end(event: ComputationTaskEvent): boolean;
 	cancel(event: ComputationTaskEvent): boolean;
+	/**
+	 * Listen for commits. Call again after {@link dispose}: React runs the
+	 * effect cleanup and then the effect once more, and the filter object
+	 * stays the one created in `useMemo`.
+	 */
+	listen(): () => void;
+	/** Stop listening for commits of this parameter. */
+	dispose(): void;
 }
 
 /**
@@ -333,15 +342,40 @@ export interface ComputationTaskFilter {
  *
  * A failed customization runs `computationerror`. A superseded one is
  * forgotten: the newer customization still sees the changed value.
+ *
+ * A `commit` that sets the value without a customization becomes the last
+ * computed value. The ending task does not put its start value back.
  */
 export function createParameterComputationTaskFilter(
 	sessionId: string,
+	parameterId: string,
 	getValue: () => unknown,
 ): ComputationTaskFilter {
 	let lastComputedValue = getValue();
 	let startedTasks = 0;
 	let lastEndedTask = 0;
-	const tasks = new Map<string, {order: number; value: unknown}>();
+	const tasks = new Map<
+		string,
+		{order: number; value: unknown; committed: boolean}
+	>();
+	const onCommitted = (value: unknown) => {
+		lastComputedValue = value;
+		for (const task of tasks.values()) task.committed = true;
+	};
+	let stopListening: (() => void) | undefined;
+	const ensureListening = () => {
+		if (stopListening) return;
+		stopListening = subscribeParameterCommitted(
+			sessionId,
+			parameterId,
+			onCommitted,
+		);
+	};
+	const stop = () => {
+		stopListening?.();
+		stopListening = undefined;
+	};
+	ensureListening();
 	return {
 		start(event) {
 			if (event.type !== SESSION_CUSTOMIZATION_TASK_TYPE) return false;
@@ -354,7 +388,11 @@ export function createParameterComputationTaskFilter(
 				return false;
 			const value = getValue();
 			if (value === lastComputedValue) return false;
-			tasks.set(event.id, {order: ++startedTasks, value});
+			tasks.set(event.id, {
+				order: ++startedTasks,
+				value,
+				committed: false,
+			});
 			return true;
 		},
 		end(event) {
@@ -363,8 +401,10 @@ export function createParameterComputationTaskFilter(
 			tasks.delete(event.id);
 			if (task.order > lastEndedTask) {
 				lastEndedTask = task.order;
-				lastComputedValue =
-					task.value instanceof Blob ? getValue() : task.value;
+				if (!task.committed) {
+					lastComputedValue =
+						task.value instanceof Blob ? getValue() : task.value;
+				}
 			}
 			return true;
 		},
@@ -372,6 +412,11 @@ export function createParameterComputationTaskFilter(
 			if (!tasks.delete(event.id)) return false;
 			return isSessionCustomizationFailedTask(event);
 		},
+		listen() {
+			ensureListening();
+			return stop;
+		},
+		dispose: stop,
 	};
 }
 
