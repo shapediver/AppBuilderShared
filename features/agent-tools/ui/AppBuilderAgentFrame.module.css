@@ -8,8 +8,8 @@
 	min-height: min(12rem, var(--agent-frame-max-height, 12rem));
 	max-width: var(--agent-frame-max-width, 24rem);
 	max-height: var(--agent-frame-max-height, 32rem);
-	/* Corners, border, and shadow come from the hosted iframe Paper. */
-	overflow: hidden;
+	/* Corners, border, and shadow come from the hosted iframe Paper.
+	 * Keep overflow visible so Paper's shadow is not square-clipped. */
 }
 
 .dragging iframe {
