@@ -441,12 +441,14 @@ export function AppBuilderParameterComputationSlots({
 		() =>
 			createParameterComputationTaskFilter(
 				sessionId,
+				parameterId,
 				() =>
 					useShapeDiverStoreSession.getState().sessions[sessionId]
 						?.parameters[parameterId]?.value,
 			),
 		[sessionId, parameterId],
 	);
+	useEffect(() => taskFilter.dispose, [taskFilter]);
 
 	useEffect(() => {
 		logIgnoredActionSlotEvents(

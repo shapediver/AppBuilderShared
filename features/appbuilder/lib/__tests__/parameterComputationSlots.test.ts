@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import {noteParameterCommitted} from "@AppBuilderLib/entities/parameter/model/parameterCommitNotice";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import type {IAppBuilderParameterControlActionSlots} from "../../config/appbuilderActionSlots";
 import {
@@ -26,13 +27,17 @@ const task = (
 	...extra,
 });
 
+const liveFilters: {dispose(): void}[] = [];
+
 /** The session parameter: `value` is set by the executor before it customizes. */
-function createParameter(initial: unknown) {
+function createParameter(initial: unknown, parameterId = "p1") {
 	const parameter = {value: initial};
 	const filter = createParameterComputationTaskFilter(
 		"s1",
+		parameterId,
 		() => parameter.value,
 	);
+	liveFilters.push(filter);
 	return {parameter, filter};
 }
 
@@ -75,6 +80,10 @@ describe("parameter control computation slots", () => {
 });
 
 describe("createParameterComputationTaskFilter", () => {
+	afterEach(() => {
+		liveFilters.splice(0).forEach((filter) => filter.dispose());
+	});
+
 	it("starts only when the parameter changed", () => {
 		const a = createParameter("1");
 		const b = createParameter("1");
@@ -188,8 +197,10 @@ describe("createParameterComputationTaskFilter", () => {
 		const parameter = {value: "1", sessionValue: "1"};
 		const filter = createParameterComputationTaskFilter(
 			"s1",
+			"exports",
 			() => parameter.value,
 		);
+		liveFilters.push(filter);
 		const exportsTask = (id: string) =>
 			task(id, {category: "customize_via_exports"});
 
@@ -204,5 +215,29 @@ describe("createParameterComputationTaskFilter", () => {
 
 		// unchanged since the last computation
 		expect(filter.start(exportsTask("t3"))).toBe(false);
+	});
+
+	it("does not treat a commit without a computation as a later change", () => {
+		const {parameter, filter} = createParameter("1", "committed");
+		parameter.value = "2";
+		expect(filter.start(task("t1"))).toBe(true);
+		expect(filter.end(task("t1"))).toBe(true);
+
+		parameter.value = "1";
+		noteParameterCommitted("s1", "committed", "1");
+
+		expect(filter.start(task("t2"))).toBe(false);
+		expect(filter.end(task("t2"))).toBe(false);
+	});
+
+	it("keeps a commit made while the task is still running", () => {
+		const {parameter, filter} = createParameter("1", "mid");
+		parameter.value = "2";
+		expect(filter.start(task("t1"))).toBe(true);
+		parameter.value = "reset";
+		noteParameterCommitted("s1", "mid", "reset");
+		expect(filter.end(task("t1"))).toBe(true);
+
+		expect(filter.start(task("t2"))).toBe(false);
 	});
 });
