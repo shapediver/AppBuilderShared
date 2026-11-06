@@ -4,6 +4,8 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	applySelectionAction,
+	enterSelectionSlotChain,
+	leaveSelectionSlotChain,
 	registerSelectionActionTarget,
 	resetSelectionActionTargets,
 	setSelectionActionNameFinder,
@@ -148,6 +150,34 @@ describe("applySelectionAction", () => {
 		registerSelectionActionTarget(boxes.target);
 
 		run({select: ["Boxes.1"]});
+
+		expect(slotRuns).toEqual([true, false]);
+		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);
+	});
+
+	it("does not run slots for a selection made after the slot handler awaits", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			root: true,
+			ownerKey: "boxes",
+		});
+		const slotRuns: boolean[] = [];
+		let selectAfterAwait: (() => void) | undefined;
+		boxes.setSelectedNames.mockImplementation((names: string[]) => {
+			slotRuns.push(shouldEmitSelectionActionSlots());
+			if (names[0] !== "Boxes.1") return;
+			enterSelectionSlotChain();
+			selectAfterAwait = () => {
+				applySelectionAction(
+					{select: ["Boxes.2"]},
+					{namespace: "session"},
+				);
+				leaveSelectionSlotChain();
+			};
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		run({select: ["Boxes.1"]});
+		selectAfterAwait?.();
 
 		expect(slotRuns).toEqual([true, false]);
 		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);

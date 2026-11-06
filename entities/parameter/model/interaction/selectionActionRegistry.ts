@@ -49,9 +49,27 @@ const targets = new Map<string, SelectionActionTarget>();
  */
 let selectionActionDepth = 0;
 
+/**
+ * `selecton` / `selectoff` handlers still running. A sequential
+ * `executeActions` awaits between steps, so the depth above is already 0
+ * when a later step selects again. The chain stays up until those handlers
+ * settle, and that later selection does not run the slots again.
+ */
+let selectionSlotChain = 0;
+
 /** Whether the selection change currently being applied should run its slots. */
 export function shouldEmitSelectionActionSlots(): boolean {
-	return selectionActionDepth <= 1;
+	return selectionActionDepth <= 1 && selectionSlotChain === 0;
+}
+
+/** A selection slot handler started. Pair with {@link leaveSelectionSlotChain}. */
+export function enterSelectionSlotChain(): void {
+	selectionSlotChain += 1;
+}
+
+/** The selection slot handler settled, including its awaited actions. */
+export function leaveSelectionSlotChain(): void {
+	selectionSlotChain = Math.max(0, selectionSlotChain - 1);
 }
 
 type NameFinder = (nameFilter: readonly string[]) => readonly string[];
@@ -85,6 +103,7 @@ export const registerSelectionActionTarget = (
 export const resetSelectionActionTargets = () => {
 	targets.clear();
 	selectionActionDepth = 0;
+	selectionSlotChain = 0;
 };
 
 const matchingCandidateNames = (

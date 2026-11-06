@@ -1,4 +1,8 @@
-import {shouldEmitSelectionActionSlots} from "@AppBuilderLib/entities/parameter/model/interaction/selectionActionRegistry";
+import {
+	enterSelectionSlotChain,
+	leaveSelectionSlotChain,
+	shouldEmitSelectionActionSlots,
+} from "@AppBuilderLib/entities/parameter/model/interaction/selectionActionRegistry";
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useSelectionActionTarget} from "@AppBuilderLib/entities/parameter/model/interaction/useSelectionActionTarget";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
@@ -29,6 +33,7 @@ import {
 	getActionSlotEventProps,
 	isAppBuilderInteractionEvent,
 	mapViewerInteractionEventToSlot,
+	selectionSlotCacheKey,
 	selectionSlotGroupKey,
 	selectionSlotNameFilterKey,
 	type ResolvedActionSlot,
@@ -78,10 +83,14 @@ function selectionEventProps(
 }
 
 function runSlot(
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
+	handlersRef: MutableRefObject<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>,
 	item: ResolvedActionSlot,
-): void {
-	handlersRef.current[actionSlotHandlerKey(item.eventName, item.index)]?.();
+): void | Promise<void> {
+	return handlersRef.current[
+		actionSlotHandlerKey(item.eventName, item.index)
+	]?.();
 }
 
 /**
@@ -129,14 +138,20 @@ function InteractionSlotGroup({
 	items: ResolvedActionSlot[];
 	namespace: string;
 	viewportId: string;
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
+	handlersRef: MutableRefObject<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>;
 }) {
 	const mergedEventProps = useMemo(
 		() => mergeSelectionEventProps(items),
 		[items],
 	);
 	const resolvedViewportId = mergedEventProps.viewportId ?? viewportId;
-	const cacheKey = selectionSlotGroupKey(mergedEventProps, viewportId);
+	const cacheKey = selectionSlotCacheKey(
+		namespace,
+		mergedEventProps,
+		viewportId,
+	);
 	const [selectionAllowed, setSelectionAllowed] = useState(true);
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 	const restoringRef = useRef(false);
@@ -213,7 +228,27 @@ function InteractionSlotGroup({
 	const fireNamed = useCallback(
 		(eventName: string) => {
 			for (const item of itemsRef.current) {
-				if (item.eventName === eventName) runSlot(handlersRef, item);
+				if (item.eventName !== eventName) continue;
+				// Held until the handler settles, so a later step of a
+				// sequential executeActions does not run these slots again.
+				enterSelectionSlotChain();
+				let result: void | Promise<void>;
+				try {
+					result = runSlot(handlersRef, item);
+				} catch (error) {
+					leaveSelectionSlotChain();
+					throw error;
+				}
+				if (
+					result &&
+					typeof (result as Promise<void>).then === "function"
+				) {
+					void (result as Promise<void>).finally(() =>
+						leaveSelectionSlotChain(),
+					);
+				} else {
+					leaveSelectionSlotChain();
+				}
 			}
 		},
 		[handlersRef],
