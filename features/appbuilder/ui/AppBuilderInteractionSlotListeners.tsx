@@ -224,19 +224,21 @@ function InteractionSlotGroup({
 
 	const itemsRef = useRef(items);
 	itemsRef.current = items;
+	const ownerKey = `root-selection:${namespace}:${cacheKey}`;
 
 	const fireNamed = useCallback(
 		(eventName: string) => {
 			for (const item of itemsRef.current) {
 				if (item.eventName !== eventName) continue;
 				// Held until the handler settles, so a later step of a
-				// sequential executeActions does not run these slots again.
-				enterSelectionSlotChain();
+				// sequential executeActions does not run this group's slots
+				// again. Other groups are not affected.
+				enterSelectionSlotChain(ownerKey);
 				let result: void | Promise<void>;
 				try {
 					result = runSlot(handlersRef, item);
 				} catch (error) {
-					leaveSelectionSlotChain();
+					leaveSelectionSlotChain(ownerKey);
 					throw error;
 				}
 				if (
@@ -244,14 +246,14 @@ function InteractionSlotGroup({
 					typeof (result as Promise<void>).then === "function"
 				) {
 					void (result as Promise<void>).finally(() =>
-						leaveSelectionSlotChain(),
+						leaveSelectionSlotChain(ownerKey),
 					);
 				} else {
-					leaveSelectionSlotChain();
+					leaveSelectionSlotChain(ownerKey);
 				}
 			}
 		},
-		[handlersRef],
+		[handlersRef, ownerKey],
 	);
 
 	// Default target of a selection action that does not name a parameter.
@@ -261,7 +263,7 @@ function InteractionSlotGroup({
 	useSelectionActionTarget({
 		// The namespace is part of the key. Two App Builders can share a
 		// viewport and the same selection config, and must both stay registered.
-		ownerKey: `root-selection:${namespace}:${cacheKey}`,
+		ownerKey,
 		namespace,
 		candidateNodes,
 		selectedNodeNames,
@@ -269,7 +271,7 @@ function InteractionSlotGroup({
 		maximumSelection: selectionProps.maximumSelection ?? 1,
 		setSelectedNames: (names) => {
 			setSelectedNodeNamesAndRestoreSelection(names);
-			if (!shouldEmitSelectionActionSlots()) return;
+			if (!shouldEmitSelectionActionSlots(ownerKey)) return;
 			if (names.length > 0) fireNamed("selecton");
 			else fireNamed("selectoff");
 		},

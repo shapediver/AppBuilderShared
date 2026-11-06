@@ -139,7 +139,7 @@ describe("applySelectionAction", () => {
 		});
 		const slotRuns: boolean[] = [];
 		boxes.setSelectedNames.mockImplementation((names: string[]) => {
-			slotRuns.push(shouldEmitSelectionActionSlots());
+			slotRuns.push(shouldEmitSelectionActionSlots("boxes"));
 			if (names[0] === "Boxes.1") {
 				applySelectionAction(
 					{select: ["Boxes.2"]},
@@ -163,15 +163,15 @@ describe("applySelectionAction", () => {
 		const slotRuns: boolean[] = [];
 		let selectAfterAwait: (() => void) | undefined;
 		boxes.setSelectedNames.mockImplementation((names: string[]) => {
-			slotRuns.push(shouldEmitSelectionActionSlots());
+			slotRuns.push(shouldEmitSelectionActionSlots("boxes"));
 			if (names[0] !== "Boxes.1") return;
-			enterSelectionSlotChain();
+			enterSelectionSlotChain("boxes");
 			selectAfterAwait = () => {
 				applySelectionAction(
 					{select: ["Boxes.2"]},
 					{namespace: "session"},
 				);
-				leaveSelectionSlotChain();
+				leaveSelectionSlotChain("boxes");
 			};
 		});
 		registerSelectionActionTarget(boxes.target);
@@ -181,6 +181,37 @@ describe("applySelectionAction", () => {
 
 		expect(slotRuns).toEqual([true, false]);
 		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);
+	});
+
+	it("still runs another group's slots while one handler is awaiting", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			root: true,
+			ownerKey: "boxes",
+		});
+		const other = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			root: true,
+			ownerKey: "other",
+		});
+		const slotRuns: {boxes: boolean[]; other: boolean[]} = {
+			boxes: [],
+			other: [],
+		};
+		boxes.setSelectedNames.mockImplementation((names: string[]) => {
+			slotRuns.boxes.push(shouldEmitSelectionActionSlots("boxes"));
+			if (names[0] === "Boxes.1") enterSelectionSlotChain("boxes");
+		});
+		other.setSelectedNames.mockImplementation(() => {
+			slotRuns.other.push(shouldEmitSelectionActionSlots("other"));
+		});
+		registerSelectionActionTarget(boxes.target);
+		registerSelectionActionTarget(other.target);
+
+		run({select: ["Boxes.1"]});
+		run({select: ["Boxes.2"]});
+		leaveSelectionSlotChain("boxes");
+
+		expect(slotRuns.boxes).toEqual([true, false]);
+		expect(slotRuns.other).toEqual([true, true]);
 	});
 
 	it("limits the action to the requested parameter and leaves the root selection", () => {

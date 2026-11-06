@@ -50,26 +50,34 @@ const targets = new Map<string, SelectionActionTarget>();
 let selectionActionDepth = 0;
 
 /**
- * `selecton` / `selectoff` handlers still running. A sequential
- * `executeActions` awaits between steps, so the depth above is already 0
- * when a later step selects again. The chain stays up until those handlers
- * settle, and that later selection does not run the slots again.
+ * `selecton` / `selectoff` handlers still running, per selection group.
+ * A sequential `executeActions` awaits between steps, so the depth above is
+ * already 0 when a later step selects again. Only that group's slots stay
+ * quiet. Another App Builder, or another group in the same one, still runs.
  */
-let selectionSlotChain = 0;
+const selectionSlotChains = new Map<string, number>();
 
-/** Whether the selection change currently being applied should run its slots. */
-export function shouldEmitSelectionActionSlots(): boolean {
-	return selectionActionDepth <= 1 && selectionSlotChain === 0;
+/** Whether this group's selection change should run its slots. */
+export function shouldEmitSelectionActionSlots(ownerKey: string): boolean {
+	return (
+		selectionActionDepth <= 1 &&
+		(selectionSlotChains.get(ownerKey) ?? 0) === 0
+	);
 }
 
 /** A selection slot handler started. Pair with {@link leaveSelectionSlotChain}. */
-export function enterSelectionSlotChain(): void {
-	selectionSlotChain += 1;
+export function enterSelectionSlotChain(ownerKey: string): void {
+	selectionSlotChains.set(
+		ownerKey,
+		(selectionSlotChains.get(ownerKey) ?? 0) + 1,
+	);
 }
 
 /** The selection slot handler settled, including its awaited actions. */
-export function leaveSelectionSlotChain(): void {
-	selectionSlotChain = Math.max(0, selectionSlotChain - 1);
+export function leaveSelectionSlotChain(ownerKey: string): void {
+	const next = (selectionSlotChains.get(ownerKey) ?? 0) - 1;
+	if (next <= 0) selectionSlotChains.delete(ownerKey);
+	else selectionSlotChains.set(ownerKey, next);
 }
 
 type NameFinder = (nameFilter: readonly string[]) => readonly string[];
@@ -103,7 +111,7 @@ export const registerSelectionActionTarget = (
 export const resetSelectionActionTargets = () => {
 	targets.clear();
 	selectionActionDepth = 0;
-	selectionSlotChain = 0;
+	selectionSlotChains.clear();
 };
 
 const matchingCandidateNames = (
