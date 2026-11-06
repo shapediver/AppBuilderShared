@@ -183,12 +183,12 @@ The task events carry only the session id. The parameter executor sets `session.
 
 | Event of the customization                            | Slots of a parameter control whose value changed                                                                 |
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `task.start`                                          | `computationstart`. The task is remembered.                                                                      |
-| `task.end` (after the session scene node is replaced) | `computationend`. The current value becomes the last computed value.                                             |
+| `task.start`                                          | `computationstart`. The task and the value are remembered.                                                       |
+| `task.end` (after the session scene node is replaced) | `computationend`. The task's value becomes the last computed value.                                              |
 | `task.cancel`: `Session customization failed`         | `computationerror`. The task is forgotten.                                                                       |
 | `task.cancel`: `The request was exceeded by…`         | None. The task is forgotten. The newer customization still sees the changed value, so it includes the parameter. |
 
 - **Accept mode:** the executor runs only when the accepted change is computed. A queued change runs nothing.
 - **Instances** (`customize_parallel`) change neither the values nor the scene node of the session. They run no parameter control slots.
-- **Current value at `task.end`:** the viewer replaces a `File` by its upload id during `customize`, and an older task may end after a newer one started. The value at the start would be stale in both cases.
+- **Value at `task.end`:** the value of the task at `task.start`, not the live one: with default exports the executor may already have set the next value while it uploads files. A task that ends after a newer one has ended changes nothing. A `File` is read again at the end, because `customize` replaces it by its upload id.
 - **Overlapping customizations:** a customization that starts while an earlier one with the changed value is still running includes the parameter too, so both run `computationend` (unless one is superseded).

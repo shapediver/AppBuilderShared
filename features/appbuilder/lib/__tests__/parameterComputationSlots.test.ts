@@ -126,6 +126,17 @@ describe("createParameterComputationTaskFilter", () => {
 		expect(filter.start(task("t3"))).toBe(false);
 	});
 
+	it("keeps a value set while an earlier task ends as not computed yet", () => {
+		const {parameter, filter} = createParameter("1");
+		parameter.value = "2";
+		expect(filter.start(task("t1"))).toBe(true);
+		// the executor sets the next value, then uploads files before it starts the task
+		parameter.value = "3";
+		expect(filter.end(task("t1"))).toBe(true);
+		expect(filter.start(task("t2"))).toBe(true);
+		expect(filter.end(task("t2"))).toBe(true);
+	});
+
 	it("forgets a superseded customization, the newer one ends once", () => {
 		const {parameter, filter} = createParameter("1");
 		parameter.value = "2";

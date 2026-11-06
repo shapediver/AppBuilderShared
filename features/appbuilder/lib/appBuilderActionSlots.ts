@@ -326,9 +326,10 @@ export interface ComputationTaskFilter {
  * executor sets the value before it customizes). `sessionValue` is not used:
  * `requestExports` (default exports) does not update it.
  *
- * At TASK_END the current value becomes the last computed one: the viewer
- * replaces a `File` by its id during the customization, and an older task
- * may end after a newer one has started.
+ * At TASK_END the value of the task becomes the last computed one, unless a
+ * newer task has already ended. The live value is not used in general: the
+ * executor may already have set the next value while it uploads files. Only
+ * a `File` is read again at the end, as `customize` replaces it by its id.
  *
  * A failed customization runs `computationerror`. A superseded one is
  * forgotten: the newer customization still sees the changed value.
@@ -338,7 +339,9 @@ export function createParameterComputationTaskFilter(
 	getValue: () => unknown,
 ): ComputationTaskFilter {
 	let lastComputedValue = getValue();
-	const tasks = new Set<string>();
+	let startedTasks = 0;
+	let lastEndedTask = 0;
+	const tasks = new Map<string, {order: number; value: unknown}>();
 	return {
 		start(event) {
 			if (event.type !== SESSION_CUSTOMIZATION_TASK_TYPE) return false;
@@ -349,13 +352,20 @@ export function createParameterComputationTaskFilter(
 				sessionId
 			)
 				return false;
-			if (getValue() === lastComputedValue) return false;
-			tasks.add(event.id);
+			const value = getValue();
+			if (value === lastComputedValue) return false;
+			tasks.set(event.id, {order: ++startedTasks, value});
 			return true;
 		},
 		end(event) {
-			if (!tasks.delete(event.id)) return false;
-			lastComputedValue = getValue();
+			const task = tasks.get(event.id);
+			if (!task) return false;
+			tasks.delete(event.id);
+			if (task.order > lastEndedTask) {
+				lastEndedTask = task.order;
+				lastComputedValue =
+					task.value instanceof Blob ? getValue() : task.value;
+			}
 			return true;
 		},
 		cancel(event) {
