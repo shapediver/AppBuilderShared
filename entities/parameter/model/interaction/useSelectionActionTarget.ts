@@ -1,49 +1,65 @@
-import type {ITreeNode} from "@shapediver/viewer.session";
+import {
+	findNamedNodesByNameFilter,
+	type NamedNode,
+} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
 import {useEffect, useRef} from "react";
-import {registerSelectionActionTarget} from "./selectionActionRegistry";
-import {matchSelectionNames} from "./selectionNameMatcher";
+import {
+	registerSelectionActionTarget,
+	setSelectionActionNameFinder,
+} from "./selectionActionRegistry";
+
+// The registry stays free of the viewer. This module already runs in the
+// mounted parameter and the root slot group, which load the viewer.
+setSelectionActionNameFinder((nameFilter) => {
+	if (nameFilter.length === 0) return [];
+
+	return findNamedNodesByNameFilter([...nameFilter]).map(({name}) => name);
+});
 
 export type UseSelectionActionTargetProps = {
 	/** Unique key of the mounted component. */
 	ownerKey: string;
-	namespace: string;
-	parameterId: string;
-	parameterName: string;
-	/** All candidate nodes of the parameter, in scene order. */
-	candidateNodes: {name: string; node: ITreeNode}[];
-	selectedNodeNames: string[];
-	/** The `maximumSelection` of the parameter, `Infinity` if unlimited. */
+	/** Candidates in scene order. */
+	candidateNodes: readonly NamedNode[];
+	selectedNodeNames: readonly string[];
+	/** `Infinity` if unlimited. */
 	maximumSelection: number;
-	setSelectedNodeNames: (names: string[]) => void;
+	setSelectedNames: (names: string[]) => void;
+	/**
+	 * Set for a mounted interaction parameter (selection, gumball, rectangle
+	 * transform). Root interaction slot groups omit it: they are the targets
+	 * of a selection action that does not name a parameter.
+	 */
+	parameter?: {namespace: string; id: string; name: string};
 };
 
 /**
- * Makes the selection of an interaction parameter (selection, gumball,
- * rectangle transform) available to the "selection" action.
+ * Makes a mounted selection available to the "selection" action.
  *
- * The action sets the selected node names of the component, exactly like a
- * selection in the viewport does: the component applies its own rules, e.g.
- * confirms the selection automatically or waits for the confirmation.
+ * The action sets the selected names of this component. A parameter then
+ * applies its own rules (confirmation, maximum). A root slot group updates
+ * its scene selection and runs `selecton` / `selectoff`.
  */
 export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 	const propsRef = useRef(props);
 	propsRef.current = props;
 
-	const {ownerKey, namespace, parameterId, parameterName} = props;
+	const {ownerKey, parameter} = props;
+	const namespace = parameter?.namespace;
+	const parameterId = parameter?.id;
+	const parameterName = parameter?.name;
+
 	useEffect(
 		() =>
 			registerSelectionActionTarget({
 				ownerKey,
-				namespace,
-				parameterId,
-				parameterName,
-				getCandidateNames: () =>
-					propsRef.current.candidateNodes.map(({name}) => name),
-				matchNames: (nameFilter) =>
-					matchSelectionNames(
-						nameFilter,
-						propsRef.current.candidateNodes.map(({node}) => node),
-					),
+				parameter:
+					namespace !== undefined &&
+					parameterId !== undefined &&
+					parameterName !== undefined
+						? {namespace, id: parameterId, name: parameterName}
+						: undefined,
+				getCandidates: () => propsRef.current.candidateNodes,
 				getSelectedNames: () => propsRef.current.selectedNodeNames,
 				getMaximumSelection: () => propsRef.current.maximumSelection,
 				setSelectedNames: (names) => {
@@ -52,7 +68,7 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 						...propsRef.current,
 						selectedNodeNames: names,
 					};
-					propsRef.current.setSelectedNodeNames(names);
+					propsRef.current.setSelectedNames(names);
 				},
 			}),
 		[ownerKey, namespace, parameterId, parameterName],

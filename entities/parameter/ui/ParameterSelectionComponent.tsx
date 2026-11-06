@@ -277,16 +277,18 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNames,
 		requestSelectionRestore,
 	});
-	// The "selection" action changes the selection like a user does.
+	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: selectionOwnerKey,
-		namespace,
-		parameterId: definition.id,
-		parameterName: definition.name,
 		candidateNodes,
 		selectedNodeNames,
 		maximumSelection,
-		setSelectedNodeNames,
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
 	});
 
 	const acceptable =

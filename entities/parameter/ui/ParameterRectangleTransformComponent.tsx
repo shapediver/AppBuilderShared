@@ -227,17 +227,19 @@ export default function ParameterRectangleTransformComponent(
 		// editing is paused during a computation, like the other parameters
 		busy,
 	);
-	// The "selection" action changes the selection like a user does.
+	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: interactionOwnerKey,
-		namespace,
-		parameterId: definition.id,
-		parameterName: definition.name,
 		candidateNodes,
 		selectedNodeNames,
 		// the same default as the selection of the rectangle transform
 		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
-		setSelectedNodeNames,
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
 	});
 
 	const rtLabel =

@@ -221,16 +221,18 @@ export default function ParameterGumballComponent(
 		// editing is paused during a computation, like the other parameters
 		busy,
 	);
-	// The "selection" action changes the selection like a user does.
+	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: interactionOwnerKey,
-		namespace,
-		parameterId: definition.id,
-		parameterName: definition.name,
 		candidateNodes,
 		selectedNodeNames,
 		maximumSelection: gumballProps.maximumSelection ?? Infinity,
-		setSelectedNodeNames,
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
 	});
 
 	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";

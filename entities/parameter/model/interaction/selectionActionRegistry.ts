@@ -1,31 +1,25 @@
+import type {NamedNode} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
 import {resolveSelectionActionChange} from "@AppBuilderLib/entities/parameter/lib/selectionAction";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreParameters} from "../useShapeDiverStoreParameters";
 
 /**
- * A mounted interaction parameter with a selection (selection, gumball,
- * rectangle transform) which the "selection" action can change.
+ * Mounted selection the "selection" action can change.
  *
- * The parameter registers itself, see `useSelectionActionTarget`. The action
- * changes the selection of the component, which then behaves as if the user
- * had made that selection.
+ * The selection lives in React state of the mounted parameter, or of a root
+ * interaction slot group, not in a store. The component registers while it
+ * is mounted. `parameter` is set for an interaction parameter. Without it,
+ * the entry is a root `selecton` / `selectoff` group.
  *
- * This module must stay free of viewer imports: the action catalog imports it.
+ * This module must stay free of viewer imports: the action catalog imports
+ * it. Name matching is installed from the UI, which already loads the viewer.
  */
-export type SelectionActionTarget = {
-	/** Unique key of the mounted component. */
+type SelectionActionTarget = {
 	ownerKey: string;
-	namespace: string;
-	parameterId: string;
-	parameterName: string;
-	/** The names of the candidate nodes of the parameter, in scene order. */
-	getCandidateNames: () => string[];
-	/**
-	 * The names of the candidate nodes which are matched by name filters
-	 * (see `matchSelectionNames`).
-	 */
-	matchNames: (nameFilter: string[]) => Set<string>;
-	getSelectedNames: () => string[];
+	parameter?: {namespace: string; id: string; name: string};
+	/** Candidates in scene order. */
+	getCandidates: () => readonly NamedNode[];
+	getSelectedNames: () => readonly string[];
 	getMaximumSelection: () => number;
 	setSelectedNames: (names: string[]) => void;
 };
@@ -45,6 +39,18 @@ export type SelectionActionContext = {
 
 const targets = new Map<string, SelectionActionTarget>();
 
+type NameFinder = (nameFilter: readonly string[]) => readonly string[];
+
+let findMatchingNames: NameFinder = () => [];
+
+/**
+ * Install the scene lookup used to match `select` / `deselect`.
+ * `useSelectionActionTarget` installs `findNamedNodesByNameFilter`.
+ */
+export const setSelectionActionNameFinder = (finder: NameFinder) => {
+	findMatchingNames = finder;
+};
+
 /**
  * Register a target. A later registration with the same key replaces the
  * earlier one (e.g. a remount). Returns the function to unregister.
@@ -63,6 +69,23 @@ export const registerSelectionActionTarget = (
 /** Test-only: drop all registered targets. */
 export const resetSelectionActionTargets = () => targets.clear();
 
+const matchingCandidateNames = (
+	candidates: readonly NamedNode[],
+	nameFilter: readonly string[],
+): string[] => {
+	if (nameFilter.length === 0 || candidates.length === 0) return [];
+	const matched = new Set(findMatchingNames(nameFilter));
+	const names: string[] = [];
+	const seen = new Set<string>();
+	for (const candidate of candidates) {
+		if (!matched.has(candidate.name) || seen.has(candidate.name)) continue;
+		seen.add(candidate.name);
+		names.push(candidate.name);
+	}
+
+	return names;
+};
+
 const resolveRequestedParameter = (
 	parameter: NonNullable<SelectionActionRequest["parameter"]>,
 	context: SelectionActionContext,
@@ -78,10 +101,15 @@ const resolveRequestedParameter = (
 };
 
 /**
- * Run a "selection" action: select and deselect nodes of the registered
- * interaction parameters. A node targeted by both lists is selected.
+ * Run a "selection" action.
  *
- * @returns The ids of the parameters whose selection was changed.
+ * Without `parameter`, root interaction slot groups whose candidates match
+ * change, the same way a selection there would. With `parameter`, only that
+ * mounted interaction parameter changes. A node targeted by both lists is
+ * selected. A result equal to the current selection is not applied.
+ *
+ * @returns The ids of the parameters (or the owner keys of the root groups)
+ * whose selection was changed.
  */
 export function applySelectionAction(
 	request: SelectionActionRequest,
@@ -91,7 +119,11 @@ export function applySelectionAction(
 	const deselect = request.deselect ?? [];
 	if (select.length === 0 && deselect.length === 0) return [];
 
-	let candidates = Array.from(targets.values());
+	let candidates = Array.from(targets.values()).filter((target) =>
+		request.parameter
+			? target.parameter !== undefined
+			: target.parameter === undefined,
+	);
 	if (request.parameter) {
 		const requested = resolveRequestedParameter(request.parameter, context);
 		if (!requested) {
@@ -103,8 +135,8 @@ export function applySelectionAction(
 		}
 		candidates = candidates.filter(
 			(target) =>
-				target.namespace === requested.namespace &&
-				target.parameterId === requested.parameterId,
+				target.parameter?.namespace === requested.namespace &&
+				target.parameter.id === requested.parameterId,
 		);
 		if (candidates.length === 0) {
 			Logger.warn(
@@ -117,22 +149,27 @@ export function applySelectionAction(
 
 	const changed: string[] = [];
 	for (const target of candidates) {
+		const candidateNodes = target.getCandidates();
+		const selectedNames = target.getSelectedNames();
 		const maximumSelection = target.getMaximumSelection();
-		const result = resolveSelectionActionChange({
-			candidateNames: target.getCandidateNames(),
-			selectedNames: target.getSelectedNames(),
-			selectMatches: target.matchNames(select),
-			deselectMatches: target.matchNames(deselect),
+		const result = resolveSelectionActionChange(
+			candidateNodes.map(({name}) => name),
+			selectedNames,
+			new Set(matchingCandidateNames(candidateNodes, select)),
+			new Set(matchingCandidateNames(candidateNodes, deselect)),
 			maximumSelection,
-		});
+		);
 		if (result.exceededBy > 0) {
+			const where = target.parameter
+				? `parameter "${target.parameter.name}"`
+				: "the root selection";
 			Logger.warn(
-				`Selection action: ${result.exceededBy} more node(s) match than the maximum selection of ${maximumSelection} allows for parameter "${target.parameterName}". The first matches in scene order are selected.`,
+				`Selection action: ${result.exceededBy} more node(s) match than the maximum selection of ${maximumSelection} allows for ${where}. The first matches in scene order are selected.`,
 			);
 		}
 		if (!result.changed) continue;
 		target.setSelectedNames(result.names);
-		changed.push(target.parameterId);
+		changed.push(target.parameter?.id ?? target.ownerKey);
 	}
 
 	return changed;

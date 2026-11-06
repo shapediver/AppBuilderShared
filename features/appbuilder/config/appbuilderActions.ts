@@ -118,20 +118,24 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
 /**
  * Properties of a "selection" action.
  *
- * Selects and deselects nodes of interaction parameters that have a selection
- * (selection, gumball, and rectangle transform; dragging has no selection).
- * The change is applied to the parameter that owns the node, the same way a
- * user selection is: the parameter's own rules apply (e.g. `maximumSelection`,
- * confirmation), and the App Builder logic that reacts to a selection runs.
+ * Without {@link parameter}, the action changes the root scene selection:
+ * each root `selecton` / `selectoff` group (`eventProps.type: "selection"`)
+ * whose candidates match. That change behaves like a selection in the group,
+ * so the group's `selecton` (non-empty result) or `selectoff` (empty result)
+ * runs. A result equal to the current selection does nothing.
  *
- * Names are node names as used by the `nameFilter` of interaction parameters
- * (output name, then the hierarchical node names separated by dots) and can
- * contain the wildcard `*`. A node targeted by both {@link select} and
- * {@link deselect} is selected.
+ * With {@link parameter}, only that interaction parameter changes (selection,
+ * gumball, or rectangle transform; dragging has no selection). The parameter
+ * must be mounted. The change goes through its selection, the same way a user
+ * selection does: `maximumSelection`, confirmation, and the logic that reacts
+ * to the parameter run. If more nodes match {@link select} than
+ * `maximumSelection` allows, the first matches in scene order are selected
+ * and a warning is logged. The action does not fail.
  *
- * If more nodes match {@link select} than the `maximumSelection` of a
- * parameter allows, the first matches in scene order are selected and a
- * warning is logged. The action does not fail.
+ * Names are node names as used by a `nameFilter` (output name, then the
+ * hierarchical node names separated by dots) and can contain the wildcard
+ * `*`. A node targeted by both {@link select} and {@link deselect} is
+ * selected.
  *
  * @docAttached
  * @category feature
@@ -139,13 +143,14 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
  * @displayName IAppBuilderActionPropsSelection
  */
 export interface IAppBuilderActionPropsSelection {
-	/** The name or names of the nodes to be selected. */
+	/** Name filters of the nodes to select. */
 	select?: string[];
-	/** The name or names of the nodes to be deselected. */
+	/** Name filters of the nodes to deselect. */
 	deselect?: string[];
 	/**
-	 * Optional. Limits the action to one interaction parameter.
-	 * Without it, every parameter whose candidate nodes match is changed.
+	 * Interaction parameter whose selection changes. Without it, the action
+	 * changes the root scene selection of the matching `selecton` /
+	 * `selectoff` groups.
 	 */
 	parameter?: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
 }

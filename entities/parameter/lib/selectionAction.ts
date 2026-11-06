@@ -1,44 +1,21 @@
-export type SelectionActionChangeInput = {
-	/** Names of the candidate nodes of the parameter, in scene order. */
-	candidateNames: readonly string[];
-	/** Names of the currently selected nodes. */
-	selectedNames: readonly string[];
-	/** Names of the candidates targeted by `select`. */
-	selectMatches: ReadonlySet<string>;
-	/** Names of the candidates targeted by `deselect`. */
-	deselectMatches: ReadonlySet<string>;
-	/** The `maximumSelection` of the parameter. */
-	maximumSelection: number;
-};
-
-export type SelectionActionChange = {
-	/** The resulting selection. The current selection if nothing changes. */
-	names: string[];
-	/** Whether the resulting selection differs from the current one. */
-	changed: boolean;
-	/** Number of nodes targeted by `select` which the maximum cannot hold. */
-	exceededBy: number;
-};
-
 /**
- * Compute the selection of a parameter after a "selection" action.
+ * The selection after a "selection" action.
  *
- * - Nodes targeted by `select` are selected. A node targeted by both `select`
- *   and `deselect` is selected.
- * - Nodes targeted only by `deselect` are deselected.
- * - Other selected nodes stay selected.
- * - If more nodes match `select` than `maximumSelection` allows, the first
- *   matches in scene order are selected (`exceededBy` reports the rest).
- *   Selected nodes which do not fit next to the new ones are dropped, like a
- *   single selection which is replaced by the next one.
+ * Nodes targeted by `selectMatches` are selected, including a node targeted
+ * by both lists. Nodes targeted only by `deselectMatches` are deselected.
+ * Other selected nodes stay selected. If more nodes match `selectMatches`
+ * than `maximumSelection` allows, the first matches in `candidateNames`
+ * (scene order) are selected and `exceededBy` counts the rest. When the
+ * resulting set equals the current selection, `names` keeps that selection
+ * and its order, and `changed` is false.
  */
-export function resolveSelectionActionChange({
-	candidateNames,
-	selectedNames,
-	selectMatches,
-	deselectMatches,
-	maximumSelection,
-}: SelectionActionChangeInput): SelectionActionChange {
+export function resolveSelectionActionChange(
+	candidateNames: readonly string[],
+	selectedNames: readonly string[],
+	selectMatches: ReadonlySet<string>,
+	deselectMatches: ReadonlySet<string>,
+	maximumSelection: number,
+): {names: string[]; changed: boolean; exceededBy: number} {
 	const maximum = Math.max(0, maximumSelection);
 	const targeted = Array.from(
 		new Set(candidateNames.filter((name) => selectMatches.has(name))),

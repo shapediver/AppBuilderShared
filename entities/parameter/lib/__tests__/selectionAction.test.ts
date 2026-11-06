@@ -2,17 +2,20 @@ import {resolveSelectionActionChange} from "@AppBuilderLib/entities/parameter/li
 
 const candidateNames = ["Box.1", "Box.2", "Box.3", "Box.4"];
 
-const resolve = (
-	options: Partial<Parameters<typeof resolveSelectionActionChange>[0]>,
-) =>
-	resolveSelectionActionChange({
-		candidateNames,
-		selectedNames: [],
-		selectMatches: new Set(),
-		deselectMatches: new Set(),
-		maximumSelection: Infinity,
-		...options,
-	});
+const resolve = (options: {
+	candidateNames?: readonly string[];
+	selectedNames?: readonly string[];
+	selectMatches?: ReadonlySet<string>;
+	deselectMatches?: ReadonlySet<string>;
+	maximumSelection?: number;
+}) =>
+	resolveSelectionActionChange(
+		options.candidateNames ?? candidateNames,
+		options.selectedNames ?? [],
+		options.selectMatches ?? new Set<string>(),
+		options.deselectMatches ?? new Set<string>(),
+		options.maximumSelection ?? Infinity,
+	);
 
 describe("resolveSelectionActionChange", () => {
 	it("selects the targeted nodes and keeps the current selection", () => {

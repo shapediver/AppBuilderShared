@@ -146,14 +146,27 @@ export const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 });
 
 export const IAppBuilderActionPropsSelectionSchema = z.strictObject({
-	select: z.array(z.string()).optional(),
-	deselect: z.array(z.string()).optional(),
+	select: z
+		.array(z.string())
+		.optional()
+		.describe(
+			"Name filters of the nodes to select. Wildcards (`*`) are allowed. A node listed in both select and deselect is selected.",
+		),
+	deselect: z
+		.array(z.string())
+		.optional()
+		.describe(
+			"Name filters of the nodes to deselect. Wildcards (`*`) are allowed.",
+		),
 	parameter: z
 		.strictObject({
 			name: z.string(),
 			sessionId: z.string().optional(),
 		})
-		.optional(),
+		.optional()
+		.describe(
+			"Interaction parameter (selection, gumball, or rectangle transform) whose selection changes. The parameter must be mounted. Without it, the action changes the root scene selection of the selecton/selectoff groups whose candidates match.",
+		),
 });
 
 export const IAppBuilderActionPropsEmptySchema = z.strictObject({});

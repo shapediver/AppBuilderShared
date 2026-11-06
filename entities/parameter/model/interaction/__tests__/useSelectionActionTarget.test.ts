@@ -16,37 +16,46 @@ jest.mock("@AppBuilderLib/shared/lib/logger", () => ({
 	Logger: {warn: jest.fn()},
 }));
 jest.mock("../../useShapeDiverStoreParameters", () => ({
-	useShapeDiverStoreParameters: {getState: () => ({})},
+	useShapeDiverStoreParameters: {
+		getState: () => ({
+			getParameter: (namespace: string, name: string) =>
+				namespace === "session" && name === "Boxes"
+					? {getState: () => ({definition: {id: "boxes"}})}
+					: undefined,
+		}),
+	},
 }));
-// the nodes of the tests carry their name
-jest.mock("../selectionNameMatcher", () => ({
-	matchSelectionNames: (filters: string[], nodes: {name: string}[]) =>
-		new Set(
-			nodes
-				.map(({name}) => name)
-				.filter((name) => filters.includes(name)),
-		),
-}));
+// each filter string stands for one scene node of that name
+jest.mock(
+	"@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter",
+	() => ({
+		findNamedNodesByNameFilter: (filters: string[] = []) =>
+			filters.map((name) => ({name, node: {name}})),
+	}),
+);
 
 const createProps = (
 	overrides: Partial<UseSelectionActionTargetProps> = {},
 ): UseSelectionActionTargetProps => ({
 	ownerKey: "owner",
-	namespace: "session",
-	parameterId: "boxes",
-	parameterName: "Boxes",
 	candidateNodes: ["Boxes.1", "Boxes.2"].map((name) => ({
 		name,
 		node: {name} as unknown as ITreeNode,
 	})),
 	selectedNodeNames: [],
 	maximumSelection: 2,
-	setSelectedNodeNames: jest.fn(),
+	setSelectedNames: jest.fn(),
+	parameter: {namespace: "session", id: "boxes", name: "Boxes"},
 	...overrides,
 });
 
-const run = (request: Parameters<typeof applySelectionAction>[0]) =>
-	applySelectionAction(request, {namespace: "session"});
+const run = (
+	request: Parameters<typeof applySelectionAction>[0],
+	context: Partial<Parameters<typeof applySelectionAction>[1]> = {},
+) => applySelectionAction(request, {namespace: "session", ...context});
+
+const runOnParameter = (request: Parameters<typeof applySelectionAction>[0]) =>
+	run({parameter: {name: "Boxes"}, ...request});
 
 describe("useSelectionActionTarget", () => {
 	beforeEach(() => resetSelectionActionTargets());
@@ -55,45 +64,79 @@ describe("useSelectionActionTarget", () => {
 		const props = createProps();
 		const {unmount} = renderHook(() => useSelectionActionTarget(props));
 
-		expect(run({select: ["Boxes.1"]})).toEqual(["boxes"]);
-		expect(props.setSelectedNodeNames).toHaveBeenCalledWith(["Boxes.1"]);
+		expect(runOnParameter({select: ["Boxes.1"]})).toEqual(["boxes"]);
+		expect(props.setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
 
 		unmount();
 
-		expect(run({select: ["Boxes.2"]})).toEqual([]);
+		expect(runOnParameter({select: ["Boxes.2"]})).toEqual([]);
+	});
+
+	it("is not used when the action does not name the parameter", () => {
+		const props = createProps();
+		renderHook(() => useSelectionActionTarget(props));
+
+		expect(run({select: ["Boxes.1"]})).toEqual([]);
+		expect(props.setSelectedNames).not.toHaveBeenCalled();
+	});
+
+	it("registers a root group when no parameter is set", () => {
+		const setSelectedNames = jest.fn();
+		const props = createProps({
+			parameter: undefined,
+			setSelectedNames,
+			ownerKey: "root",
+		});
+		renderHook(() => useSelectionActionTarget(props));
+
+		expect(run({select: ["Boxes.1"]})).toEqual(["root"]);
+		expect(setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
+		expect(runOnParameter({select: ["Boxes.2"]})).toEqual([]);
 	});
 
 	it("uses the selection of the latest render", () => {
-		const setSelectedNodeNames = jest.fn();
+		const setSelectedNames = jest.fn();
 		const {rerender} = renderHook(
 			(props: UseSelectionActionTargetProps) =>
 				useSelectionActionTarget(props),
-			{initialProps: createProps({setSelectedNodeNames})},
+			{initialProps: createProps({setSelectedNames})},
 		);
 
 		rerender(
 			createProps({
-				setSelectedNodeNames,
+				setSelectedNames,
 				selectedNodeNames: ["Boxes.1"],
 			}),
 		);
-		run({deselect: ["Boxes.1"]});
+		runOnParameter({deselect: ["Boxes.1"]});
 
-		expect(setSelectedNodeNames).toHaveBeenCalledWith([]);
+		expect(setSelectedNames).toHaveBeenCalledWith([]);
 	});
 
 	it("lets actions in a row see the selection before the next render", () => {
-		const setSelectedNodeNames = jest.fn();
+		const setSelectedNames = jest.fn();
 		renderHook(() =>
-			useSelectionActionTarget(createProps({setSelectedNodeNames})),
+			useSelectionActionTarget(createProps({setSelectedNames})),
 		);
 
-		run({select: ["Boxes.1"]});
-		run({select: ["Boxes.2"]});
+		runOnParameter({select: ["Boxes.1"]});
+		runOnParameter({select: ["Boxes.2"]});
 
-		expect(setSelectedNodeNames).toHaveBeenLastCalledWith([
+		expect(setSelectedNames).toHaveBeenLastCalledWith([
 			"Boxes.1",
 			"Boxes.2",
 		]);
+	});
+
+	it("ignores a scene node which is not a candidate", () => {
+		const setSelectedNames = jest.fn();
+		renderHook(() =>
+			useSelectionActionTarget(createProps({setSelectedNames})),
+		);
+
+		expect(runOnParameter({select: ["Boxes.1", "Other"]})).toEqual([
+			"boxes",
+		]);
+		expect(setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
 	});
 });
