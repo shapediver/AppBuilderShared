@@ -45,6 +45,7 @@ import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderLib/widge
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAreaChartWidgetComponent";
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
+import {AppBuilderIframeWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderIframeWidgetComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderImage";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderLineChartWidgetComponent";
 import {AppBuilderPdfEmbedThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderPdfEmbed";
@@ -843,6 +844,16 @@ export const useCustomTheme = (props: Props = {}) => {
 				// withBorder: false,
 				// shadow: "xs",
 				// styles: { root: { overflow: "auto" }}
+			}),
+			/**
+			 * AppBuilderIframeWidgetComponent
+			 *
+			 * Chrome for iframe and hostedAgent widgets.
+			 */
+			AppBuilderIframeWidgetComponent: AppBuilderIframeWidgetThemeProps({
+				// px: 0,
+				// py: 0,
+				// shadow: "md",
 			}),
 			AppBuilderAgentWidgetComponent: AppBuilderAgentWidgetThemeProps({
 				// systemPrompt: "Hi there",

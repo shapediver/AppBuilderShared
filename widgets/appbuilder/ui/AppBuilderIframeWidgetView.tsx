@@ -1,5 +1,12 @@
 import type {IAppBuilderWidgetPropsIframe} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Center, Loader} from "@mantine/core";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import {
+	Center,
+	Loader,
+	MantineThemeComponent,
+	Paper,
+	useProps,
+} from "@mantine/core";
 import {useEffect, useState} from "react";
 import classes from "./AppBuilderIframeWidgetComponent.module.css";
 import {resolveIframeSrc} from "./resolveIframeSrc";
@@ -18,21 +25,55 @@ export function frameHeight(
 	return DEFAULT_HEIGHT;
 }
 
-export type AppBuilderIframeWidgetComponentProps =
-	IAppBuilderWidgetPropsIframe & {
-		/** Called with the iframe window after load, and with `null` on unmount. */
-		onLoad?: (frame: Window | null) => void;
+/**
+ * Theme defaults for the iframe / hosted-agent frame chrome.
+ *
+ * Matches other widgets: rounded `Paper` with the standard shadow.
+ *
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderIframeWidgetComponent.defaultProps
+ * @displayName AppBuilderIframeWidgetComponent
+ */
+export type AppBuilderIframeWidgetComponentStyleProps = MantinePaperProps;
+
+const defaultStyleProps: Partial<AppBuilderIframeWidgetComponentStyleProps> = {
+	// Prefer px/py over `p`: Paper's theme defaults set px/py, which win over `p`.
+	px: 0,
+	py: 0,
+	shadow: "md",
+};
+
+type AppBuilderIframeWidgetThemePropsType =
+	Partial<AppBuilderIframeWidgetComponentStyleProps>;
+
+export function AppBuilderIframeWidgetThemeProps(
+	props: AppBuilderIframeWidgetThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
 	};
+}
+
+export type AppBuilderIframeWidgetComponentProps =
+	IAppBuilderWidgetPropsIframe &
+		AppBuilderIframeWidgetThemePropsType & {
+			/** Called with the iframe window after load, and with `null` on unmount. */
+			onLoad?: (frame: Window | null) => void;
+		};
 
 /**
  * Iframe widget view. `url` must be an absolute http(s) page.
  */
-export default function AppBuilderIframeWidgetView({
-	url,
-	title,
-	height,
-	onLoad,
-}: AppBuilderIframeWidgetComponentProps) {
+export default function AppBuilderIframeWidgetView(
+	props: AppBuilderIframeWidgetComponentProps,
+) {
+	const {url, title, height, onLoad, ...rest} = props;
+	const paperProps = useProps(
+		"AppBuilderIframeWidgetComponent",
+		defaultStyleProps,
+		rest,
+	);
 	const src = resolveIframeSrc(url);
 	const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
 	const loaded = loadedSrc === src;
@@ -49,7 +90,11 @@ export default function AppBuilderIframeWidgetView({
 	}
 
 	return (
-		<div className={classes.root} style={{height: frameHeight(height)}}>
+		<Paper
+			{...paperProps}
+			className={classes.root}
+			style={{height: frameHeight(height), overflow: "hidden"}}
+		>
 			{loaded ? null : (
 				<Center
 					aria-label="Loading"
@@ -72,6 +117,6 @@ export default function AppBuilderIframeWidgetView({
 					onLoad?.(event.currentTarget.contentWindow);
 				}}
 			/>
-		</div>
+		</Paper>
 	);
 }

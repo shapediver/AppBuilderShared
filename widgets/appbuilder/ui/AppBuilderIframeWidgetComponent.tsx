@@ -1,9 +1,15 @@
-import {Center, Loader} from "@mantine/core";
+import {Loader, Paper} from "@mantine/core";
 import {lazy, Suspense} from "react";
 import type {AppBuilderIframeWidgetComponentProps} from "./AppBuilderIframeWidgetView";
 
-export {frameHeight} from "./AppBuilderIframeWidgetView";
-export type {AppBuilderIframeWidgetComponentProps};
+export {
+	AppBuilderIframeWidgetThemeProps,
+	frameHeight,
+} from "./AppBuilderIframeWidgetView";
+export type {
+	AppBuilderIframeWidgetComponentProps,
+	AppBuilderIframeWidgetComponentStyleProps,
+} from "./AppBuilderIframeWidgetView";
 
 const AppBuilderIframeWidgetView = lazy(
 	() => import("./AppBuilderIframeWidgetView"),
@@ -19,9 +25,15 @@ export default function AppBuilderIframeWidgetComponent(
 		<Suspense
 			name="AppBuilderIframeWidgetComponent"
 			fallback={
-				<Center aria-label="Loading" role="status">
+				<Paper
+					px={0}
+					py={0}
+					shadow="md"
+					aria-label="Loading"
+					role="status"
+				>
 					<Loader size="md" type="oval" />
-				</Center>
+				</Paper>
 			}
 		>
 			<AppBuilderIframeWidgetView {...props} />

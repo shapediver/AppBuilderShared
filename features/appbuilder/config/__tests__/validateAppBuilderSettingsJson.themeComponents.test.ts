@@ -156,6 +156,11 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
+		component: "AppBuilderIframeWidgetComponent",
+		validDefaultProps: {shadow: "md", withBorder: true, px: 0, py: 0},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
 		component: "AppBuilderActionComponent",
 		validDefaultProps: {variant: "filled", fullWidth: true},
 		invalidDefaultProps: {variant: 123},
