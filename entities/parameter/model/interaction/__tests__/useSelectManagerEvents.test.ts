@@ -91,6 +91,14 @@ describe("useSelectManagerEvents with a kept minimum selection", () => {
 		);
 	});
 
+	it("reports the clicked selection before React renders it", () => {
+		const {result} = renderEvents(0);
+
+		select(nodeB);
+
+		expect(result.current.getSelectedNodeNames()).toEqual(["b"]);
+	});
+
 	it("replaces the selection when another object is clicked", async () => {
 		const {result} = renderEvents(1);
 

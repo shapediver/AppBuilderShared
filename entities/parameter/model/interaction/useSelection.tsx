@@ -139,16 +139,20 @@ export function useSelection(
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
 	const {patterns} = useCreateNameFilterPattern(createNameFilterInput);
 
-	const {selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames} =
-		useSelectManagerEvents(
-			patterns,
-			componentId,
-			initialSelectedNodeNames,
-			strictNaming,
-			activate,
-			selectManager,
-			keptMinimumSelection,
-		);
+	const {
+		selectedNodeNames,
+		setSelectedNodeNames,
+		getSelectedNodeNames,
+		resetSelectedNodeNames,
+	} = useSelectManagerEvents(
+		patterns,
+		componentId,
+		initialSelectedNodeNames,
+		strictNaming,
+		activate,
+		selectManager,
+		keptMinimumSelection,
+	);
 	const [restoreRevision, requestSelectionRestore] = React.useReducer(
 		(revision: number) => revision + 1,
 		0,
@@ -454,6 +458,7 @@ export function useSelection(
 		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
+		getSelectedNodeNames,
 		resetSelectedNodeNames,
 		availableNodeNames: availableNodeNamesReturn,
 		setSelectedNodeNamesAndRestoreSelection,

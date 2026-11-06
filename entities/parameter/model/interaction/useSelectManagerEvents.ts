@@ -24,6 +24,11 @@ export interface ISelectionState {
 	 */
 	selectedNodeNames: string[];
 	/**
+	 * The selected names, including a change made earlier in the current
+	 * event (before React has rendered it).
+	 */
+	getSelectedNodeNames: () => string[];
+	/**
 	 * Set the selected node names.
 	 *
 	 * @param names
@@ -95,15 +100,25 @@ export function useSelectManagerEvents(
 	selectManagerRef.current = selectManager;
 
 	// state for the selected nodes
-	const [selectedNodeNames, setSelectedNodeNames] = useState<string[]>(
+	const [selectedNodeNames, setSelectedNodeNamesState] = useState<string[]>(
 		initialSelectedNodeNames ?? [],
-	);
-	const resetSelectedNodeNames = useCallback(
-		() => setSelectedNodeNames([]),
-		[],
 	);
 	const selectedNodeNamesRef = useRef(selectedNodeNames);
 	selectedNodeNamesRef.current = selectedNodeNames;
+	// A click updates this ref before React renders. Slot handlers run in that
+	// same event, so they must read the ref rather than the state.
+	const setSelectedNodeNames = useCallback((names: string[]) => {
+		selectedNodeNamesRef.current = names;
+		setSelectedNodeNamesState(names);
+	}, []);
+	const getSelectedNodeNames = useCallback(
+		() => selectedNodeNamesRef.current,
+		[],
+	);
+	const resetSelectedNodeNames = useCallback(
+		() => setSelectedNodeNames([]),
+		[setSelectedNodeNames],
+	);
 	const keptMinimumSelectionRef = useRef(keptMinimumSelection);
 	keptMinimumSelectionRef.current = keptMinimumSelection;
 	// set by a user selection, which the select manager emits right after the
@@ -251,11 +266,12 @@ export function useSelectManagerEvents(
 			removeListener(tokenMultiSelectOn);
 			removeListener(tokenMultiSelectOff);
 		};
-	}, [patterns, componentId, strictNaming]);
+	}, [patterns, componentId, setSelectedNodeNames, strictNaming]);
 
 	return {
 		selectedNodeNames,
 		setSelectedNodeNames,
+		getSelectedNodeNames,
 		resetSelectedNodeNames,
 	};
 }

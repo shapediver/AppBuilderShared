@@ -22,6 +22,11 @@ export type UseSelectionActionTargetProps = {
 	/** Candidates in scene order. */
 	candidateNodes: readonly NamedNode[];
 	selectedNodeNames: readonly string[];
+	/**
+	 * Current names, including a change made earlier in this event. Falls
+	 * back to `selectedNodeNames` when omitted.
+	 */
+	getSelectedNames?: () => readonly string[];
 	/** `Infinity` if unlimited. */
 	maximumSelection: number;
 	setSelectedNames: (names: string[]) => void;
@@ -60,7 +65,9 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 						? {namespace, id: parameterId, name: parameterName}
 						: undefined,
 				getCandidates: () => propsRef.current.candidateNodes,
-				getSelectedNames: () => propsRef.current.selectedNodeNames,
+				getSelectedNames: () =>
+					propsRef.current.getSelectedNames?.() ??
+					propsRef.current.selectedNodeNames,
 				getMaximumSelection: () => propsRef.current.maximumSelection,
 				setSelectedNames: (names) => {
 					// Actions in a row see this selection before the next render.

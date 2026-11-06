@@ -195,6 +195,7 @@ function InteractionSlotGroup({
 	const {
 		candidateNodes,
 		selectedNodeNames,
+		getSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
 		componentId,
@@ -225,6 +226,7 @@ function InteractionSlotGroup({
 		ownerKey: `root-selection:${cacheKey}`,
 		candidateNodes,
 		selectedNodeNames,
+		getSelectedNames: getSelectedNodeNames,
 		maximumSelection: selectionProps.maximumSelection ?? 1,
 		setSelectedNames: (names) => {
 			setSelectedNodeNamesAndRestoreSelection(names);
