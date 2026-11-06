@@ -46,6 +46,11 @@ export type UseSelectionActionTargetProps = {
 	 * of a selection action that does not name a parameter.
 	 */
 	parameter?: {namespace: string; id: string; name: string};
+	/**
+	 * Whether the action can change the selection, e.g. not while another
+	 * interaction owns the nodes. Omitted is `true`.
+	 */
+	enabled?: boolean;
 };
 
 /**
@@ -59,38 +64,45 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 	const propsRef = useRef(props);
 	propsRef.current = props;
 
-	const {ownerKey, parameter} = props;
+	const {ownerKey, parameter, enabled = true} = props;
 	const namespace = parameter?.namespace ?? props.namespace ?? "";
 	const parameterId = parameter?.id;
 	const parameterName = parameter?.name;
 
 	useEffect(
 		() =>
-			registerSelectionActionTarget({
-				ownerKey,
-				namespace,
-				parameter:
-					namespace !== undefined &&
-					parameterId !== undefined &&
-					parameterName !== undefined
-						? {namespace, id: parameterId, name: parameterName}
-						: undefined,
-				getCandidates: () => propsRef.current.candidateNodes,
-				getSelectedNames: () =>
-					propsRef.current.getSelectedNames?.() ??
-					propsRef.current.selectedNodeNames,
-				getMaximumSelection: () => propsRef.current.maximumSelection,
-				getKeptMinimumSelection: () =>
-					propsRef.current.keptMinimumSelection ?? 0,
-				setSelectedNames: (names) => {
-					// Actions in a row see this selection before the next render.
-					propsRef.current = {
-						...propsRef.current,
-						selectedNodeNames: names,
-					};
-					propsRef.current.setSelectedNames(names);
-				},
-			}),
-		[ownerKey, namespace, parameterId, parameterName],
+			enabled
+				? registerSelectionActionTarget({
+						ownerKey,
+						namespace,
+						parameter:
+							namespace !== undefined &&
+							parameterId !== undefined &&
+							parameterName !== undefined
+								? {
+										namespace,
+										id: parameterId,
+										name: parameterName,
+									}
+								: undefined,
+						getCandidates: () => propsRef.current.candidateNodes,
+						getSelectedNames: () =>
+							propsRef.current.getSelectedNames?.() ??
+							propsRef.current.selectedNodeNames,
+						getMaximumSelection: () =>
+							propsRef.current.maximumSelection,
+						getKeptMinimumSelection: () =>
+							propsRef.current.keptMinimumSelection ?? 0,
+						setSelectedNames: (names) => {
+							// Actions in a row see this selection before the next render.
+							propsRef.current = {
+								...propsRef.current,
+								selectedNodeNames: names,
+							};
+							propsRef.current.setSelectedNames(names);
+						},
+					})
+				: undefined,
+		[ownerKey, namespace, parameterId, parameterName, enabled],
 	);
 }
