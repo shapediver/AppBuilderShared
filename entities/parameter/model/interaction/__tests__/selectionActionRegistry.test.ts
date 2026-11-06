@@ -41,6 +41,7 @@ const createTarget = (
 	options: {
 		selected?: string[];
 		maximumSelection?: number;
+		keptMinimumSelection?: number;
 		namespace?: string;
 		ownerKey?: string;
 		root?: boolean;
@@ -64,6 +65,7 @@ const createTarget = (
 			names.map((name) => ({name, node: {name} as never})),
 		getSelectedNames: () => selected,
 		getMaximumSelection: () => options.maximumSelection ?? 1,
+		getKeptMinimumSelection: () => options.keptMinimumSelection ?? 0,
 		setSelectedNames,
 	};
 
@@ -306,6 +308,60 @@ describe("applySelectionAction", () => {
 
 		expect(run({select: ["Boxes.1"], deselect: ["Boxes.2"]})).toEqual([]);
 		expect(boxes.setSelectedNames).not.toHaveBeenCalled();
+	});
+
+	it("ignores a deselect below the kept minimum, without a warning", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			selected: ["Boxes.1"],
+			keptMinimumSelection: 1,
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		expect(
+			run({deselect: ["Boxes.*"], parameter: {name: "Boxes"}}),
+		).toEqual([]);
+		expect(boxes.setSelectedNames).not.toHaveBeenCalled();
+		expect(Logger.warn).not.toHaveBeenCalled();
+	});
+
+	it("still replaces a selection at the kept minimum", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			selected: ["Boxes.1"],
+			keptMinimumSelection: 1,
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		expect(
+			run({
+				select: ["Boxes.2"],
+				deselect: ["Boxes.1"],
+				parameter: {name: "Boxes"},
+			}),
+		).toEqual(["id-boxes"]);
+		expect(boxes.getSelected()).toEqual(["Boxes.2"]);
+	});
+
+	it("selects into an empty selection below the kept minimum", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			maximumSelection: 3,
+			keptMinimumSelection: 2,
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		run({select: ["Boxes.1"], parameter: {name: "Boxes"}});
+
+		expect(boxes.getSelected()).toEqual(["Boxes.1"]);
+	});
+
+	it("deselects to empty without a kept minimum", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1"], {
+			selected: ["Boxes.1"],
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		run({deselect: ["Boxes.1"], parameter: {name: "Boxes"}});
+
+		expect(boxes.getSelected()).toEqual([]);
 	});
 
 	it("ignores scene nodes which are not candidates of the target", () => {
