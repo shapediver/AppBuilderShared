@@ -114,6 +114,31 @@ describe("useSelectionActionTarget", () => {
 		expect(setSelectedNames).toHaveBeenCalledWith([]);
 	});
 
+	it("refuses a deselect below the kept minimum of the latest render", () => {
+		const setSelectedNames = jest.fn();
+		const {rerender} = renderHook(
+			(props: UseSelectionActionTargetProps) =>
+				useSelectionActionTarget(props),
+			{
+				initialProps: createProps({
+					setSelectedNames,
+					selectedNodeNames: ["Boxes.1"],
+				}),
+			},
+		);
+
+		rerender(
+			createProps({
+				setSelectedNames,
+				selectedNodeNames: ["Boxes.1"],
+				keptMinimumSelection: 1,
+			}),
+		);
+
+		expect(runOnParameter({deselect: ["Boxes.1"]})).toEqual([]);
+		expect(setSelectedNames).not.toHaveBeenCalled();
+	});
+
 	it("lets actions in a row see the selection before the next render", () => {
 		const setSelectedNames = jest.fn();
 		renderHook(() =>

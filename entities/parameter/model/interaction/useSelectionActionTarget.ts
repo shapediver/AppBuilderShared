@@ -29,6 +29,11 @@ export type UseSelectionActionTargetProps = {
 	getSelectedNames?: () => readonly string[];
 	/** `Infinity` if unlimited. */
 	maximumSelection: number;
+	/**
+	 * An action which would drop a non-empty selection below this number is
+	 * ignored, like a deselection by the user. Omitted is 0.
+	 */
+	keptMinimumSelection?: number;
 	setSelectedNames: (names: string[]) => void;
 	/**
 	 * Namespace of a root interaction slot group. An interaction parameter
@@ -75,6 +80,8 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 					propsRef.current.getSelectedNames?.() ??
 					propsRef.current.selectedNodeNames,
 				getMaximumSelection: () => propsRef.current.maximumSelection,
+				getKeptMinimumSelection: () =>
+					propsRef.current.keptMinimumSelection ?? 0,
 				setSelectedNames: (names) => {
 					// Actions in a row see this selection before the next render.
 					propsRef.current = {
