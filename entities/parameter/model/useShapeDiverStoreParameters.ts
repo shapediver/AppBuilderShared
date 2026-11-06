@@ -66,6 +66,7 @@ import {getResetValue} from "../lib/parameterResetValue";
 import {addValidator} from "../lib/parameterValidation";
 import {useFilterableDatabaseStateStore} from "./filterableDatabase/useFilterableDatabaseStateStore";
 import {parameterChangeScheduler} from "./parameterChangeScheduler";
+import {noteParameterCommitted} from "./parameterCommitNotice";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -1448,6 +1449,11 @@ export const useShapeDiverStoreParameters =
 															(value) => {
 																param.value =
 																	value;
+																noteParameterCommitted(
+																	sessionId,
+																	paramId,
+																	value,
+																);
 															},
 														),
 														acceptRejectMode,
@@ -2023,9 +2029,9 @@ export const useShapeDiverStoreParameters =
 					} = {};
 					for (const namespace in options?.forceSameValue ?? {})
 						requestedForceSameValue[namespace] = options!
-							.forceSameValue![
-								namespace
-							].map((paramId) => resolveId(namespace, paramId))
+							.forceSameValue![namespace].map((paramId) =>
+								resolveId(namespace, paramId),
+							)
 							.filter((id) => id in (requested[namespace] ?? {}));
 
 					// The pending changes of the parameter components are sent along
