@@ -177,18 +177,17 @@ A slot has one `action`. For several, use an `executeActions` action. To react t
 
 ## Slots of parameter controls
 
-A parameter control can use the same three slots (see [Parameter controls](action-slots.md#parameter-controls)). They listen to the same viewer events, but run only for the parameters of the customization.
+A parameter control can use the same three slots (see [Parameter controls](action-slots.md#parameter-controls)). They use the same listener as the root slots, with a filter for the control's parameter.
 
-The task events carry only the session id. The App Builder therefore remembers which parameter values it sends: the parameter executor of the session reports them right before `session.customize` (or `session.requestExports`), and keeps them until the task ends.
+The task events carry only the session id. The parameter executor sets `session.parameters[id].value` before it calls `session.customize` or `session.requestExports`, and the viewer emits `task.start` before its first `await`. So at `task.start` the filter compares the parameter's `value` with the value of its last finished computation (initially the value when the control mounts). `sessionValue` is not used: `requestExports` (the path with default exports) does not update it.
 
-| Event of the customization                            | Slots of a parameter control that was part of it                                                               |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `task.start`                                          | `computationstart`. The parameters stay remembered.                                                            |
-| `task.end` (after the session scene node is replaced) | `computationend`. The parameters are forgotten.                                                                |
-| `task.cancel`: `Session customization failed`         | `computationerror`. The parameters are forgotten.                                                              |
-| `task.cancel`: `The request was exceeded by…`         | None. The parameters stay remembered: the newer customization sends every current value, so they belong to it. |
+| Event of the customization                            | Slots of a parameter control whose value changed                                                                 |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `task.start`                                          | `computationstart`. The task and the value are remembered.                                                       |
+| `task.end` (after the session scene node is replaced) | `computationend`. The value becomes the last computed value.                                                     |
+| `task.cancel`: `Session customization failed`         | `computationerror`. The task is forgotten.                                                                       |
+| `task.cancel`: `The request was exceeded by…`         | None. The task is forgotten. The newer customization still sees the changed value, so it includes the parameter. |
 
-- **No change:** a customization in which no value changed emits no event, and the parameter is not remembered.
 - **Accept mode:** the executor runs only when the accepted change is computed. A queued change runs nothing.
 - **Instances** (`customize_parallel`) change neither the values nor the scene node of the session. They run no parameter control slots.
-- **Overlapping default exports:** the parameters are handed to the task that starts next, so each export computation ends with its own parameters, whatever the order of the answers. A superseded customization hands its parameters to the newest other running task.
+- **Overlapping customizations:** a customization that starts while an earlier one with the changed value is still running includes the parameter too, so both run `computationend` (unless one is superseded).

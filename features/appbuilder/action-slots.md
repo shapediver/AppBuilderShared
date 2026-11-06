@@ -47,7 +47,7 @@ A control of `type: "parameter"` may also use the three computation slots of the
 }
 ```
 
-- **Which computation.** The slot runs only when the control's parameter was one of the values the customization sent. A customization of another parameter of the same session does not run it. One customization that changes several parameters runs the slots of each of them. Several controls for the same parameter each run.
+- **Which computation.** The slot runs only when the customization changes the control's parameter, that is, when its value differs from the value of its last computation. A customization of another parameter of the same session does not run it. One customization that changes several parameters runs the slots of each of them. Several controls for the same parameter each run.
 - **Accept and reject.** With `acceptRejectMode`, the slots run when the accepted change is computed, not when it is queued. A rejected change computes nothing and runs nothing.
 - **Root slots stay.** A root `computationend` still runs for every customization of its session, including one that also runs a parameter control's slot.
 - **Only parameter controls.** Export, output, and action controls do not gain these events, and Zod rejects them there. Toolbar items do not either. Custom parameters (`sessionId` of the App Builder itself) are not computed by a session, so their slots never run.

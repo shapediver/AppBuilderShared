@@ -66,10 +66,6 @@ import {getResetValue} from "../lib/parameterResetValue";
 import {addValidator} from "../lib/parameterValidation";
 import {useFilterableDatabaseStateStore} from "./filterableDatabase/useFilterableDatabaseStateStore";
 import {parameterChangeScheduler} from "./parameterChangeScheduler";
-import {
-	markParametersInCustomization,
-	unmarkParametersInCustomization,
-} from "./parameterComputationEvents";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -327,9 +323,6 @@ function createGenericParameterExecutorForSession(
 		// create a process manager for the session customization
 		const {resolve, reject} = registerInProcessManager(session);
 
-		// ids of the parameters this call reports to the computation events
-		let markedParameterIds: string[] = [];
-
 		try {
 			// set values and call customize
 			Object.keys(values).forEach(
@@ -352,20 +345,9 @@ function createGenericParameterExecutorForSession(
 					exports,
 					outputs: Object.keys(session.outputs),
 				};
-				// the viewer always customizes via exports
-				markedParameterIds = Object.keys(values);
-				markParametersInCustomization(session.id, markedParameterIds);
 				const response = await session.requestExports(body, true);
 				exportResponseSetter(response.exports as IExportResponse);
 			} else {
-				// the viewer skips (and emits no task for) a customization
-				// in which no value differs from the one of the session
-				markedParameterIds = Object.keys(values).filter(
-					(id) =>
-						session.parameters[id].value !==
-						session.parameters[id].sessionValue,
-				);
-				markParametersInCustomization(session.id, markedParameterIds);
 				await session.customize();
 			}
 
@@ -392,10 +374,6 @@ function createGenericParameterExecutorForSession(
 		} catch (e: any) {
 			// cancel process manager
 			reject();
-			// a customization that failed or was superseded after its viewer
-			// task started is handled by the task events, only forget
-			// parameters that never reached a task
-			unmarkParametersInCustomization(session.id, markedParameterIds);
 			// in case of an error, restore the previous values
 			Object.keys(previousValues).forEach(
 				(id) => (session.parameters[id].value = previousValues[id]),

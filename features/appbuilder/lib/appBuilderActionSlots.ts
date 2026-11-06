@@ -10,7 +10,6 @@ import {
 	type IAppBuilderActionSlotEventProps,
 	type IAppBuilderActionSlotEventPropsSelection,
 	type IAppBuilderActionSlots,
-	type IAppBuilderParameterControlActionSlots,
 } from "../config/appbuilderActionSlots";
 
 /**
@@ -272,16 +271,102 @@ function warnIncompatibleActionSlotEventProps(
 	);
 }
 
-export {
-	isSessionCustomizationFailedTask,
-	SESSION_CUSTOMIZATION_FAILED_STATUS,
-	SESSION_CUSTOMIZATION_TASK_TYPE,
-} from "@AppBuilderLib/shared/lib/sessionCustomizationTask";
+/** Viewer `TASK_TYPE.SESSION_CUSTOMIZATION` (string to avoid importing the viewer here). */
+export const SESSION_CUSTOMIZATION_TASK_TYPE = "session_customization";
+
+/**
+ * `ITaskEvent.status` on `TASK_CANCEL` when a session customize actually
+ * failed. Other cancels (superseded customizes) use a different status.
+ */
+export const SESSION_CUSTOMIZATION_FAILED_STATUS =
+	"Session customization failed";
+
+export function isSessionCustomizationFailedTask(event: {
+	type?: string;
+	status?: string;
+}): boolean {
+	return (
+		event.type === SESSION_CUSTOMIZATION_TASK_TYPE &&
+		event.status === SESSION_CUSTOMIZATION_FAILED_STATUS
+	);
+}
+
+/**
+ * Viewer `TASK_CATEGORY.SESSION_CUSTOMIZATION.CUSTOMIZE_PARALLEL`: an
+ * instance computation, which changes neither the parameter values nor the
+ * scene node of the session.
+ */
+export const SESSION_CUSTOMIZATION_PARALLEL_CATEGORY = "customize_parallel";
+
+/** Fields of a viewer `ITaskEvent` read by a {@link ComputationTaskFilter}. */
+export type ComputationTaskEvent = {
+	id: string;
+	type?: string;
+	category?: string;
+	status?: string;
+	data?: unknown;
+};
+
+/**
+ * Decides which session customization task events run the computation
+ * slots of a node: `start` for `computationstart` (TASK_START), `end` for
+ * `computationend` (TASK_END), `cancel` for `computationerror` (TASK_CANCEL).
+ * Each is called for every session customization task event.
+ */
+export interface ComputationTaskFilter {
+	start(event: ComputationTaskEvent): boolean;
+	end(event: ComputationTaskEvent): boolean;
+	cancel(event: ComputationTaskEvent): boolean;
+}
+
+/**
+ * Filter for the computation slots of a parameter control. The task events
+ * carry only the session id, so a customization counts for the parameter
+ * when, at TASK_START, its value differs from the last computed one (the
+ * executor sets the value before it customizes). `sessionValue` is not used:
+ * `requestExports` (default exports) does not update it.
+ *
+ * A failed customization runs `computationerror`. A superseded one is
+ * forgotten: the newer customization still sees the changed value.
+ */
+export function createParameterComputationTaskFilter(
+	sessionId: string,
+	getValue: () => unknown,
+): ComputationTaskFilter {
+	let lastComputedValue = getValue();
+	const valueOfTask = new Map<string, unknown>();
+	return {
+		start(event) {
+			if (event.type !== SESSION_CUSTOMIZATION_TASK_TYPE) return false;
+			if (event.category === SESSION_CUSTOMIZATION_PARALLEL_CATEGORY)
+				return false;
+			if (
+				readStringField(event.data, ["sessionId", "session"]) !==
+				sessionId
+			)
+				return false;
+			const value = getValue();
+			if (value === lastComputedValue) return false;
+			valueOfTask.set(event.id, value);
+			return true;
+		},
+		end(event) {
+			if (!valueOfTask.has(event.id)) return false;
+			lastComputedValue = valueOfTask.get(event.id);
+			valueOfTask.delete(event.id);
+			return true;
+		},
+		cancel(event) {
+			if (!valueOfTask.delete(event.id)) return false;
+			return isSessionCustomizationFailedTask(event);
+		},
+	};
+}
 
 /**
  * Computation events of a parameter control (the root has the same names,
  * see {@link APP_BUILDER_APPLICATION_EVENTS}). They are run by
- * `AppBuilderParameterActionSlots`, not by the DOM wrapper of the control.
+ * `AppBuilderParameterComputationSlots`, not by the DOM wrapper of the control.
  */
 export const APP_BUILDER_PARAMETER_COMPUTATION_EVENTS = [
 	"computationstart",
@@ -480,46 +565,6 @@ export function pickAllowedActionSlots(
 		}
 	}
 	return resolved;
-}
-
-/**
- * Computation slots of a parameter control. The control's name and session
- * identify the parameter, so a slot with `eventProps` is incompatible: it is
- * warned and skipped.
- */
-export function pickParameterComputationSlots(
-	actionSlots: IAppBuilderParameterControlActionSlots | undefined,
-): ResolvedActionSlot[] {
-	if (!actionSlots) return [];
-	const resolved: ResolvedActionSlot[] = [];
-	for (const eventName of APP_BUILDER_PARAMETER_COMPUTATION_EVENTS) {
-		for (const slot of listActionSlots(actionSlots[eventName])) {
-			if (readSlotEventProps(slot)) {
-				Logger.warn(
-					`Action slot "${eventName}" of a parameter control does not support eventProps and will be ignored.`,
-				);
-				continue;
-			}
-			resolved.push({eventName, slot, index: resolved.length});
-		}
-	}
-	return resolved;
-}
-
-/**
- * The slots of a parameter control without its computation events. The
- * computation events are run by `AppBuilderParameterActionSlots`, so the DOM
- * wrapper of the control neither runs nor warns about them.
- */
-export function omitParameterComputationSlots(
-	actionSlots: IAppBuilderParameterControlActionSlots | undefined,
-): IAppBuilderParameterControlActionSlots | undefined {
-	if (!actionSlots) return undefined;
-	const rest = {...actionSlots};
-	for (const eventName of APP_BUILDER_PARAMETER_COMPUTATION_EVENTS) {
-		delete rest[eventName];
-	}
-	return rest;
 }
 
 /**
