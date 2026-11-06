@@ -60,11 +60,46 @@ const createSourceKey = (
 	namespace?: string,
 ) => `${namespace ?? ""}|${source.type + ""}|${JSON.stringify(source.props)}`;
 
+/** Namespaces for which a source object is on the stack or already flattened. */
+type SourceVisits = WeakMap<
+	IAppBuilderParameterValueSourceDefinition,
+	Set<string>
+>;
+
+const visitNamespace = (namespace?: string) => namespace ?? "";
+
+const hasSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => visits.get(source)?.has(visitNamespace(namespace)) ?? false;
+
+const addSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => {
+	let namespaces = visits.get(source);
+	if (!namespaces) {
+		namespaces = new Set();
+		visits.set(source, namespaces);
+	}
+	namespaces.add(visitNamespace(namespace));
+};
+
+const removeSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => {
+	visits.get(source)?.delete(visitNamespace(namespace));
+};
+
 function addSourceToFlatMap(
 	parameterInfo: ParameterValueDefinition,
 	map: Map<string, SourceEntry>,
-	resolving: WeakSet<IAppBuilderParameterValueSourceDefinition>,
-	resolved: WeakSet<IAppBuilderParameterValueSourceDefinition>,
+	resolving: SourceVisits,
+	resolved: SourceVisits,
 ) {
 	const {id, value, namespace} = parameterInfo;
 
@@ -75,15 +110,15 @@ function addSourceToFlatMap(
 	)
 		return;
 
-	if (resolving.has(value)) {
+	if (hasSourceVisit(resolving, value, namespace)) {
 		Logger.warn(
 			`Cycle detected while flattening Parameter Value Sources. Source with id '${id}' is already being resolved higher up in the call stack.`,
 		);
 		return;
 	}
-	if (resolved.has(value)) return;
+	if (hasSourceVisit(resolved, value, namespace)) return;
 
-	resolving.add(value);
+	addSourceVisit(resolving, value, namespace);
 
 	const nested = isExportSource(value) && value.props.parameterValues;
 	const nestedSourceKeys = new Map<string, string>();
@@ -127,16 +162,16 @@ function addSourceToFlatMap(
 		});
 	}
 
-	resolving.delete(value);
-	resolved.add(value);
+	removeSourceVisit(resolving, value, namespace);
+	addSourceVisit(resolved, value, namespace);
 }
 
 function flattenSources(
 	parameterValues?: ParameterValueDefinition[],
 ): Map<string, SourceEntry> {
 	const map: Map<string, SourceEntry> = new Map();
-	const resolving = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
-	const resolved = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
+	const resolving: SourceVisits = new WeakMap();
+	const resolved: SourceVisits = new WeakMap();
 
 	if (parameterValues) {
 		for (const param of parameterValues) {

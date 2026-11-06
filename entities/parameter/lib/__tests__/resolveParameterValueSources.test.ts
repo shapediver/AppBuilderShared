@@ -298,11 +298,7 @@ describe("resolveParameterValueSources", () => {
 			const values = await resolveParameterValueSources(
 				[
 					{id: "mesh", namespace: "session-a", value: source},
-					{
-						id: "mesh",
-						namespace: "session-b",
-						value: {...source, props: {...source.props}},
-					},
+					{id: "mesh", namespace: "session-b", value: source},
 				],
 				{namespace: "default"},
 			);
