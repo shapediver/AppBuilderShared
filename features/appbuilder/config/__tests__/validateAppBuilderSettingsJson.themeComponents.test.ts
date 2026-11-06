@@ -37,6 +37,7 @@ jest.mock("@shapediver/viewer.shared.types", () => {
 			enableRotation: z.boolean().optional(),
 			enableScaling: z.boolean().optional(),
 			enableTranslation: z.boolean().optional(),
+			exclusive: z.boolean().optional(),
 		}),
 		IDraggingParameterPropsJsonSchema: z.object({
 			draggingColor: z.string().optional(),
