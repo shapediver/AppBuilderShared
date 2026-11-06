@@ -188,12 +188,15 @@ export function useRectangleTransformPreview({
 		// pointer is released, the gizmo continues it as a translation
 		let cameraFreezeToken: string | undefined;
 		let pressedPointerId: number | undefined;
-		const releasePress = (event: PointerEvent) => {
-			if (pressedPointerId !== event.pointerId) return;
+		const endPress = () => {
 			pressedPointerId = undefined;
 			pendingPressRef.current = undefined;
 			if (cameraFreezeToken) viewportApi.removeFlag(cameraFreezeToken);
 			cameraFreezeToken = undefined;
+		};
+		const releasePress = (event: PointerEvent) => {
+			if (pressedPointerId !== event.pointerId) return;
+			endPress();
 		};
 		const selectToken = addListener(
 			EVENTTYPE_INTERACTION.SELECT_ON,
@@ -212,6 +215,9 @@ export function useRectangleTransformPreview({
 		);
 		window.addEventListener("pointerup", releasePress, true);
 		window.addEventListener("pointercancel", releasePress, true);
+		// when the window loses focus mid-press the release may never reach
+		// this window, so end the press here instead of freezing the camera
+		window.addEventListener("blur", endPress);
 
 		return () => {
 			removeListener(hoverToken);
@@ -220,6 +226,7 @@ export function useRectangleTransformPreview({
 			removeListener(selectToken);
 			window.removeEventListener("pointerup", releasePress, true);
 			window.removeEventListener("pointercancel", releasePress, true);
+			window.removeEventListener("blur", endPress);
 			if (cameraFreezeToken) viewportApi.removeFlag(cameraFreezeToken);
 			pendingPressRef.current = undefined;
 			previewRef.current?.rectangle.close();
