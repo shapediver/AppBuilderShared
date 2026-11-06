@@ -1,3 +1,4 @@
+import {shouldEmitSelectionActionSlots} from "@AppBuilderLib/entities/parameter/model/interaction/selectionActionRegistry";
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useSelectionActionTarget} from "@AppBuilderLib/entities/parameter/model/interaction/useSelectionActionTarget";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
@@ -220,16 +221,18 @@ function InteractionSlotGroup({
 
 	// Default target of a selection action that does not name a parameter.
 	// A change runs selecton (non-empty) or selectoff (empty), like a click
-	// on this group. The action skips a result equal to the current selection,
-	// so a slot that runs the same action does not loop.
+	// on this group. Slots started by that run may change the selection again,
+	// and do not run the slots themselves.
 	useSelectionActionTarget({
 		ownerKey: `root-selection:${cacheKey}`,
+		namespace,
 		candidateNodes,
 		selectedNodeNames,
 		getSelectedNames: getSelectedNodeNames,
 		maximumSelection: selectionProps.maximumSelection ?? 1,
 		setSelectedNames: (names) => {
 			setSelectedNodeNamesAndRestoreSelection(names);
+			if (!shouldEmitSelectionActionSlots()) return;
 			if (names.length > 0) fireNamed("selecton");
 			else fireNamed("selectoff");
 		},

@@ -7,6 +7,7 @@ import {
 	registerSelectionActionTarget,
 	resetSelectionActionTargets,
 	setSelectionActionNameFinder,
+	shouldEmitSelectionActionSlots,
 } from "../selectionActionRegistry";
 
 jest.mock("@AppBuilderLib/shared/lib/logger", () => ({
@@ -49,6 +50,7 @@ const createTarget = (
 	});
 	const target = {
 		ownerKey: options.ownerKey ?? `owner-${parameterName}`,
+		namespace: options.namespace ?? "session",
 		parameter: options.root
 			? undefined
 			: {
@@ -109,6 +111,46 @@ describe("applySelectionAction", () => {
 		expect(boxes.setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
 		expect(spheres.setSelectedNames).not.toHaveBeenCalled();
 		expect(parameter.setSelectedNames).not.toHaveBeenCalled();
+	});
+
+	it("does not change a root selection of another App Builder", () => {
+		const here = createTarget("Boxes", ["Boxes.1"], {
+			root: true,
+			ownerKey: "here",
+		});
+		const there = createTarget("Boxes", ["Boxes.1"], {
+			root: true,
+			namespace: "other",
+			ownerKey: "there",
+		});
+		registerSelectionActionTarget(here.target);
+		registerSelectionActionTarget(there.target);
+
+		expect(run({select: ["Boxes.1"]})).toEqual(["here"]);
+		expect(there.setSelectedNames).not.toHaveBeenCalled();
+	});
+
+	it("lets a nested selection action change the selection without running slots again", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			root: true,
+			ownerKey: "boxes",
+		});
+		const slotRuns: boolean[] = [];
+		boxes.setSelectedNames.mockImplementation((names: string[]) => {
+			slotRuns.push(shouldEmitSelectionActionSlots());
+			if (names[0] === "Boxes.1") {
+				applySelectionAction(
+					{select: ["Boxes.2"]},
+					{namespace: "session"},
+				);
+			}
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		run({select: ["Boxes.1"]});
+
+		expect(slotRuns).toEqual([true, false]);
+		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);
 	});
 
 	it("limits the action to the requested parameter and leaves the root selection", () => {
