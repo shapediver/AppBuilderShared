@@ -25,7 +25,12 @@ jest.mock(
 		) => selector({sessions: {session: {}}}),
 	}),
 );
-const mockViewportApi = {id: "viewport", render: jest.fn()};
+const mockViewportApi = {
+	id: "viewport",
+	render: jest.fn(),
+	addFlag: jest.fn(() => "camera-freeze"),
+	removeFlag: jest.fn(),
+};
 jest.mock(
 	"@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport",
 	() => ({
@@ -50,6 +55,12 @@ jest.mock("@shapediver/viewer.session", () => ({
 	addListener: jest.fn(),
 	removeListener: jest.fn(),
 	EVENTTYPE_VIEWPORT: {VIEWPORT_UPDATED: "viewport.updated"},
+	EVENTTYPE_INTERACTION: {HOVER_ON: "hoverOn", SELECT_ON: "selectOn"},
+	EVENTTYPE_TRANSFORMATION_TOOLS: {
+		HOVER_CHANGED: "hoverChanged",
+		GESTURE_START: "gestureStart",
+	},
+	FLAG_TYPE: {CAMERA_FREEZE: "cameraFreeze"},
 }));
 jest.mock("../../drawing/useRestrictions", () => ({
 	useRestrictions: () => ({restrictions: undefined}),
