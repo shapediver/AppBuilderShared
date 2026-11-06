@@ -101,6 +101,31 @@ describe("createParameterComputationTaskFilter", () => {
 		expect(filter.end(task("t3"))).toBe(true);
 	});
 
+	it("remembers the uploaded file id, not the File the task started with", () => {
+		const file = new File(["x"], "a.txt");
+		const {parameter, filter} = createParameter("id-0");
+		parameter.value = file;
+		expect(filter.start(task("t1"))).toBe(true);
+		// the viewer uploads the file during the customization
+		parameter.value = "id-1";
+		expect(filter.end(task("t1"))).toBe(true);
+
+		expect(filter.start(task("t2"))).toBe(false);
+	});
+
+	it("does not roll back the value when an older task ends last", () => {
+		const {parameter, filter} = createParameter("1");
+		parameter.value = "2";
+		expect(filter.start(task("t1"))).toBe(true);
+		parameter.value = "3";
+		expect(filter.start(task("t2"))).toBe(true);
+		expect(filter.end(task("t2"))).toBe(true);
+		expect(filter.end(task("t1"))).toBe(true);
+
+		// another parameter changes, this one stays "3"
+		expect(filter.start(task("t3"))).toBe(false);
+	});
+
 	it("forgets a superseded customization, the newer one ends once", () => {
 		const {parameter, filter} = createParameter("1");
 		parameter.value = "2";

@@ -326,6 +326,10 @@ export interface ComputationTaskFilter {
  * executor sets the value before it customizes). `sessionValue` is not used:
  * `requestExports` (default exports) does not update it.
  *
+ * At TASK_END the current value becomes the last computed one: the viewer
+ * replaces a `File` by its id during the customization, and an older task
+ * may end after a newer one has started.
+ *
  * A failed customization runs `computationerror`. A superseded one is
  * forgotten: the newer customization still sees the changed value.
  */
@@ -334,7 +338,7 @@ export function createParameterComputationTaskFilter(
 	getValue: () => unknown,
 ): ComputationTaskFilter {
 	let lastComputedValue = getValue();
-	const valueOfTask = new Map<string, unknown>();
+	const tasks = new Set<string>();
 	return {
 		start(event) {
 			if (event.type !== SESSION_CUSTOMIZATION_TASK_TYPE) return false;
@@ -345,19 +349,17 @@ export function createParameterComputationTaskFilter(
 				sessionId
 			)
 				return false;
-			const value = getValue();
-			if (value === lastComputedValue) return false;
-			valueOfTask.set(event.id, value);
+			if (getValue() === lastComputedValue) return false;
+			tasks.add(event.id);
 			return true;
 		},
 		end(event) {
-			if (!valueOfTask.has(event.id)) return false;
-			lastComputedValue = valueOfTask.get(event.id);
-			valueOfTask.delete(event.id);
+			if (!tasks.delete(event.id)) return false;
+			lastComputedValue = getValue();
 			return true;
 		},
 		cancel(event) {
-			if (!valueOfTask.delete(event.id)) return false;
+			if (!tasks.delete(event.id)) return false;
 			return isSessionCustomizationFailedTask(event);
 		},
 	};
