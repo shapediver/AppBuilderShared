@@ -42,6 +42,7 @@ import {useGumball} from "../model/interaction/useGumball";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
@@ -205,6 +206,7 @@ export default function ParameterGumballComponent(
 		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
+		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
@@ -219,6 +221,19 @@ export default function ParameterGumballComponent(
 		// editing is paused during a computation, like the other parameters
 		busy,
 	);
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: interactionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		maximumSelection: gumballProps.maximumSelection ?? Infinity,
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
+	});
 
 	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";
 	const confirmButton = resolveParameterInteractionButtonTheme(
