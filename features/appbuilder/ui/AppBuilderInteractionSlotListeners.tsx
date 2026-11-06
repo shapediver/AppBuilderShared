@@ -224,7 +224,9 @@ function InteractionSlotGroup({
 	// on this group. Slots started by that run may change the selection again,
 	// and do not run the slots themselves.
 	useSelectionActionTarget({
-		ownerKey: `root-selection:${cacheKey}`,
+		// The namespace is part of the key. Two App Builders can share a
+		// viewport and the same selection config, and must both stay registered.
+		ownerKey: `root-selection:${namespace}:${cacheKey}`,
 		namespace,
 		candidateNodes,
 		selectedNodeNames,
