@@ -49,6 +49,12 @@ export function useSelection(
 	 * this number is refused (see useSelectManagerEvents).
 	 */
 	keptMinimumSelection = 0,
+	/**
+	 * Prune removed nodes while `activate` is false. A rectangle transform
+	 * turns selection off at its maximum, and an output update must still
+	 * drop a deleted node so the maximum can be filled again.
+	 */
+	pruneWhenInactive = false,
 ): ISelectionState & {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
@@ -84,6 +90,8 @@ export function useSelection(
 	const componentId = useId();
 	const onPruneRef = React.useRef(onPrune);
 	onPruneRef.current = onPrune;
+	const pruneWhenInactiveRef = React.useRef(pruneWhenInactive);
+	pruneWhenInactiveRef.current = pruneWhenInactive;
 	const [singleCandidateSuppressed, setSingleCandidateSuppressed] =
 		React.useState(false);
 
@@ -258,7 +266,7 @@ export function useSelection(
 	// to ensure that the selected nodes are still available
 	useEffect(() => {
 		// intentionally stale to only re-render when availableNodeNames changes
-		if (!activate) return;
+		if (!activate && !pruneWhenInactiveRef.current) return;
 		const previousAvailableNodeNames = prunedAvailableNodeNamesRef.current;
 		prunedAvailableNodeNamesRef.current = availableNodeNames;
 
