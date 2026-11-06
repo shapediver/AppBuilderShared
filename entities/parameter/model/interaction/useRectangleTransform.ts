@@ -29,6 +29,10 @@ import {useRestrictions} from "../drawing/useRestrictions";
 import {exclusiveSelection} from "./exclusiveSelection";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useRectangleTransformEvents} from "./useRectangleTransformEvents";
+import {
+	selectedNodesKeyOf,
+	useRectangleTransformPreview,
+} from "./useRectangleTransformPreview";
 import {useSelection} from "./useSelection";
 
 // #region Functions (1)
@@ -147,12 +151,19 @@ export function useRectangleTransform(
 			nameFilter.push(element.nameFilter);
 		});
 
+		// an exclusive parameter shows a preview on hover (see
+		// useRectangleTransformPreview), the hover setting only controls
+		// the hover color
+		const previewOnHover = resolveExclusive(rectangleTransformProps);
 		return {
 			nameFilter,
-			hover: rectangleTransformProps.hover,
+			hover: previewOnHover || rectangleTransformProps.hover,
 			selectionColor: rectangleTransformProps.selectionColor,
 			availableColor: rectangleTransformProps.availableColor,
-			hoverColor: rectangleTransformProps.hoverColor,
+			hoverColor:
+				previewOnHover && !rectangleTransformProps.hover
+					? null
+					: rectangleTransformProps.hoverColor,
 			minimumSelection: rectangleTransformProps.minimumSelection ?? 0,
 			maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
 			deselectOnEmpty: rectangleTransformProps.deselectOnEmpty ?? false,
@@ -176,6 +187,7 @@ export function useRectangleTransform(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		availableNodeNames,
+		componentId: selectionComponentId,
 	} = useSelection(
 		viewportId,
 		selectionSettings,
@@ -276,9 +288,7 @@ export function useRectangleTransform(
 	// The candidates change with every output update; the gizmo is only
 	// recreated when the selected nodes themselves change (replaced nodes or a
 	// changed selection), which this key captures by node id and name.
-	const selectedNodesKey = selectedNodes
-		.map((entry) => `${entry.node.id}:${entry.name}`)
-		.join("|");
+	const selectedNodesKey = selectedNodesKeyOf(selectedNodes);
 	const selectedNodesRef = useRef(selectedNodes);
 	selectedNodesRef.current = selectedNodes;
 	// a gizmo created during an execution is recreated once it ended, see
@@ -292,6 +302,110 @@ export function useRectangleTransform(
 	}, [executing]);
 	const pausedRef = useRef(paused);
 	pausedRef.current = paused;
+
+	// The settings of a gizmo for the given nodes.
+	const createSettings = (gizmoNodes: ITreeNode[]) => {
+		// for the nodes, we search for the correct restrictions in the dragging objects
+		// this allows us to have different restrictions for different nodes
+		// if no restrictions are found, we use an empty object
+		// NOTE: We only do this if there is only one node selected
+		// if multiple nodes are selected, we use no restrictions
+		const restrictionsToUse: {[key: string]: RestrictionProperties} = {};
+		if (gizmoNodes.length === 1 && restrictions) {
+			const node = gizmoNodes[0];
+
+			const processPatterns = (
+				pattern: OutputNodeNameFilterPatterns,
+				index: number,
+			) => {
+				// check if there are any patterns that match the selected nodes
+				const matchedNodeNames = matchNodesWithPatterns(
+					pattern,
+					[node],
+					strictNaming,
+				);
+
+				if (matchedNodeNames.length > 0) {
+					if (
+						objects[index].restrictions &&
+						objects[index].restrictions.length > 0
+					) {
+						objects[index].restrictions.forEach((restrictionId) => {
+							const restriction = restrictions[restrictionId];
+							if (!restriction) return;
+							restrictionsToUse[restrictionId] = restriction;
+						});
+					}
+				}
+			};
+
+			for (let i = 0; i < objects.length; i++) {
+				if (objects[i].patterns.outputPatterns) {
+					Object.values(objects[i].patterns.outputPatterns!).forEach(
+						(pattern) => {
+							processPatterns(pattern, i);
+						},
+					);
+				}
+
+				if (objects[i].patterns.instancePatterns) {
+					const patterns = objects[i].patterns.instancePatterns!;
+					if (!patterns) continue;
+					processPatterns(patterns, i);
+				}
+			}
+		}
+
+		return {
+			...rectangleTransformProps,
+			// editing is paused during a computation (see also "paused")
+			pauseWhileBusy: true,
+			// a press on the object of an exclusive parameter moves it
+			translateOnObjects: exclusive,
+			plane: {
+				type: RESTRICTION_TYPE.PLANE,
+				origin: rectangleTransformProps?.plane?.origin
+					? vec3.fromValues(
+							rectangleTransformProps.plane.origin[0],
+							rectangleTransformProps.plane.origin[1],
+							rectangleTransformProps.plane.origin[2],
+						)
+					: vec3.fromValues(0, 0, 0),
+				vector_u: rectangleTransformProps?.plane?.vector_u
+					? vec3.fromValues(
+							rectangleTransformProps.plane.vector_u[0],
+							rectangleTransformProps.plane.vector_u[1],
+							rectangleTransformProps.plane.vector_u[2],
+						)
+					: vec3.fromValues(1, 0, 0),
+				vector_v: rectangleTransformProps?.plane?.vector_v
+					? vec3.fromValues(
+							rectangleTransformProps.plane.vector_v[0],
+							rectangleTransformProps.plane.vector_v[1],
+							rectangleTransformProps.plane.vector_v[2],
+						)
+					: vec3.fromValues(0, 1, 0),
+			},
+			restrictions:
+				Object.values(restrictionsToUse).length === 0
+					? undefined
+					: restrictionsToUse,
+		};
+	};
+
+	const {takeAdopted, takePendingPress} = useRectangleTransformPreview({
+		enabled: exclusive && activate,
+		hidden: executing || paused,
+		viewportApi,
+		componentId,
+		selectionComponentId,
+		candidateNodes,
+		selectedNodeNames,
+		setSelectedNodeNames,
+		nodeNamesRef,
+		selectionGizmoRef: rectangleTransformRef,
+		createSettings,
+	});
 
 	// use an effect to create the rectangle transform whenever the selected node names change
 	useEffect(() => {
@@ -322,108 +436,24 @@ export function useRectangleTransform(
 			);
 		} else if (activate && viewportApi && sessionApis && nodes.length > 0) {
 			// whenever the selected node names change, create a new rectangle transform
-
-			// for the nodes, we search for the correct restrictions in the dragging objects
-			// this allows us to have different restrictions for different nodes
-			// if no restrictions are found, we use an empty object
-			// NOTE: We only do this if there is only one node selected
-			// if multiple nodes are selected, we use no restrictions
-			const restrictionsToUse: {[key: string]: RestrictionProperties} =
-				{};
-			if (nodes.length === 1 && restrictions) {
-				const node = nodes[0];
-
-				const processPatterns = (
-					pattern: OutputNodeNameFilterPatterns,
-					index: number,
-				) => {
-					// check if there are any patterns that match the selected nodes
-					const matchedNodeNames = matchNodesWithPatterns(
-						pattern,
-						[node.node],
-						strictNaming,
-					);
-
-					if (matchedNodeNames.length > 0) {
-						if (
-							objects[index].restrictions &&
-							objects[index].restrictions.length > 0
-						) {
-							objects[index].restrictions.forEach(
-								(restrictionId) => {
-									const restriction =
-										restrictions[restrictionId];
-									if (!restriction) return;
-									restrictionsToUse[restrictionId] =
-										restriction;
-								},
-							);
-						}
-					}
-				};
-
-				for (let i = 0; i < objects.length; i++) {
-					if (objects[i].patterns.outputPatterns) {
-						Object.values(
-							objects[i].patterns.outputPatterns!,
-						).forEach((pattern) => {
-							processPatterns(pattern, i);
-						});
-					}
-
-					if (objects[i].patterns.instancePatterns) {
-						const patterns = objects[i].patterns.instancePatterns!;
-						if (!patterns) continue;
-						processPatterns(patterns, i);
-					}
-				}
-			}
-
-			const props = {
-				...rectangleTransformProps,
-				// editing is paused during a computation (see also "paused")
-				pauseWhileBusy: true,
-				plane: {
-					type: RESTRICTION_TYPE.PLANE,
-					origin: rectangleTransformProps?.plane?.origin
-						? vec3.fromValues(
-								rectangleTransformProps.plane.origin[0],
-								rectangleTransformProps.plane.origin[1],
-								rectangleTransformProps.plane.origin[2],
-							)
-						: vec3.fromValues(0, 0, 0),
-					vector_u: rectangleTransformProps?.plane?.vector_u
-						? vec3.fromValues(
-								rectangleTransformProps.plane.vector_u[0],
-								rectangleTransformProps.plane.vector_u[1],
-								rectangleTransformProps.plane.vector_u[2],
-							)
-						: vec3.fromValues(1, 0, 0),
-					vector_v: rectangleTransformProps?.plane?.vector_v
-						? vec3.fromValues(
-								rectangleTransformProps.plane.vector_v[0],
-								rectangleTransformProps.plane.vector_v[1],
-								rectangleTransformProps.plane.vector_v[2],
-							)
-						: vec3.fromValues(0, 1, 0),
-				},
-				restrictions:
-					Object.values(restrictionsToUse).length === 0
-						? undefined
-						: restrictionsToUse,
-			};
-
+			// (or take over the preview a press selected the nodes with)
+			const adopted = takeAdopted(selectedNodesKey);
 			// the constructor already emits a matrix change event
 			nodeNamesRef.current = new Map(
 				nodes.map((n) => [n.node.id, n.name]),
 			);
-			const rectangle = new RectangleTransform(
-				viewportApi,
-				Object.values(nodes).map((n) => n.node),
-				props,
-				componentId,
-			);
+			const rectangle =
+				adopted ??
+				new RectangleTransform(
+					viewportApi,
+					Object.values(nodes).map((n) => n.node),
+					createSettings(nodes.map((n) => n.node)),
+					componentId,
+				);
 			if (pausedRef.current) rectangle.pause();
+			// the press which selected the nodes moves them
+			const press = takePendingPress();
+			if (press && !adopted) rectangle.startTranslation(press);
 			rectangleTransformRef.current = rectangle;
 			createdWhileExecutingRef.current = executing;
 		}
