@@ -29,9 +29,10 @@ type SourceEntry = {
  * @param source The parameter value source
  * @returns
  */
-const createSourceKey = (source: IAppBuilderParameterValueSourceDefinition) => {
-	return `${source.type + ""}|${JSON.stringify(source.props)}`;
-};
+const createSourceKey = (
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => `${namespace ?? ""}|${source.type + ""}|${JSON.stringify(source.props)}`;
 
 /**
  * Add this source and its nested sources to the flat map
@@ -93,7 +94,7 @@ const addSourceToFlatMap = (
 				isParameterSource(child)
 			) {
 				// track this nested source
-				const childSourceKey = createSourceKey(child);
+				const childSourceKey = createSourceKey(child, nestedNamespace);
 				nestedSourceKeys.set(childKey, childSourceKey);
 			}
 
@@ -107,7 +108,7 @@ const addSourceToFlatMap = (
 	}
 
 	// add to map if not already present
-	const key = createSourceKey(value);
+	const key = createSourceKey(value, namespace);
 	if (!map.has(key)) {
 		map.set(key, {
 			index: map.size,
@@ -210,7 +211,7 @@ export function useResolveParameterValues(props?: {
 				)
 					return undefined;
 
-				const entry = flat.get(createSourceKey(value));
+				const entry = flat.get(createSourceKey(value, param.namespace));
 				if (!entry) {
 					Logger.warn(
 						`Top-level parameter value source not found in flattened map for parameter ${id}.`,
@@ -419,7 +420,7 @@ export function useResolveParameterValues(props?: {
 
 		for (const pending of resolutionState.pendingSources) {
 			const entry = flatArray[pending.entryIndex];
-			const key = createSourceKey(entry.source);
+			const key = createSourceKey(entry.source, entry.namespace);
 			newResolvedMap.set(key, undefined);
 		}
 
@@ -449,7 +450,7 @@ export function useResolveParameterValues(props?: {
 		for (let i = 0; i < currentPassSources.length; i++) {
 			const source = currentPassSources[i];
 			const entry = flatArray[source.entryIndex];
-			const key = createSourceKey(entry.source);
+			const key = createSourceKey(entry.source, entry.namespace);
 			newResolvedMap.set(key, currentPassResolved[i]);
 
 			// Remove from pending
@@ -488,7 +489,7 @@ export function useResolveParameterValues(props?: {
 		const result: unknown[] = [];
 
 		for (const entry of flatArray) {
-			const key = createSourceKey(entry.source);
+			const key = createSourceKey(entry.source, entry.namespace);
 			const resolved = resolutionState.resolvedMap.get(key);
 			result.push(resolved);
 		}

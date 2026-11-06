@@ -55,8 +55,10 @@ type SourceEntry = {
 	nestedSourceKeys?: Map<string, string>;
 };
 
-const createSourceKey = (source: IAppBuilderParameterValueSourceDefinition) =>
-	`${source.type + ""}|${JSON.stringify(source.props)}`;
+const createSourceKey = (
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => `${namespace ?? ""}|${source.type + ""}|${JSON.stringify(source.props)}`;
 
 function addSourceToFlatMap(
 	parameterInfo: ParameterValueDefinition,
@@ -98,7 +100,10 @@ function addSourceToFlatMap(
 				child !== null &&
 				isParameterSource(child)
 			) {
-				nestedSourceKeys.set(childKey, createSourceKey(child));
+				nestedSourceKeys.set(
+					childKey,
+					createSourceKey(child, nestedNamespace),
+				);
 			}
 
 			addSourceToFlatMap(
@@ -110,7 +115,7 @@ function addSourceToFlatMap(
 		}
 	}
 
-	const key = createSourceKey(value);
+	const key = createSourceKey(value, namespace);
 	if (!map.has(key)) {
 		map.set(key, {
 			index: map.size,
@@ -589,7 +594,10 @@ export async function resolveParameterValueSources(
 				`Cannot resolve ${pending.length} sources. Possible circular dependency or missing nested sources.`,
 			);
 			for (const entry of pending) {
-				resolvedMap.set(createSourceKey(entry.source), undefined);
+				resolvedMap.set(
+					createSourceKey(entry.source, entry.namespace),
+					undefined,
+				);
 			}
 			break;
 		}
@@ -608,37 +616,27 @@ export async function resolveParameterValueSources(
 
 		const readyIndexes = new Set(ready.map((entry) => entry.index));
 		for (let i = 0; i < ready.length; i++) {
-			resolvedMap.set(createSourceKey(ready[i].source), values[i]);
+			resolvedMap.set(
+				createSourceKey(ready[i].source, ready[i].namespace),
+				values[i],
+			);
 		}
 		pending = pending.filter((entry) => !readyIndexes.has(entry.index));
 	}
 
-	const topLevelParameterToIndex: Record<string, number> = {};
-	for (const param of parameterValues) {
-		const {id, value} = param;
-		if (
-			typeof value === "object" &&
-			value !== null &&
-			isParameterSource(value)
-		) {
-			const entry = flat.get(createSourceKey(value));
-			if (entry) topLevelParameterToIndex[id] = entry.index;
-		}
-	}
-
-	const flatArray = Array.from(flat.values());
 	return parameterValues.map((param) => {
-		const {id, value} = param;
+		const {value} = param;
 		if (
 			typeof value === "object" &&
 			value !== null &&
 			isParameterSource(value)
 		) {
-			const index = topLevelParameterToIndex[id];
-			const resolvedValue =
-				index !== undefined
-					? resolvedMap.get(createSourceKey(flatArray[index].source))
-					: undefined;
+			const entry = flat.get(createSourceKey(value, param.namespace));
+			const resolvedValue = entry
+				? resolvedMap.get(
+						createSourceKey(entry.source, entry.namespace),
+					)
+				: undefined;
 			return resolvedValue !== undefined ? resolvedValue + "" : "";
 		}
 		return value + "";
