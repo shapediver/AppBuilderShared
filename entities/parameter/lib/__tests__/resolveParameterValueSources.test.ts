@@ -240,6 +240,80 @@ describe("resolveParameterValueSources", () => {
 		}
 	});
 
+	it("uploads the same sdTF source separately for each target session", async () => {
+		const uploadA = jest.fn(async () => [{id: "asset-a"}]);
+		const uploadB = jest.fn(async () => [{id: "asset-b"}]);
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = jest.fn(async () => ({
+			arrayBuffer: async () => new ArrayBuffer(4),
+		})) as unknown as typeof fetch;
+
+		const output = {
+			id: "out",
+			name: "shared_output",
+			content: [{href: "https://example.test/out.sdtf"}],
+		};
+		const parameter = {
+			id: "mesh",
+			name: "mesh",
+			type: "sMesh",
+		};
+		useShapeDiverStoreSession.getState = () =>
+			({
+				sessions: {
+					source: {
+						parameters: {},
+						outputs: {shared_output: output},
+						exports: {},
+					},
+					"session-a": {
+						parameters: {mesh: parameter},
+						outputs: {},
+						exports: {},
+						uploadSDTF: uploadA,
+					},
+					"session-b": {
+						parameters: {mesh: parameter},
+						outputs: {},
+						exports: {},
+						uploadSDTF: uploadB,
+					},
+				},
+			}) as unknown as ReturnType<typeof originalSessionGetState>;
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getOutput: () => undefined,
+			}) as unknown as ReturnType<typeof originalParameterGetState>;
+		useShapeDiverStoreProcessManager.getState = () =>
+			({
+				createProcessManager: jest.fn(() => "pm"),
+				addProcess: jest.fn(),
+			}) as unknown as ReturnType<typeof originalProcessGetState>;
+
+		const source = {
+			type: "sdtf" as const,
+			props: {name: "shared_output", sessionId: "source"},
+		};
+		try {
+			const values = await resolveParameterValueSources(
+				[
+					{id: "mesh", namespace: "session-a", value: source},
+					{id: "mesh", namespace: "session-b", value: source},
+				],
+				{namespace: "default"},
+			);
+
+			expect(uploadA).toHaveBeenCalledTimes(1);
+			expect(uploadB).toHaveBeenCalledTimes(1);
+			expect(values).toEqual([
+				JSON.stringify({asset: {id: "asset-a"}}, null, 2),
+				JSON.stringify({asset: {id: "asset-b"}}, null, 2),
+			]);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
 	it("reads a dataOutput without sessionId from the controller and uploads it to the parameter session", async () => {
 		const upload = jest.fn(async () => "uploaded-id");
 		const content = [{data: {from: "controller"}}];
