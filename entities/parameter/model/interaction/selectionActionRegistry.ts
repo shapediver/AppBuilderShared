@@ -16,6 +16,8 @@ import {useShapeDiverStoreParameters} from "../useShapeDiverStoreParameters";
  */
 type SelectionActionTarget = {
 	ownerKey: string;
+	/** Namespace of the App Builder root, or of the interaction parameter. */
+	namespace: string;
 	parameter?: {namespace: string; id: string; name: string};
 	/** Candidates in scene order. */
 	getCandidates: () => readonly NamedNode[];
@@ -38,6 +40,19 @@ export type SelectionActionContext = {
 };
 
 const targets = new Map<string, SelectionActionTarget>();
+
+/**
+ * How many selection actions are on the stack. The outermost action runs
+ * `selecton` / `selectoff`. A selection action started by those slots still
+ * changes the selection, and does not run the slots again. Two slots that
+ * select different nodes would otherwise call each other until the page stops.
+ */
+let selectionActionDepth = 0;
+
+/** Whether the selection change currently being applied should run its slots. */
+export function shouldEmitSelectionActionSlots(): boolean {
+	return selectionActionDepth <= 1;
+}
 
 type NameFinder = (nameFilter: readonly string[]) => readonly string[];
 
@@ -67,7 +82,10 @@ export const registerSelectionActionTarget = (
 };
 
 /** Test-only: drop all registered targets. */
-export const resetSelectionActionTargets = () => targets.clear();
+export const resetSelectionActionTargets = () => {
+	targets.clear();
+	selectionActionDepth = 0;
+};
 
 const matchingCandidateNames = (
 	candidates: readonly NamedNode[],
@@ -103,10 +121,11 @@ const resolveRequestedParameter = (
 /**
  * Run a "selection" action.
  *
- * Without `parameter`, root interaction slot groups whose candidates match
- * change, the same way a selection there would. With `parameter`, only that
- * mounted interaction parameter changes. A node targeted by both lists is
- * selected. A result equal to the current selection is not applied.
+ * Without `parameter`, root interaction slot groups of this App Builder
+ * whose candidates match change. Groups of another mounted root are left
+ * alone. With `parameter`, only that mounted interaction parameter changes.
+ * A node targeted by both lists is selected. A result equal to the current
+ * selection is not applied.
  *
  * @returns The ids of the parameters (or the owner keys of the root groups)
  * whose selection was changed.
@@ -119,10 +138,25 @@ export function applySelectionAction(
 	const deselect = request.deselect ?? [];
 	if (select.length === 0 && deselect.length === 0) return [];
 
+	selectionActionDepth += 1;
+	try {
+		return applySelectionActionOnce(request, context, select, deselect);
+	} finally {
+		selectionActionDepth -= 1;
+	}
+}
+
+function applySelectionActionOnce(
+	request: SelectionActionRequest,
+	context: SelectionActionContext,
+	select: string[],
+	deselect: string[],
+): string[] {
 	let candidates = Array.from(targets.values()).filter((target) =>
 		request.parameter
 			? target.parameter !== undefined
-			: target.parameter === undefined,
+			: target.parameter === undefined &&
+				target.namespace === context.namespace,
 	);
 	if (request.parameter) {
 		const requested = resolveRequestedParameter(request.parameter, context);

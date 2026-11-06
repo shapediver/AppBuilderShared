@@ -31,6 +31,11 @@ export type UseSelectionActionTargetProps = {
 	maximumSelection: number;
 	setSelectedNames: (names: string[]) => void;
 	/**
+	 * Namespace of a root interaction slot group. An interaction parameter
+	 * passes its namespace on `parameter` instead.
+	 */
+	namespace?: string;
+	/**
 	 * Set for a mounted interaction parameter (selection, gumball, rectangle
 	 * transform). Root interaction slot groups omit it: they are the targets
 	 * of a selection action that does not name a parameter.
@@ -50,7 +55,7 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 	propsRef.current = props;
 
 	const {ownerKey, parameter} = props;
-	const namespace = parameter?.namespace;
+	const namespace = parameter?.namespace ?? props.namespace ?? "";
 	const parameterId = parameter?.id;
 	const parameterName = parameter?.name;
 
@@ -58,6 +63,7 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 		() =>
 			registerSelectionActionTarget({
 				ownerKey,
+				namespace,
 				parameter:
 					namespace !== undefined &&
 					parameterId !== undefined &&
