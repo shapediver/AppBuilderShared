@@ -1,9 +1,12 @@
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {waitForAppBuilderViewport} from "@AppBuilderLib/entities/viewport/lib/waitForAppBuilderViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
 	actionSlotHandlerKey,
+	APP_BUILDER_PARAMETER_COMPUTATION_EVENTS,
 	APP_BUILDER_SLOT_EVENTS,
+	createParameterComputationTaskFilter,
 	getActionSlotEventProps,
 	isAppBuilderInteractionEvent,
 	isSessionCustomizationFailedTask,
@@ -12,6 +15,7 @@ import {
 	matchesSessionFilter,
 	pickAllowedActionSlots,
 	readStringField,
+	type ComputationTaskFilter,
 	type ResolvedActionSlot,
 } from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -26,6 +30,7 @@ import {MutableRefObject, useContext, useEffect, useMemo, useRef} from "react";
 import type {
 	IAppBuilderActionSlot,
 	IAppBuilderActionSlots,
+	IAppBuilderParameterControlActionSlots,
 } from "../config/appbuilderActionSlots";
 import {AppBuilderActionSlotRunner} from "./AppBuilderActionSlotRunner";
 
@@ -85,26 +90,6 @@ function shouldRunExportSlot(
 	return matchesExportName(exportIdentity, eventProps?.name);
 }
 
-/** TASK_START / TASK_END for `SESSION_CUSTOMIZATION` only. */
-function listenSessionCustomization(
-	eventType: string,
-	items: ResolvedActionSlot[],
-	run: (item: ResolvedActionSlot) => void,
-	namespace: string,
-): string | undefined {
-	if (items.length === 0) return undefined;
-	return addListener(eventType, (event) => {
-		const taskEvent = event as ITaskEvent;
-		if (taskEvent.type !== TASK_TYPE.SESSION_CUSTOMIZATION) return;
-		const sessionId = getTaskSessionId(taskEvent);
-		for (const item of items) {
-			if (shouldRunComputationSlot(item.slot, sessionId, namespace)) {
-				run(item);
-			}
-		}
-	});
-}
-
 /** TASK_START / TASK_END / TASK_CANCEL for `EXPORT_REQUEST`. */
 function listenExportRequest(
 	eventType: string,
@@ -140,6 +125,115 @@ function runSlot(
 	item: ResolvedActionSlot,
 ): void {
 	handlersRef.current[actionSlotHandlerKey(item.eventName, item.index)]?.();
+}
+
+const COMPUTATION_LISTENERS = [
+	[EVENTTYPE_TASK.TASK_START, "computationstart", "start"],
+	[EVENTTYPE_TASK.TASK_END, "computationend", "end"],
+	[EVENTTYPE_TASK.TASK_CANCEL, "computationerror", "cancel"],
+] as const;
+
+/**
+ * Runs `computationstart`/`end`/`error` on TASK_START/END/CANCEL of
+ * SESSION_CUSTOMIZATION. Used by the root and by parameter controls.
+ *
+ * - Without `taskFilter` (root): a slot runs for the session of its
+ *   `eventProps` (default `namespace`). `computationerror` needs status
+ *   "Session customization failed" (superseded customizes cancel with a
+ *   different status).
+ * - With `taskFilter` (parameter control): the filter decides. It sees every
+ *   task event while the node has any computation slot, so it can track the
+ *   tasks it started.
+ */
+export function useComputationSlotListeners(
+	resolved: ResolvedActionSlot[],
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
+	namespace: string,
+	taskFilter?: ComputationTaskFilter,
+): void {
+	useEffect(() => {
+		const hasAny = COMPUTATION_LISTENERS.some(
+			([, eventName]) => itemsNamed(resolved, eventName).length > 0,
+		);
+		const tokens: string[] = [];
+		for (const [eventType, eventName, filterKey] of COMPUTATION_LISTENERS) {
+			const items = itemsNamed(resolved, eventName);
+			if (taskFilter ? !hasAny : items.length === 0) continue;
+			tokens.push(
+				addListener(eventType, (event) => {
+					const taskEvent = event as ITaskEvent;
+					if (taskEvent.type !== TASK_TYPE.SESSION_CUSTOMIZATION)
+						return;
+					if (taskFilter) {
+						if (!taskFilter[filterKey](taskEvent)) return;
+						for (const item of items) runSlot(handlersRef, item);
+						return;
+					}
+					if (
+						eventName === "computationerror" &&
+						!isSessionCustomizationFailedTask(taskEvent)
+					) {
+						return;
+					}
+					const sessionId = getTaskSessionId(taskEvent);
+					for (const item of items) {
+						if (
+							shouldRunComputationSlot(
+								item.slot,
+								sessionId,
+								namespace,
+							)
+						) {
+							runSlot(handlersRef, item);
+						}
+					}
+				}),
+			);
+		}
+		return () => {
+			tokens.forEach((token) => removeListener(token));
+		};
+	}, [handlersRef, namespace, resolved, taskFilter]);
+}
+
+/** One runner per resolved slot; its trigger is written into `handlersRef`. */
+function ActionSlotRunners({
+	resolved,
+	handlersRef,
+	namespace,
+	viewportId,
+	fullscreenId,
+	registerCustomGlobally,
+}: {
+	resolved: ResolvedActionSlot[];
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
+	namespace: string;
+	viewportId: string;
+	fullscreenId?: string;
+	registerCustomGlobally?: boolean;
+}) {
+	return (
+		<>
+			{resolved.map(({eventName, slot, index}) => (
+				<AppBuilderActionSlotRunner
+					key={actionSlotHandlerKey(eventName, index)}
+					definition={slot.action}
+					namespace={namespace}
+					viewportId={viewportId}
+					fullscreenId={fullscreenId}
+					eventName={eventName}
+					registerCustomGlobally={registerCustomGlobally}
+					registerTrigger={(trigger) => {
+						handlersRef.current[
+							actionSlotHandlerKey(eventName, index)
+						] = () => {
+							void trigger();
+						};
+					}}
+				/>
+			))}
+		</>
+	);
 }
 
 /**
@@ -189,51 +283,14 @@ function ApplicationSlotListeners({
 		};
 	}, [handlersRef, hasViewport, namespace, resolved, viewportId]);
 
+	useComputationSlotListeners(resolved, handlersRef, namespace);
+
 	useEffect(() => {
-		const computationStart = itemsNamed(resolved, "computationstart");
-		const computationEnd = itemsNamed(resolved, "computationend");
-		const computationError = itemsNamed(resolved, "computationerror");
 		const exportStart = itemsNamed(resolved, "exportstart");
 		const exportEnd = itemsNamed(resolved, "exportend");
 		const exportError = itemsNamed(resolved, "exporterror");
 
 		const tokens: string[] = [];
-
-		const startToken = listenSessionCustomization(
-			EVENTTYPE_TASK.TASK_START,
-			computationStart,
-			(item) => runSlot(handlersRef, item),
-			namespace,
-		);
-		const endToken = listenSessionCustomization(
-			EVENTTYPE_TASK.TASK_END,
-			computationEnd,
-			(item) => runSlot(handlersRef, item),
-			namespace,
-		);
-		if (startToken) tokens.push(startToken);
-		if (endToken) tokens.push(endToken);
-
-		if (computationError.length > 0) {
-			tokens.push(
-				addListener(EVENTTYPE_TASK.TASK_CANCEL, (event) => {
-					const taskEvent = event as ITaskEvent;
-					if (!isSessionCustomizationFailedTask(taskEvent)) return;
-					const sessionId = getTaskSessionId(taskEvent);
-					for (const item of computationError) {
-						if (
-							shouldRunComputationSlot(
-								item.slot,
-								sessionId,
-								namespace,
-							)
-						) {
-							runSlot(handlersRef, item);
-						}
-					}
-				}),
-			);
-		}
 
 		const exportStartToken = listenExportRequest(
 			EVENTTYPE_TASK.TASK_START,
@@ -322,24 +379,14 @@ export default function AppBuilderApplicationActionSlots({
 
 	return (
 		<>
-			{resolved.map(({eventName, slot, index}) => (
-				<AppBuilderActionSlotRunner
-					key={actionSlotHandlerKey(eventName, index)}
-					definition={slot.action}
-					namespace={namespace}
-					viewportId={viewportId}
-					fullscreenId={fullscreenId}
-					eventName={eventName}
-					registerCustomGlobally
-					registerTrigger={(trigger) => {
-						handlersRef.current[
-							actionSlotHandlerKey(eventName, index)
-						] = () => {
-							void trigger();
-						};
-					}}
-				/>
-			))}
+			<ActionSlotRunners
+				resolved={resolved}
+				handlersRef={handlersRef}
+				namespace={namespace}
+				viewportId={viewportId}
+				fullscreenId={fullscreenId}
+				registerCustomGlobally
+			/>
 			<ApplicationSlotListeners
 				resolved={resolved}
 				namespace={namespace}
@@ -356,5 +403,67 @@ export default function AppBuilderApplicationActionSlots({
 				/>
 			) : null}
 		</>
+	);
+}
+
+/**
+ * Computation slots of a parameter control: the root listener
+ * ({@link useComputationSlotListeners}), filtered to the customizations that
+ * change the control's parameter ({@link createParameterComputationTaskFilter}).
+ * Also warns about the control's unsupported slots; its DOM wrapper does not.
+ */
+export function AppBuilderParameterComputationSlots({
+	actionSlots,
+	namespace,
+	sessionId,
+	parameterId,
+}: {
+	actionSlots?: IAppBuilderParameterControlActionSlots;
+	/** Namespace the actions run in (the widget's). */
+	namespace: string;
+	/** Session of the parameter. */
+	sessionId: string;
+	/** Parameter id as used by the session. */
+	parameterId: string;
+}) {
+	const {viewportId} = useViewportId();
+	const handlersRef = useRef<Record<string, (() => void) | undefined>>({});
+	const resolved = useMemo(
+		() =>
+			pickAllowedActionSlots(
+				actionSlots,
+				APP_BUILDER_PARAMETER_COMPUTATION_EVENTS,
+				{includeCustomEvents: false},
+			),
+		[actionSlots],
+	);
+	const taskFilter = useMemo(
+		() =>
+			createParameterComputationTaskFilter(
+				sessionId,
+				() =>
+					useShapeDiverStoreSession.getState().sessions[sessionId]
+						?.parameters[parameterId]?.value,
+			),
+		[sessionId, parameterId],
+	);
+
+	useEffect(() => {
+		logIgnoredActionSlotEvents(
+			actionSlots,
+			APP_BUILDER_SLOT_EVENTS.parameterControl,
+			"on this parameter control",
+		);
+	}, [actionSlots]);
+
+	useComputationSlotListeners(resolved, handlersRef, namespace, taskFilter);
+
+	return (
+		<ActionSlotRunners
+			resolved={resolved}
+			handlersRef={handlersRef}
+			namespace={namespace}
+			viewportId={viewportId}
+		/>
 	);
 }

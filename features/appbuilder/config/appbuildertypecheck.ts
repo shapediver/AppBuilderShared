@@ -851,10 +851,27 @@ const IAppBuilderRootActionSlotsSchema = actionSlotsSchema({
 	hoveroff: actionSlotList(IAppBuilderSelectionActionSlotSchema).optional(),
 });
 
-function appBuilderNodeObject<T extends z.ZodRawShape>(shape: T) {
+/**
+ * Controls of `type: "parameter"`. The computation events run when that
+ * parameter was part of a customization. The control's `name` and `sessionId`
+ * identify the parameter, so these are plain slots (no `eventProps`).
+ */
+const IAppBuilderParameterControlActionSlotsSchema = actionSlotsSchema({
+	...nodeActionSlotShape,
+	computationstart: plainActionSlotListSchema.optional(),
+	computationend: plainActionSlotListSchema.optional(),
+	computationerror: plainActionSlotListSchema.optional(),
+});
+
+function appBuilderNodeObject<T extends z.ZodRawShape>(
+	shape: T,
+	actionSlots:
+		| typeof IAppBuilderNodeActionSlotsSchema
+		| typeof IAppBuilderParameterControlActionSlotsSchema = IAppBuilderNodeActionSlotsSchema,
+) {
 	return z.strictObject({
 		...shape,
-		actionSlots: IAppBuilderNodeActionSlotsSchema.optional(),
+		actionSlots: actionSlots.optional(),
 	});
 }
 
@@ -882,10 +899,13 @@ const IAppBuilderControlOutputRefSchema = z
 
 // Zod type definition for IAppBuilderControl
 const IAppBuilderControlSchema = z.discriminatedUnion("type", [
-	appBuilderNodeObject({
-		type: z.literal("parameter"),
-		props: IAppBuilderControlParameterRefSchema,
-	}),
+	appBuilderNodeObject(
+		{
+			type: z.literal("parameter"),
+			props: IAppBuilderControlParameterRefSchema,
+		},
+		IAppBuilderParameterControlActionSlotsSchema,
+	),
 	appBuilderNodeObject({
 		type: z.literal("export"),
 		props: IAppBuilderControlExportRefSchema,

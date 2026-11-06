@@ -174,3 +174,21 @@ A slot has one `action`. For several, use an `executeActions` action. To react t
 - **Without a filter,** only the controller counts. An instance computation only runs the slots when the filter names the instance's session.
 - **Default exports and instance computations** count too.
 - **A cancelled customization** runs `computationstart`, but neither `computationend` nor `computationerror`. Exception: default exports still run `computationend`.
+
+## Slots of parameter controls
+
+A parameter control can use the same three slots (see [Parameter controls](action-slots.md#parameter-controls)). They use the same listener as the root slots, with a filter for the control's parameter.
+
+The task events carry only the session id. The parameter executor sets `session.parameters[id].value` before it calls `session.customize` or `session.requestExports`, and the viewer emits `task.start` before its first `await`. So at `task.start` the filter compares the parameter's `value` with the value of its last finished computation (initially the value when the control mounts). `sessionValue` is not used: `requestExports` (the path with default exports) does not update it.
+
+| Event of the customization                            | Slots of a parameter control whose value changed                                                                 |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `task.start`                                          | `computationstart`. The task and the value are remembered.                                                       |
+| `task.end` (after the session scene node is replaced) | `computationend`. The task's value becomes the last computed value.                                              |
+| `task.cancel`: `Session customization failed`         | `computationerror`. The task is forgotten.                                                                       |
+| `task.cancel`: `The request was exceeded by…`         | None. The task is forgotten. The newer customization still sees the changed value, so it includes the parameter. |
+
+- **Accept mode:** the executor runs only when the accepted change is computed. A queued change runs nothing.
+- **Instances** (`customize_parallel`) change neither the values nor the scene node of the session. They run no parameter control slots.
+- **Value at `task.end`:** the value of the task at `task.start`, not the live one: with default exports the executor may already have set the next value while it uploads files. A task that ends after a newer one has ended changes nothing. A `File` is read again at the end, because `customize` replaces it by its upload id.
+- **Overlapping customizations:** a customization that starts while an earlier one with the changed value is still running includes the parameter too, so both run `computationend` (unless one is superseded).

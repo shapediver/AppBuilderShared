@@ -20,6 +20,7 @@ import {
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
+import {AppBuilderParameterComputationSlots} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderApplicationActionSlots";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {MantineThemeComponent, Paper, Stack, useProps} from "@mantine/core";
@@ -160,6 +161,25 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 		return map;
 	}, [parameters, componentContext, elementPaperProps]);
 
+	// Computation slots of parameter controls, hidden parameters included
+	const parameterComputationSlots = useMemo(
+		() =>
+			controls
+				.filter(isParameterRefControl)
+				.map((control, index) =>
+					parameters[index] ? (
+						<AppBuilderParameterComputationSlots
+							key={`control-computation-slots-${index}`}
+							actionSlots={control.actionSlots}
+							namespace={namespace}
+							sessionId={parameterProps[index].namespace}
+							parameterId={parameters[index].definition.id}
+						/>
+					) : null,
+				),
+		[controls, namespace, parameters, parameterProps],
+	);
+
 	// Create export map for quick lookup
 	const exportMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
@@ -231,6 +251,8 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					key={`control-action-slots-${index}`}
 					actionSlots={control.actionSlots}
 					allowedEvents={APP_BUILDER_SLOT_EVENTS.control}
+					// AppBuilderParameterComputationSlots warns for parameter controls
+					warnUnsupported={!isParameterRefControl(control)}
 					namespace={namespace}
 				>
 					{component}
@@ -242,14 +264,24 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	}, [controls, parameterMap, exportMap, namespace, componentContext]);
 
 	if (orderedComponents.length === 0) {
-		return <></>;
+		return <>{parameterComputationSlots}</>;
 	}
 
 	// If we only have one component, return it directly
 	if (orderedComponents.length === 1) {
-		return orderedComponents[0];
+		return (
+			<>
+				{parameterComputationSlots}
+				{orderedComponents[0]}
+			</>
+		);
 	}
 
 	// Return all components in a stack
-	return <Stack {...stackProps}>{orderedComponents}</Stack>;
+	return (
+		<>
+			{parameterComputationSlots}
+			<Stack {...stackProps}>{orderedComponents}</Stack>
+		</>
+	);
 }
