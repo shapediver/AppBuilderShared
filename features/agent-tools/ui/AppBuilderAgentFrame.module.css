@@ -8,10 +8,8 @@
 	min-height: min(12rem, var(--agent-frame-max-height, 12rem));
 	max-width: var(--agent-frame-max-width, 24rem);
 	max-height: var(--agent-frame-max-height, 32rem);
-	overflow: hidden;
-	border-radius: var(--mantine-radius-md, 8px);
-	border: 1px solid var(--mantine-color-default-border, rgba(0, 0, 0, 0.15));
-	background: var(--mantine-color-body, #fff);
+	/* Corners, border, and shadow come from the hosted iframe Paper.
+	 * Keep overflow visible so Paper's shadow is not square-clipped. */
 }
 
 .dragging iframe {
