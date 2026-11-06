@@ -230,6 +230,17 @@ describe("createParameterComputationTaskFilter", () => {
 		expect(filter.end(task("t2"))).toBe(false);
 	});
 
+	it("hears a commit again after the listener was stopped and started", () => {
+		const {parameter, filter} = createParameter("1", "relisten");
+		filter.dispose();
+		const stop = filter.listen();
+		parameter.value = "9";
+		noteParameterCommitted("s1", "relisten", "9");
+
+		expect(filter.start(task("t1"))).toBe(false);
+		stop();
+	});
+
 	it("keeps a commit made while the task is still running", () => {
 		const {parameter, filter} = createParameter("1", "mid");
 		parameter.value = "2";

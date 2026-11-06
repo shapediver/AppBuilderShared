@@ -318,6 +318,12 @@ export interface ComputationTaskFilter {
 	start(event: ComputationTaskEvent): boolean;
 	end(event: ComputationTaskEvent): boolean;
 	cancel(event: ComputationTaskEvent): boolean;
+	/**
+	 * Listen for commits. Call again after {@link dispose}: React runs the
+	 * effect cleanup and then the effect once more, and the filter object
+	 * stays the one created in `useMemo`.
+	 */
+	listen(): () => void;
 	/** Stop listening for commits of this parameter. */
 	dispose(): void;
 }
@@ -352,14 +358,24 @@ export function createParameterComputationTaskFilter(
 		string,
 		{order: number; value: unknown; committed: boolean}
 	>();
-	const unsubscribe = subscribeParameterCommitted(
-		sessionId,
-		parameterId,
-		(value) => {
-			lastComputedValue = value;
-			for (const task of tasks.values()) task.committed = true;
-		},
-	);
+	const onCommitted = (value: unknown) => {
+		lastComputedValue = value;
+		for (const task of tasks.values()) task.committed = true;
+	};
+	let stopListening: (() => void) | undefined;
+	const ensureListening = () => {
+		if (stopListening) return;
+		stopListening = subscribeParameterCommitted(
+			sessionId,
+			parameterId,
+			onCommitted,
+		);
+	};
+	const stop = () => {
+		stopListening?.();
+		stopListening = undefined;
+	};
+	ensureListening();
 	return {
 		start(event) {
 			if (event.type !== SESSION_CUSTOMIZATION_TASK_TYPE) return false;
@@ -396,7 +412,11 @@ export function createParameterComputationTaskFilter(
 			if (!tasks.delete(event.id)) return false;
 			return isSessionCustomizationFailedTask(event);
 		},
-		dispose: unsubscribe,
+		listen() {
+			ensureListening();
+			return stop;
+		},
+		dispose: stop,
 	};
 }
 

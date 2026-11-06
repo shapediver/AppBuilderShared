@@ -448,7 +448,7 @@ export function AppBuilderParameterComputationSlots({
 			),
 		[sessionId, parameterId],
 	);
-	useEffect(() => taskFilter.dispose, [taskFilter]);
+	useEffect(() => taskFilter.listen(), [taskFilter]);
 
 	useEffect(() => {
 		logIgnoredActionSlotEvents(
