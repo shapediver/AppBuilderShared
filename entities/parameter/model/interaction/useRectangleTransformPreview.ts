@@ -52,6 +52,7 @@ export function useRectangleTransformPreview({
 	selectedNodeNames,
 	setSelectedNodeNames,
 	nodeNamesRef,
+	selectionGizmoRef,
 	createSettings,
 }: {
 	enabled: boolean;
@@ -65,6 +66,8 @@ export function useRectangleTransformPreview({
 	selectedNodeNames: string[];
 	setSelectedNodeNames: (names: string[]) => void;
 	nodeNamesRef: MutableRefObject<Map<string, string>>;
+	/** The gizmo of the current selection, replaced by a promoted preview. */
+	selectionGizmoRef: MutableRefObject<RectangleTransform | undefined>;
 	createSettings: (nodes: ITreeNode[]) => RectangleTransformSettings;
 }): {
 	/** The preview gizmo a press selected, if it was on these nodes. */
@@ -163,6 +166,10 @@ export function useRectangleTransformPreview({
 				const preview = previewRef.current;
 				if (event.id !== previewId || !preview) return;
 				previewRef.current = undefined;
+				// the gizmo of the previous selection goes now, it must not
+				// share the id with the promoted preview until the next render
+				selectionGizmoRef.current?.close();
+				selectionGizmoRef.current = undefined;
 				// the gesture continues on the gizmo of the selection
 				preview.rectangle.promote(componentId);
 				adoptedRef.current?.rectangle.close();
@@ -220,7 +227,14 @@ export function useRectangleTransformPreview({
 			adoptedRef.current?.rectangle.close();
 			adoptedRef.current = undefined;
 		};
-	}, [enabled, viewportApi, componentId, selectionComponentId, previewId]);
+	}, [
+		enabled,
+		viewportApi,
+		componentId,
+		selectionComponentId,
+		previewId,
+		selectionGizmoRef,
+	]);
 
 	// a computation hides the preview
 	useEffect(() => {

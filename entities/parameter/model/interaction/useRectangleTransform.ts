@@ -395,6 +395,7 @@ export function useRectangleTransform(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		nodeNamesRef,
+		selectionGizmoRef: rectangleTransformRef,
 		createSettings,
 	});
 
