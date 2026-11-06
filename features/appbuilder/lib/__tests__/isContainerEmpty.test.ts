@@ -113,6 +113,18 @@ describe("isParameterControlEmpty", () => {
 		}
 	});
 
+	it("is empty for an exclusive rectangle transform in the toolbar", () => {
+		expect(
+			isParameterControlEmpty(
+				interaction("rectangleTransform", {
+					activeMode: "alwaysActive",
+					exclusive: true,
+				}),
+				ref,
+			),
+		).toBe(true);
+	});
+
 	it("reads the drawing settings from general", () => {
 		expect(
 			isParameterControlEmpty(

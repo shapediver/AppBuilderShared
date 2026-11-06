@@ -24,7 +24,9 @@ import type {
 } from "@shapediver/viewer.shared.types";
 import {mat4, vec3} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
+import {resolveExclusive} from "../../lib/exclusive";
 import {useRestrictions} from "../drawing/useRestrictions";
+import {exclusiveSelection} from "./exclusiveSelection";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useRectangleTransformEvents} from "./useRectangleTransformEvents";
 import {useSelection} from "./useSelection";
@@ -152,6 +154,10 @@ export function useRectangleTransform(
 		} as ISelectionParameterProps;
 	}, [rectangleTransformProps]);
 
+	// an exclusive parameter starts without a selection, and at most one
+	// exclusive parameter per viewport has a selection
+	const exclusive = resolveExclusive(rectangleTransformProps);
+
 	// track whether the maximum number of selections has been reached
 	const [maxReached, setMaxReached] = useState(false);
 
@@ -168,6 +174,24 @@ export function useRectangleTransform(
 		undefined,
 		strictNaming,
 		false,
+		undefined,
+		// the minimum only applies once the user selected something
+		exclusive ? (selectionSettings.minimumSelection ?? 0) : 0,
+	);
+
+	const hasSelection = selectedNodeNames.length > 0;
+	useEffect(() => {
+		if (!exclusive || !hasSelection) {
+			exclusiveSelection.release(viewportId, componentId);
+			return;
+		}
+		exclusiveSelection.acquire(viewportId, componentId, () =>
+			setSelectedNodeNames([]),
+		);
+	}, [exclusive, hasSelection, viewportId, componentId]);
+	useEffect(
+		() => () => exclusiveSelection.release(viewportId, componentId),
+		[viewportId, componentId],
 	);
 
 	// disable selection once the maximum number of objects has been reached
@@ -201,6 +225,7 @@ export function useRectangleTransform(
 
 	// use an effect to set the selected node names to the first available node name if only one is available
 	useEffect(() => {
+		if (exclusive) return;
 		const singleAvailableNodeName =
 			getSingleAvailableNodeName(availableNodeNames);
 		if (!activate || !singleAvailableNodeName) return;
@@ -210,7 +235,7 @@ export function useRectangleTransform(
 		if (current.length === 1 && current[0] === singleAvailableNodeName)
 			return;
 		setSelectedNodeNames([singleAvailableNodeName]);
-	}, [activate, availableNodeNames, setSelectedNodeNames]);
+	}, [activate, availableNodeNames, setSelectedNodeNames, exclusive]);
 
 	// create a reference for the rectangle transform
 	const rectangleTransformRef = useRef<RectangleTransform | undefined>(

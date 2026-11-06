@@ -11,6 +11,7 @@ import {
 	ITreeNode,
 	removeListener,
 } from "@shapediver/viewer.session";
+import {vec3} from "gl-matrix";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {IUseCreateNameFilterPatternResult} from "./useCreateNameFilterPattern";
 
@@ -70,6 +71,9 @@ const getNodeNames = (
  * @param initialSelectedNodeNames The initial selected node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
  * @param strictNaming Whether to use strict naming for node name matching.
+ * @param keptMinimumSelection A deselection by the user (select manager only)
+ * 					which would drop a non-empty selection below this number is
+ * 					refused. A click on another object still replaces the selection.
  */
 export function useSelectManagerEvents(
 	patterns: IUseCreateNameFilterPatternResult,
@@ -78,6 +82,7 @@ export function useSelectManagerEvents(
 	strictNaming = true,
 	active = true,
 	selectManager?: SelectManager | MultiSelectManager,
+	keptMinimumSelection = 0,
 ): ISelectionState {
 	// A select manager is disposed while an interaction is suspended. Disposal
 	// emits selection-off events asynchronously, so keep the current activity in
@@ -97,6 +102,13 @@ export function useSelectManagerEvents(
 		() => setSelectedNodeNames([]),
 		[],
 	);
+	const selectedNodeNamesRef = useRef(selectedNodeNames);
+	selectedNodeNamesRef.current = selectedNodeNames;
+	const keptMinimumSelectionRef = useRef(keptMinimumSelection);
+	keptMinimumSelectionRef.current = keptMinimumSelection;
+	// set by a user selection, which the select manager emits right after the
+	// deselection of the previous node when another object is clicked
+	const selectedSinceDeselectRef = useRef(false);
 
 	// register an event handler and listen for output updates
 	useEffect(() => {
@@ -119,6 +131,7 @@ export function useSelectManagerEvents(
 				)
 					return;
 
+				selectedSinceDeselectRef.current = true;
 				const selected = [selectEvent.node];
 				const names = getNodeNames(patterns, selected, strictNaming);
 				setSelectedNodeNames(names);
@@ -145,6 +158,32 @@ export function useSelectManagerEvents(
 					selectEvent.manager !== selectManagerRef.current
 				)
 					return;
+
+				const manager = selectEvent.manager;
+				const count = selectedNodeNamesRef.current.length;
+				if (
+					manager instanceof SelectManager &&
+					count > 0 &&
+					count - 1 < keptMinimumSelectionRef.current
+				) {
+					// refused, unless another object is selected right away
+					const node = selectEvent.node;
+					selectedSinceDeselectRef.current = false;
+					queueMicrotask(() => {
+						if (
+							selectedSinceDeselectRef.current ||
+							!activeRef.current ||
+							manager !== selectManagerRef.current
+						)
+							return;
+						manager.select({
+							distance: 1,
+							point: vec3.create(),
+							node,
+						});
+					});
+					return;
+				}
 
 				setSelectedNodeNames([]);
 			},

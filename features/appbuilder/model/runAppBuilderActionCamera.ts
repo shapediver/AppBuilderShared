@@ -230,8 +230,23 @@ async function applyCameraAction(
 		}
 	}
 
-	if (isAssignCameraAction(props) && !newCamera) {
-		failCamera(strict, "Camera assign requires id, name, or type.");
+	if (isAssignCameraAction(props)) {
+		if (!newCamera) {
+			failCamera(strict, "Camera assign requires id, name, or type.");
+			return;
+		}
+
+		// The viewer fits a camera to the scene only when the scene is loaded
+		// for the first time. When switching to a camera which has
+		// `initialAutoAdjust` set, fit it to the current scene, unless the
+		// action defines the pose of the camera explicitly.
+		const camera = props.props.camera as Record<string, unknown>;
+		if (newCamera.initialAutoAdjust && !camera.position && !camera.target) {
+			await newCamera.zoomTo(
+				undefined,
+				props.props.options ?? {duration: 0},
+			);
+		}
 		return;
 	}
 
