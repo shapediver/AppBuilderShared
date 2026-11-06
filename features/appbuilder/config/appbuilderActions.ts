@@ -132,6 +132,12 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
  * `maximumSelection` allows, the first matches in scene order are selected
  * and a warning is logged. The action does not fail.
  *
+ * For an exclusive rectangle transform (`exclusive: true`), selecting a node
+ * makes this parameter the selected one in the viewport and deselects the
+ * previous exclusive parameter, also if that one has a `minimumSelection`.
+ * A change that would drop a non-empty selection below `minimumSelection`
+ * is ignored, like a deselection by the user.
+ *
  * Names are node names as used by a `nameFilter` (output name, then the
  * hierarchical node names separated by dots) and can contain the wildcard
  * `*`. A node targeted by both {@link select} and {@link deselect} is
