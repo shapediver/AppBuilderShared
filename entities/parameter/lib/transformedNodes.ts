@@ -26,6 +26,22 @@ export const hasLocalTransformationDelta = (
 	);
 
 /**
+ * Whether the selected object was moved by a handle.
+ *
+ * A gizmo reports the selected object only. The local matrix of an object
+ * that is no longer selected is a move already made: it stays in the value
+ * of a later send. The identity matrix of a gizmo created again must not
+ * schedule another update.
+ */
+export const hasSelectedLocalTransformationDelta = (
+	nodes: readonly Pick<TransformedNode, "name" | "localTransformations">[],
+	selectedNames: readonly string[],
+): boolean =>
+	hasLocalTransformationDelta(
+		nodes.filter((node) => selectedNames.includes(node.name)),
+	);
+
+/**
  * Merge a MATRIX_CHANGED event of a transformation tool into the transformed nodes.
  *
  * The event lists one matrix per scene node. Each node is mapped to its

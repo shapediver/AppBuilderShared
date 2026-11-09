@@ -1,5 +1,6 @@
 import {
 	hasLocalTransformationDelta,
+	hasSelectedLocalTransformationDelta,
 	mergeTransformationEvent,
 } from "../transformedNodes";
 
@@ -168,5 +169,34 @@ describe("hasLocalTransformationDelta", () => {
 		expect(
 			hasLocalTransformationDelta([{localTransformations: [1, 0, 0, 1]}]),
 		).toBe(false);
+	});
+});
+
+describe("hasSelectedLocalTransformationDelta", () => {
+	const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+	const translated = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3, 0, 0, 1];
+
+	it("ignores a move of an object that is no longer selected", () => {
+		expect(
+			hasSelectedLocalTransformationDelta(
+				[
+					{name: "a", localTransformations: translated},
+					{name: "b", localTransformations: identity},
+				],
+				["b"],
+			),
+		).toBe(false);
+	});
+
+	it("detects a move of the selected object", () => {
+		expect(
+			hasSelectedLocalTransformationDelta(
+				[
+					{name: "a", localTransformations: translated},
+					{name: "b", localTransformations: translated},
+				],
+				["b"],
+			),
+		).toBe(true);
 	});
 });

@@ -5,7 +5,10 @@ import {
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib/automaticSceneUpdate";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
-import {hasLocalTransformationDelta} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
+import {
+	hasLocalTransformationDelta,
+	hasSelectedLocalTransformationDelta,
+} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
@@ -461,11 +464,18 @@ export default function ParameterRectangleTransformComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	// Automatic scene update (always active tools only): a moved handle sends
-	// the transformation like Confirm would, debounced by the timeout. The
-	// identity transformations emitted on creation of the gizmo are not sent.
+	// Automatic scene update (always active tools only): a moved handle of the
+	// selected object sends the transformation like Confirm would, debounced
+	// by the timeout. The identity matrix emitted when its gizmo is created
+	// is not sent. A local matrix left on an object that is no longer
+	// selected is a move already made, and must not be sent again when the
+	// selected gizmo is created on the updated nodes.
 	const hasLocalTransformation =
 		hasLocalTransformationDelta(transformedNodeNames);
+	const hasSelectedLocalTransformation = hasSelectedLocalTransformationDelta(
+		transformedNodeNames,
+		selectedNodeNames,
+	);
 	// A move while a request is in flight is not sent: after our own request
 	// the gizmo is recreated on the new nodes and the move is dropped; after
 	// another parameter's execution the move is sent once it ends.
@@ -476,7 +486,7 @@ export default function ParameterRectangleTransformComponent(
 			seenTransformedNodeNamesRef.current !== transformedNodeNames;
 		seenTransformedNodeNamesRef.current = transformedNodeNames;
 		if (!automaticSceneUpdate || !effectiveRectangleActive) return;
-		if (!hasLocalTransformation) {
+		if (!hasSelectedLocalTransformation) {
 			movedWhileExecutingRef.current = false;
 			return;
 		}
@@ -489,7 +499,7 @@ export default function ParameterRectangleTransformComponent(
 		if (!moved && !movedWhileExecutingRef.current) return;
 		movedWhileExecutingRef.current = false;
 		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
-	}, [transformedNodeNames, executing]);
+	}, [transformedNodeNames, selectedNodeNames, executing]);
 
 	// Clear: the committed transformations are undone (the parameter is reset
 	// to its default value and executed), a pending transformation is dropped.
