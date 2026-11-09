@@ -38,7 +38,10 @@ import {getResetValue} from "../lib/parameterResetValue";
 import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
-import {shouldSubmitSelectionChange} from "../model/interaction/shouldSubmitSelectionChange";
+import {
+	registersPendingSelection,
+	shouldSubmitSelectionChange,
+} from "../model/interaction/shouldSubmitSelectionChange";
 import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
@@ -325,7 +328,13 @@ export default function ParameterSelectionComponent(
 	const hasOtherPendingSelection = usePendingSelectionRegistry(
 		selectionOwnerKey,
 		`${namespace}-${viewportId}`,
-		hasPendingSelection && !acceptsAutomatically,
+		registersPendingSelection({
+			hasPendingSelection,
+			acceptsAutomatically,
+			fromAction: commitActionSelectionRef.current,
+			acceptable,
+			cleared: clearedSinceLastConfirmationRef.current,
+		}),
 	);
 	// Keep the established automatic behavior unless another selection parameter
 	// has an outstanding pending selection. A committed batch is not pending

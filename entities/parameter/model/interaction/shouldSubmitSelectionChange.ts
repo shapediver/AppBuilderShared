@@ -22,3 +22,29 @@ export function shouldSubmitSelectionChange({
 
 	return acceptImmediately;
 }
+
+/**
+ * A draft is registered as pending only when it waits for Confirm.
+ * A selection that is sent on this render must not put the other
+ * selection parameters into confirmation mode for that frame. That
+ * includes an action whose result the parameter accepts, even when
+ * the result does not fill the maximum.
+ */
+export function registersPendingSelection({
+	hasPendingSelection,
+	acceptsAutomatically,
+	fromAction,
+	acceptable,
+	cleared,
+}: {
+	hasPendingSelection: boolean;
+	acceptsAutomatically: boolean;
+	fromAction: boolean;
+	acceptable: boolean;
+	cleared: boolean;
+}): boolean {
+	const actionSubmits =
+		fromAction && acceptable && (hasPendingSelection || cleared);
+
+	return hasPendingSelection && !acceptsAutomatically && !actionSubmits;
+}

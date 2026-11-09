@@ -1,4 +1,7 @@
-import {shouldSubmitSelectionChange} from "../shouldSubmitSelectionChange";
+import {
+	registersPendingSelection,
+	shouldSubmitSelectionChange,
+} from "../shouldSubmitSelectionChange";
 
 describe("shouldSubmitSelectionChange", () => {
 	it("commits an action whose result the parameter accepts", () => {
@@ -43,6 +46,54 @@ describe("shouldSubmitSelectionChange", () => {
 				pending: true,
 			}),
 		).toBe(true);
+	});
+
+	it("does not register an action that is sent on this render", () => {
+		expect(
+			registersPendingSelection({
+				hasPendingSelection: true,
+				acceptsAutomatically: false,
+				fromAction: true,
+				acceptable: true,
+				cleared: false,
+			}),
+		).toBe(false);
+	});
+
+	it("registers an action the parameter would refuse", () => {
+		expect(
+			registersPendingSelection({
+				hasPendingSelection: true,
+				acceptsAutomatically: false,
+				fromAction: true,
+				acceptable: false,
+				cleared: false,
+			}),
+		).toBe(true);
+	});
+
+	it("registers a click that does not accept itself", () => {
+		expect(
+			registersPendingSelection({
+				hasPendingSelection: true,
+				acceptsAutomatically: false,
+				fromAction: false,
+				acceptable: true,
+				cleared: false,
+			}),
+		).toBe(true);
+	});
+
+	it("does not register a selection that accepts itself", () => {
+		expect(
+			registersPendingSelection({
+				hasPendingSelection: true,
+				acceptsAutomatically: true,
+				fromAction: false,
+				acceptable: true,
+				cleared: false,
+			}),
+		).toBe(false);
 	});
 
 	it("does not submit a selection equal to the committed value", () => {
