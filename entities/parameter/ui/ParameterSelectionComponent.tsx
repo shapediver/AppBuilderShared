@@ -39,6 +39,7 @@ import {parseSelectionNames as parseNames} from "../model/interaction/parseSelec
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
 import {
+	blockedActionStaysUnregistered,
 	nextActionPendingHold,
 	registersPendingSelection,
 	shouldRetryBlockedAction,
@@ -338,8 +339,9 @@ export default function ParameterSelectionComponent(
 		selectionKey,
 	});
 	submittedActionKeyRef.current = actionHold.heldKey;
-	// Another draft already waiting means this action cannot be sent yet, so
-	// it stays in the pending set instead of being hidden by the action flag.
+	// Another draft already waiting means this action cannot be sent yet.
+	// It stays out of the pending set so that draft can still be confirmed,
+	// and the retry below sends this one once that happens.
 	const blockedByOtherSelection =
 		alwaysActive &&
 		hasOtherPendingSelectionInScope(
@@ -353,9 +355,12 @@ export default function ParameterSelectionComponent(
 			hasPendingSelection,
 			acceptsAutomatically,
 			fromAction:
-				(commitActionSelectionRef.current &&
-					!blockedByOtherSelection) ||
-				actionHold.suppress,
+				commitActionSelectionRef.current ||
+				actionHold.suppress ||
+				blockedActionStaysUnregistered(
+					blockedActionKeyRef.current,
+					selectionKey,
+				),
 			acceptable,
 			cleared: clearedSinceLastConfirmationRef.current,
 		}),

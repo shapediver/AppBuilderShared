@@ -1,4 +1,5 @@
 import {
+	blockedActionStaysUnregistered,
 	nextActionPendingHold,
 	registersPendingSelection,
 	shouldRetryBlockedAction,
@@ -117,6 +118,16 @@ describe("shouldSubmitSelectionChange", () => {
 				selectionKey: '["box_3"]',
 			}),
 		).toEqual({heldKey: null, suppress: false});
+	});
+
+	it("does not register a blocked action, so the waiting draft can confirm", () => {
+		expect(blockedActionStaysUnregistered('["box_3"]', '["box_3"]')).toBe(
+			true,
+		);
+		expect(blockedActionStaysUnregistered('["box_3"]', '["box_1"]')).toBe(
+			false,
+		);
+		expect(blockedActionStaysUnregistered(null, '["box_3"]')).toBe(false);
 	});
 
 	it("retries a blocked action once the other draft is gone", () => {

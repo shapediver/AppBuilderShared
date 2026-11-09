@@ -52,8 +52,7 @@ export function registersPendingSelection({
 /**
  * Continues a hold that was recorded when the value was actually sent.
  * An acceptable action does not start the hold by itself: the send can
- * still be skipped because another selection is waiting, and that draft
- * has to stay pending.
+ * still be skipped because another selection is waiting.
  */
 export function nextActionPendingHold(
 	heldKey: string | null,
@@ -86,4 +85,15 @@ export function shouldRetryBlockedAction({
 	otherPending: boolean;
 }): boolean {
 	return blockedKey !== null && blockedKey === selectionKey && !otherPending;
+}
+
+/**
+ * A blocked action stays out of the pending set. Registering it would stop
+ * the draft that is already waiting from confirming, so neither one could send.
+ */
+export function blockedActionStaysUnregistered(
+	blockedKey: string | null,
+	selectionKey: string,
+): boolean {
+	return blockedKey !== null && blockedKey === selectionKey;
 }
