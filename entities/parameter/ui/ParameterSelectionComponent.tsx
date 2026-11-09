@@ -39,6 +39,7 @@ import {parseSelectionNames as parseNames} from "../model/interaction/parseSelec
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
 import {
+	nextActionPendingHold,
 	registersPendingSelection,
 	shouldSubmitSelectionChange,
 } from "../model/interaction/shouldSubmitSelectionChange";
@@ -284,6 +285,9 @@ export default function ParameterSelectionComponent(
 	// A selection action commits when the result is acceptable, including a
 	// result that does not fill the maximum. A click does not.
 	const commitActionSelectionRef = useRef(false);
+	// The action flag is cleared when the selection is sent. The committed
+	// value can arrive a render later, so the sent names stay held until then.
+	const submittedActionKeyRef = useRef<string | null>(null);
 	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: selectionOwnerKey,
@@ -325,13 +329,21 @@ export default function ParameterSelectionComponent(
 	// Only a draft which needs a confirmation is registered as pending: a draft
 	// which is accepted automatically is committed right away, it must not
 	// switch the other selection parameters to confirmation mode meanwhile.
+	const actionHold = nextActionPendingHold(submittedActionKeyRef.current, {
+		fromAction: commitActionSelectionRef.current,
+		acceptable,
+		hasPendingSelection,
+		cleared: clearedSinceLastConfirmationRef.current,
+		selectionKey: JSON.stringify(selectedNodeNames),
+	});
+	submittedActionKeyRef.current = actionHold.heldKey;
 	const hasOtherPendingSelection = usePendingSelectionRegistry(
 		selectionOwnerKey,
 		`${namespace}-${viewportId}`,
 		registersPendingSelection({
 			hasPendingSelection,
 			acceptsAutomatically,
-			fromAction: commitActionSelectionRef.current,
+			fromAction: commitActionSelectionRef.current || actionHold.suppress,
 			acceptable,
 			cleared: clearedSinceLastConfirmationRef.current,
 		}),

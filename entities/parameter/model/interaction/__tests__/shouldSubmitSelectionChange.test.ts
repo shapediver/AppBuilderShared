@@ -1,4 +1,5 @@
 import {
+	nextActionPendingHold,
 	registersPendingSelection,
 	shouldSubmitSelectionChange,
 } from "../shouldSubmitSelectionChange";
@@ -82,6 +83,47 @@ describe("shouldSubmitSelectionChange", () => {
 				cleared: false,
 			}),
 		).toBe(true);
+	});
+
+	it("holds a sent action until the committed value catches up", () => {
+		const started = nextActionPendingHold(null, {
+			fromAction: true,
+			acceptable: true,
+			hasPendingSelection: true,
+			cleared: false,
+			selectionKey: '["box_3"]',
+		});
+		expect(started).toEqual({heldKey: '["box_3"]', suppress: true});
+		expect(
+			nextActionPendingHold(started.heldKey, {
+				fromAction: false,
+				acceptable: true,
+				hasPendingSelection: true,
+				cleared: false,
+				selectionKey: '["box_3"]',
+			}),
+		).toEqual({heldKey: '["box_3"]', suppress: true});
+	});
+
+	it("drops the hold when the draft changes or the value commits", () => {
+		expect(
+			nextActionPendingHold('["box_3"]', {
+				fromAction: false,
+				acceptable: true,
+				hasPendingSelection: true,
+				cleared: false,
+				selectionKey: '["box_1"]',
+			}),
+		).toEqual({heldKey: null, suppress: false});
+		expect(
+			nextActionPendingHold('["box_3"]', {
+				fromAction: false,
+				acceptable: true,
+				hasPendingSelection: false,
+				cleared: false,
+				selectionKey: '["box_3"]',
+			}),
+		).toEqual({heldKey: null, suppress: false});
 	});
 
 	it("does not register a selection that accepts itself", () => {

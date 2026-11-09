@@ -48,3 +48,34 @@ export function registersPendingSelection({
 
 	return hasPendingSelection && !acceptsAutomatically && !actionSubmits;
 }
+
+/**
+ * The action flag is cleared when the selection is sent, and the committed
+ * value can arrive a render later. Hold that selection until the committed
+ * value catches up, or until the draft changes, so it is not registered as
+ * pending in the gap.
+ */
+export function nextActionPendingHold(
+	heldKey: string | null,
+	{
+		fromAction,
+		acceptable,
+		hasPendingSelection,
+		cleared,
+		selectionKey,
+	}: {
+		fromAction: boolean;
+		acceptable: boolean;
+		hasPendingSelection: boolean;
+		cleared: boolean;
+		selectionKey: string;
+	},
+): {heldKey: string | null; suppress: boolean} {
+	const pending = hasPendingSelection || cleared;
+	if (fromAction && acceptable && pending)
+		return {heldKey: selectionKey, suppress: hasPendingSelection};
+	if (heldKey === selectionKey && hasPendingSelection)
+		return {heldKey, suppress: true};
+
+	return {heldKey: null, suppress: false};
+}
