@@ -13,6 +13,7 @@ import {
 } from "@shapediver/viewer.session";
 import {type IViewportApi} from "@shapediver/viewer.viewport";
 import {type MutableRefObject, useCallback, useEffect, useRef} from "react";
+import {adoptExclusivePreview} from "./adoptExclusivePreview";
 
 type Candidate = {name: string; node: ITreeNode};
 type RectangleTransformSettings = NonNullable<
@@ -166,21 +167,24 @@ export function useRectangleTransformPreview({
 				const preview = previewRef.current;
 				if (event.id !== previewId || !preview) return;
 				previewRef.current = undefined;
-				// the gizmo of the previous selection goes now, it must not
-				// share the id with the promoted preview until the next render
-				selectionGizmoRef.current?.close();
-				selectionGizmoRef.current = undefined;
-				// the gesture continues on the gizmo of the selection
-				preview.rectangle.promote(componentId);
+				adoptExclusivePreview({
+					nodeNamesRef,
+					selectionGizmo: selectionGizmoRef.current,
+					preview: {
+						promote: (id) => preview.rectangle.promote(id),
+						candidate: preview.candidate,
+					},
+					componentId,
+					setSelected: setSelectedRef.current,
+					clearSelectionGizmo: () => {
+						selectionGizmoRef.current = undefined;
+					},
+				});
 				adoptedRef.current?.rectangle.close();
 				adoptedRef.current = {
 					rectangle: preview.rectangle,
 					key: selectedNodesKeyOf([preview.candidate]),
 				};
-				nodeNamesRef.current = new Map([
-					[preview.candidate.node.id, preview.candidate.name],
-				]);
-				setSelectedRef.current([preview.candidate.name]);
 			},
 		);
 
@@ -203,6 +207,7 @@ export function useRectangleTransformPreview({
 			(e) => {
 				const event =
 					e as InteractionEventResponseMapping[EVENTTYPE_INTERACTION.SELECT_ON];
+				if (event.viewportId !== viewportApi.id) return;
 				if (event.manager.id !== selectionComponentId) return;
 				if (event.event?.type !== "pointerdown") return;
 				pendingPressRef.current = event.event;
