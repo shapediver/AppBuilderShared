@@ -41,6 +41,7 @@ import {shouldShowSelectionConfirmationControls} from "../model/interaction/shou
 import {
 	nextActionPendingHold,
 	registersPendingSelection,
+	shouldRetryBlockedAction,
 	shouldSubmitSelectionChange,
 } from "../model/interaction/shouldSubmitSelectionChange";
 import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
@@ -285,9 +286,11 @@ export default function ParameterSelectionComponent(
 	// A selection action commits when the result is acceptable, including a
 	// result that does not fill the maximum. A click does not.
 	const commitActionSelectionRef = useRef(false);
-	// The action flag is cleared when the selection is sent. The committed
-	// value can arrive a render later, so the sent names stay held until then.
+	// Set only after the value is handed to the session. The committed value
+	// can arrive a render later, and the hold covers that gap.
 	const submittedActionKeyRef = useRef<string | null>(null);
+	// An action whose send was skipped because another draft is waiting.
+	const blockedActionKeyRef = useRef<string | null>(null);
 	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: selectionOwnerKey,
@@ -329,21 +332,30 @@ export default function ParameterSelectionComponent(
 	// Only a draft which needs a confirmation is registered as pending: a draft
 	// which is accepted automatically is committed right away, it must not
 	// switch the other selection parameters to confirmation mode meanwhile.
+	const selectionKey = JSON.stringify(selectedNodeNames);
 	const actionHold = nextActionPendingHold(submittedActionKeyRef.current, {
-		fromAction: commitActionSelectionRef.current,
-		acceptable,
 		hasPendingSelection,
-		cleared: clearedSinceLastConfirmationRef.current,
-		selectionKey: JSON.stringify(selectedNodeNames),
+		selectionKey,
 	});
 	submittedActionKeyRef.current = actionHold.heldKey;
+	// Another draft already waiting means this action cannot be sent yet, so
+	// it stays in the pending set instead of being hidden by the action flag.
+	const blockedByOtherSelection =
+		alwaysActive &&
+		hasOtherPendingSelectionInScope(
+			selectionOwnerKey,
+			`${namespace}-${viewportId}`,
+		);
 	const hasOtherPendingSelection = usePendingSelectionRegistry(
 		selectionOwnerKey,
 		`${namespace}-${viewportId}`,
 		registersPendingSelection({
 			hasPendingSelection,
 			acceptsAutomatically,
-			fromAction: commitActionSelectionRef.current || actionHold.suppress,
+			fromAction:
+				(commitActionSelectionRef.current &&
+					!blockedByOtherSelection) ||
+				actionHold.suppress,
 			acceptable,
 			cleared: clearedSinceLastConfirmationRef.current,
 		}),
@@ -494,9 +506,42 @@ export default function ParameterSelectionComponent(
 				acceptImmediately,
 				pending,
 			})
-		)
+		) {
+			if (blockedByOtherSelection) {
+				if (fromAction) blockedActionKeyRef.current = selectionKey;
+				return;
+			}
+			blockedActionKeyRef.current = null;
+			if (fromAction) submittedActionKeyRef.current = selectionKey;
 			changeValueRef.current(selectedNodeNames);
-	}, [acceptImmediately, acceptable, selectedNodeNames]);
+		}
+	}, [
+		acceptImmediately,
+		acceptable,
+		blockedByOtherSelection,
+		selectedNodeNames,
+		selectionKey,
+	]);
+	// The skipped action is sent once the other draft is confirmed or cancelled.
+	useEffect(() => {
+		if (
+			!shouldRetryBlockedAction({
+				blockedKey: blockedActionKeyRef.current,
+				selectionKey,
+				otherPending: hasOtherPendingSelection,
+			})
+		) {
+			if (
+				blockedActionKeyRef.current &&
+				blockedActionKeyRef.current !== selectionKey
+			)
+				blockedActionKeyRef.current = null;
+			return;
+		}
+		blockedActionKeyRef.current = null;
+		submittedActionKeyRef.current = selectionKey;
+		changeValueRef.current(selectedNodeNames);
+	}, [hasOtherPendingSelection, selectedNodeNames, selectionKey]);
 
 	/**
 	 * Callback function to reset the selected node names.
@@ -609,7 +654,10 @@ export default function ParameterSelectionComponent(
 	});
 	const clearButton = resolveParameterInteractionButtonTheme(
 		clearButtonTheme,
-		{label: `Clear ${toolbarLabel}`, icon: "tabler:circle-off"},
+		{
+			label: `Clear ${toolbarLabel}`,
+			icon: "tabler:circle-off",
+		},
 	);
 	const confirmButton = resolveParameterInteractionButtonTheme(
 		confirmButtonTheme,

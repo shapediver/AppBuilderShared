@@ -1,6 +1,7 @@
 import {
 	nextActionPendingHold,
 	registersPendingSelection,
+	shouldRetryBlockedAction,
 	shouldSubmitSelectionChange,
 } from "../shouldSubmitSelectionChange";
 
@@ -85,21 +86,19 @@ describe("shouldSubmitSelectionChange", () => {
 		).toBe(true);
 	});
 
-	it("holds a sent action until the committed value catches up", () => {
-		const started = nextActionPendingHold(null, {
-			fromAction: true,
-			acceptable: true,
-			hasPendingSelection: true,
-			cleared: false,
-			selectionKey: '["box_3"]',
-		});
-		expect(started).toEqual({heldKey: '["box_3"]', suppress: true});
+	it("does not hide an action that has not been sent", () => {
 		expect(
-			nextActionPendingHold(started.heldKey, {
-				fromAction: false,
-				acceptable: true,
+			nextActionPendingHold(null, {
 				hasPendingSelection: true,
-				cleared: false,
+				selectionKey: '["box_3"]',
+			}),
+		).toEqual({heldKey: null, suppress: false});
+	});
+
+	it("holds a sent action until the committed value catches up", () => {
+		expect(
+			nextActionPendingHold('["box_3"]', {
+				hasPendingSelection: true,
 				selectionKey: '["box_3"]',
 			}),
 		).toEqual({heldKey: '["box_3"]', suppress: true});
@@ -108,22 +107,40 @@ describe("shouldSubmitSelectionChange", () => {
 	it("drops the hold when the draft changes or the value commits", () => {
 		expect(
 			nextActionPendingHold('["box_3"]', {
-				fromAction: false,
-				acceptable: true,
 				hasPendingSelection: true,
-				cleared: false,
 				selectionKey: '["box_1"]',
 			}),
 		).toEqual({heldKey: null, suppress: false});
 		expect(
 			nextActionPendingHold('["box_3"]', {
-				fromAction: false,
-				acceptable: true,
 				hasPendingSelection: false,
-				cleared: false,
 				selectionKey: '["box_3"]',
 			}),
 		).toEqual({heldKey: null, suppress: false});
+	});
+
+	it("retries a blocked action once the other draft is gone", () => {
+		expect(
+			shouldRetryBlockedAction({
+				blockedKey: '["box_3"]',
+				selectionKey: '["box_3"]',
+				otherPending: true,
+			}),
+		).toBe(false);
+		expect(
+			shouldRetryBlockedAction({
+				blockedKey: '["box_3"]',
+				selectionKey: '["box_3"]',
+				otherPending: false,
+			}),
+		).toBe(true);
+		expect(
+			shouldRetryBlockedAction({
+				blockedKey: '["box_3"]',
+				selectionKey: '["box_1"]',
+				otherPending: false,
+			}),
+		).toBe(false);
 	});
 
 	it("does not register a selection that accepts itself", () => {

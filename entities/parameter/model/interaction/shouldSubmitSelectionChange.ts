@@ -50,32 +50,40 @@ export function registersPendingSelection({
 }
 
 /**
- * The action flag is cleared when the selection is sent, and the committed
- * value can arrive a render later. Hold that selection until the committed
- * value catches up, or until the draft changes, so it is not registered as
- * pending in the gap.
+ * Continues a hold that was recorded when the value was actually sent.
+ * An acceptable action does not start the hold by itself: the send can
+ * still be skipped because another selection is waiting, and that draft
+ * has to stay pending.
  */
 export function nextActionPendingHold(
 	heldKey: string | null,
 	{
-		fromAction,
-		acceptable,
 		hasPendingSelection,
-		cleared,
 		selectionKey,
 	}: {
-		fromAction: boolean;
-		acceptable: boolean;
 		hasPendingSelection: boolean;
-		cleared: boolean;
 		selectionKey: string;
 	},
 ): {heldKey: string | null; suppress: boolean} {
-	const pending = hasPendingSelection || cleared;
-	if (fromAction && acceptable && pending)
-		return {heldKey: selectionKey, suppress: hasPendingSelection};
 	if (heldKey === selectionKey && hasPendingSelection)
 		return {heldKey, suppress: true};
 
 	return {heldKey: null, suppress: false};
+}
+
+/**
+ * An action whose send was skipped because another draft is waiting is
+ * tried again once that draft is gone, and only while the names are the
+ * ones that were skipped.
+ */
+export function shouldRetryBlockedAction({
+	blockedKey,
+	selectionKey,
+	otherPending,
+}: {
+	blockedKey: string | null;
+	selectionKey: string;
+	otherPending: boolean;
+}): boolean {
+	return blockedKey !== null && blockedKey === selectionKey && !otherPending;
 }
