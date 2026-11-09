@@ -587,7 +587,7 @@ export default function ParameterRectangleTransformComponent(
 			{!automaticSceneUpdate && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
 					<Button
-						disabled={transformedNodeNames.length === 0}
+						disabled={!hasLocalTransformation}
 						fullWidth={true}
 						variant="filled"
 						onClick={() => changeValue(transformedNodeNames)}
@@ -595,6 +595,7 @@ export default function ParameterRectangleTransformComponent(
 						<Text>{confirmButton.label}</Text>
 					</Button>
 					<Button
+						disabled={!hasLocalTransformation}
 						fullWidth={true}
 						variant={"light"}
 						onClick={resetTransformation}
@@ -631,10 +632,6 @@ export default function ParameterRectangleTransformComponent(
 			</Text>
 		</Button>
 	);
-	const hasPendingTransformation =
-		JSON.stringify(transformedNodeNames) !==
-		JSON.stringify(lastConfirmedValue);
-
 	// Register with interaction toolbar if presentation is "toolbar"
 
 	useInteractionToolbarContribution({
@@ -669,7 +666,7 @@ export default function ParameterRectangleTransformComponent(
 		// with automatic scene updates a moved handle is sent after the idle
 		// timeout: there is nothing to confirm or cancel, only Clear remains
 		commands: [
-			...(hasPendingTransformation && !automaticSceneUpdate
+			...(hasLocalTransformation && !automaticSceneUpdate
 				? [
 						createToolbarCommand({
 							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
@@ -678,7 +675,7 @@ export default function ParameterRectangleTransformComponent(
 							tooltip: confirmButton.tooltip,
 							icon: confirmButton.icon,
 							order: 10,
-							disabled: !hasPendingTransformation,
+							disabled: !hasLocalTransformation,
 							execute: () => changeValue(transformedNodeNames),
 						}),
 						createToolbarCommand({
@@ -688,7 +685,7 @@ export default function ParameterRectangleTransformComponent(
 							tooltip: cancelButton.tooltip,
 							icon: cancelButton.icon,
 							order: 20,
-							disabled: !hasPendingTransformation,
+							disabled: !hasLocalTransformation,
 							execute: resetTransformation,
 						}),
 					]
