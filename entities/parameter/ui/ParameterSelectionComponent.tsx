@@ -38,6 +38,7 @@ import {getResetValue} from "../lib/parameterResetValue";
 import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
+import {shouldSubmitSelectionChange} from "../model/interaction/shouldSubmitSelectionChange";
 import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
@@ -277,13 +278,19 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNames,
 		requestSelectionRestore,
 	});
+	// A selection action commits when the result is acceptable, including a
+	// result that does not fill the maximum. A click does not.
+	const commitActionSelectionRef = useRef(false);
 	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: selectionOwnerKey,
 		candidateNodes,
 		selectedNodeNames,
 		maximumSelection,
-		setSelectedNames: setSelectedNodeNames,
+		setSelectedNames: (names) => {
+			commitActionSelectionRef.current = true;
+			setSelectedNodeNames(names);
+		},
 		parameter: {
 			namespace,
 			id: definition.id,
@@ -446,18 +453,29 @@ export default function ParameterSelectionComponent(
 	const changeValueRef = useRef(changeValue);
 	changeValueRef.current = changeValue;
 	useEffect(() => {
-		if (skipNextAutomaticConfirmationRef.current) {
+		const fromAction = commitActionSelectionRef.current;
+		commitActionSelectionRef.current = false;
+		if (skipNextAutomaticConfirmationRef.current && !fromAction) {
 			skipNextAutomaticConfirmationRef.current = false;
 			return;
 		}
+		skipNextAutomaticConfirmationRef.current = false;
 		// A selection equal to the committed value has nothing to confirm (e.g. a
 		// committed value adopted into the selection, or a pruned selection which
 		// was committed without a computation). A cleared selection is the
 		// exception, it may legitimately submit the committed (reset) value again.
-		if (!hasPendingSelection && !clearedSinceLastConfirmationRef.current)
-			return;
-		if (acceptImmediately) changeValueRef.current(selectedNodeNames);
-	}, [acceptImmediately, selectedNodeNames]);
+		const pending =
+			hasPendingSelection || clearedSinceLastConfirmationRef.current;
+		if (
+			shouldSubmitSelectionChange({
+				fromAction,
+				acceptable,
+				acceptImmediately,
+				pending,
+			})
+		)
+			changeValueRef.current(selectedNodeNames);
+	}, [acceptImmediately, acceptable, selectedNodeNames]);
 
 	/**
 	 * Callback function to reset the selected node names.
