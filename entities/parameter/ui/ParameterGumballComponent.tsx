@@ -36,7 +36,10 @@ import {
 import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
 import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
-import {hasLocalTransformationDelta} from "../lib/transformedNodes";
+import {
+	hasLocalTransformationDelta,
+	hasSelectedLocalTransformationDelta,
+} from "../lib/transformedNodes";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useGumball} from "../model/interaction/useGumball";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
@@ -465,11 +468,18 @@ export default function ParameterGumballComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	// Automatic scene update (always active tools only): a moved handle sends
-	// the transformation like Confirm would, debounced by the timeout. The
-	// identity transformations emitted on creation of the gizmo are not sent.
+	// Automatic scene update (always active tools only): a moved handle of the
+	// selected object sends the transformation like Confirm would, debounced
+	// by the timeout. The identity matrix emitted when its gizmo is created
+	// is not sent. A local matrix left on an object that is no longer
+	// selected is a move already made, and must not be sent again when the
+	// selected gizmo is created on the updated nodes.
 	const hasLocalTransformation =
 		hasLocalTransformationDelta(transformedNodeNames);
+	const hasSelectedLocalTransformation = hasSelectedLocalTransformationDelta(
+		transformedNodeNames,
+		selectedNodeNames,
+	);
 	// A move while a request is in flight is not sent: after our own request
 	// the gizmo is recreated on the new nodes and the move is dropped; after
 	// another parameter's execution the move is sent once it ends.
@@ -480,7 +490,7 @@ export default function ParameterGumballComponent(
 			seenTransformedNodeNamesRef.current !== transformedNodeNames;
 		seenTransformedNodeNamesRef.current = transformedNodeNames;
 		if (!automaticSceneUpdate || !effectiveGumballActive) return;
-		if (!hasLocalTransformation) {
+		if (!hasSelectedLocalTransformation) {
 			movedWhileExecutingRef.current = false;
 			return;
 		}
@@ -493,7 +503,7 @@ export default function ParameterGumballComponent(
 		if (!moved && !movedWhileExecutingRef.current) return;
 		movedWhileExecutingRef.current = false;
 		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
-	}, [transformedNodeNames, executing]);
+	}, [transformedNodeNames, selectedNodeNames, executing]);
 
 	// Clear: the committed transformations are undone (the parameter is reset
 	// to its default value and executed), a pending transformation is dropped.
