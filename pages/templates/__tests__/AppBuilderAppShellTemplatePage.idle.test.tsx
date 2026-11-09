@@ -49,7 +49,7 @@ describe("AppBuilderAppShellTemplatePage hidden containers", () => {
 		).toBe("true");
 	});
 
-	it("idles navbar containers while the mobile drawer is closed", () => {
+	it("keeps the left container live while the mobile drawer is closed", () => {
 		mockMatchMedia(false);
 
 		render(
@@ -59,6 +59,40 @@ describe("AppBuilderAppShellTemplatePage hidden containers", () => {
 		);
 
 		const content = screen.getByText("container content", {hidden: true});
-		expect(content.getAttribute("data-live")).not.toBe("true");
+		expect(content.getAttribute("data-live")).toBe("true");
+	});
+
+	it("keeps the right container live when the mobile layout moves it into the closed drawer", () => {
+		// portrait below the breakpoint with keepBottomInGrid: the right
+		// container is moved into the drawer
+		mockMatchMedia(false);
+
+		render(
+			<MantineProvider>
+				<AppBuilderAppShellTemplatePage
+					keepBottomInGrid
+					bottom={{node: <div>bottom content</div>}}
+					right={{node: <LiveProbe />}}
+				/>
+			</MantineProvider>,
+		);
+
+		const content = screen.getByText("container content", {hidden: true});
+		expect(content.getAttribute("data-live")).toBe("true");
+	});
+
+	it("keeps the bottom container live when the mobile layout moves it into the closed drawer", () => {
+		mockMatchMedia(false);
+
+		render(
+			<MantineProvider>
+				<AppBuilderAppShellTemplatePage
+					bottom={{node: <LiveProbe />}}
+				/>
+			</MantineProvider>,
+		);
+
+		const content = screen.getByText("container content", {hidden: true});
+		expect(content.getAttribute("data-live")).toBe("true");
 	});
 });
