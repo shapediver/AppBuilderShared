@@ -164,7 +164,6 @@ function useParameter(name: keyof typeof PROPS) {
 		candidateNodes: state.candidateNodes,
 		selectedNodeNames: state.selectedNodeNames,
 		maximumSelection: props.maximumSelection ?? 1,
-		keptMinimumSelection: state.keptMinimumSelection,
 		setSelectedNames: state.setSelectedNodeNames,
 		parameter: {namespace: "session", id: name, name},
 	});
@@ -240,17 +239,14 @@ describe("selection action on an exclusive rectangle transform", () => {
 		expect(result.current.First).toEqual(["Boxes.box_1"]);
 	});
 
-	it("ignores a deselect below the minimum selection", () => {
+	it("deselects even when a click would keep the minimum selection", () => {
 		const {result} = renderParameters();
 		run("First", {select: ["Boxes.box_1"]});
-		const holder = exclusiveSelection.getHolder("viewport");
-		const gizmos = mockRectangleTransform.mock.calls.length;
 
 		run("First", {deselect: ["Boxes.box_1"]});
 
-		expect(result.current.First).toEqual(["Boxes.box_1"]);
-		expect(exclusiveSelection.getHolder("viewport")).toBe(holder);
-		expect(mockRectangleTransform).toHaveBeenCalledTimes(gizmos);
+		expect(result.current.First).toEqual([]);
+		expect(exclusiveSelection.getHolder("viewport")).toBeUndefined();
 	});
 
 	it("deselects to empty without a minimum selection and releases the viewport", () => {

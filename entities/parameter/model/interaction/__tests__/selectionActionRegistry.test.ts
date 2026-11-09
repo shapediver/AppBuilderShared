@@ -41,7 +41,6 @@ const createTarget = (
 	options: {
 		selected?: string[];
 		maximumSelection?: number;
-		keptMinimumSelection?: number;
 		namespace?: string;
 		ownerKey?: string;
 		root?: boolean;
@@ -65,7 +64,6 @@ const createTarget = (
 			names.map((name) => ({name, node: {name} as never})),
 		getSelectedNames: () => selected,
 		getMaximumSelection: () => options.maximumSelection ?? 1,
-		getKeptMinimumSelection: () => options.keptMinimumSelection ?? 0,
 		setSelectedNames,
 	};
 
@@ -310,24 +308,22 @@ describe("applySelectionAction", () => {
 		expect(boxes.setSelectedNames).not.toHaveBeenCalled();
 	});
 
-	it("ignores a deselect below the kept minimum, without a warning", () => {
+	it("deselects even when a click would keep the minimum, without a warning", () => {
 		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
 			selected: ["Boxes.1"],
-			keptMinimumSelection: 1,
 		});
 		registerSelectionActionTarget(boxes.target);
 
 		expect(
 			run({deselect: ["Boxes.*"], parameter: {name: "Boxes"}}),
-		).toEqual([]);
-		expect(boxes.setSelectedNames).not.toHaveBeenCalled();
+		).toEqual(["id-boxes"]);
+		expect(boxes.getSelected()).toEqual([]);
 		expect(Logger.warn).not.toHaveBeenCalled();
 	});
 
-	it("still replaces a selection at the kept minimum", () => {
+	it("still replaces a selection", () => {
 		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
 			selected: ["Boxes.1"],
-			keptMinimumSelection: 1,
 		});
 		registerSelectionActionTarget(boxes.target);
 
@@ -341,10 +337,9 @@ describe("applySelectionAction", () => {
 		expect(boxes.getSelected()).toEqual(["Boxes.2"]);
 	});
 
-	it("selects into an empty selection below the kept minimum", () => {
+	it("selects into an empty selection", () => {
 		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
 			maximumSelection: 3,
-			keptMinimumSelection: 2,
 		});
 		registerSelectionActionTarget(boxes.target);
 
