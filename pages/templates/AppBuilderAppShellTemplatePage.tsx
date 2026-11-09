@@ -19,7 +19,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {useDisclosure, useMediaQuery} from "@mantine/hooks";
-import React, {useEffect, useState, type ReactNode} from "react";
+import React, {useEffect, useState} from "react";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
@@ -121,28 +121,6 @@ export const appBuilderAppShellTemplatePageDefaultStyleProps: StyleProps = {
 
 const defaultStyleProps = appBuilderAppShellTemplatePageDefaultStyleProps;
 
-// React 19 exports `Activity`, which suspends effects while preserving state.
-// `@types/react` 18 does not declare it yet.
-const Activity = (
-	React as typeof React & {
-		Activity: (props: {
-			mode: "visible" | "hidden";
-			children?: ReactNode;
-		}) => React.ReactElement;
-	}
-).Activity;
-
-/** Off-screen shell content stays mounted, but its effects do not run. */
-function IdleWhenHidden({
-	idle,
-	children,
-}: {
-	idle: boolean;
-	children: ReactNode;
-}) {
-	return <Activity mode={idle ? "hidden" : "visible"}>{children}</Activity>;
-}
-
 type AppBuilderAppShellTemplatePageThemePropsType = Partial<StyleProps>;
 
 export function AppBuilderAppShellTemplatePageThemeProps(
@@ -240,15 +218,6 @@ export default function AppBuilderAppShellTemplatePage(
 	const hasNavbarContent =
 		hasLeft || (hasBottomContent && !showBottomInGrid) || showRightInNavbar;
 	const showHeader = hasTop || (hasNavbarContent && !aboveNavbarBreakpoint);
-	// AppShell only translates a collapsed navbar off-screen. Its widgets would
-	// stay subscribed. Idle them until the mobile drawer is actually open. On
-	// desktop the navbar content stays live: it is only collapsed while it
-	// renders nothing. A container which renders nothing never idles: it only
-	// holds components which work outside of it (e.g. interaction parameters
-	// presented in the toolbar), and an idle subtree runs no effects. A
-	// container with `containerOpen: false` is omitted earlier and is already
-	// unmounted.
-	const navbarContentLive = aboveNavbarBreakpoint || opened;
 	const bottomInNavbar = !!bottom && !showBottomInGrid;
 	const hasRight =
 		hasRightContent && !showRightAtBottom && !showRightInNavbar;
@@ -352,35 +321,34 @@ export default function AppBuilderAppShellTemplatePage(
 					className={classes.appShellMainNavbar}
 					withBorder={navbarBorder}
 				>
-					<IdleWhenHidden idle={!navbarContentLive && hasLeft}>
-						<AppBuilderContainerWrapper
-							name="left"
-							hidden={!!left?.empty}
-						>
-							{left?.node}
-						</AppBuilderContainerWrapper>
-					</IdleWhenHidden>
+					{/*
+					 * The containers in the navbar are never idled, even while
+					 * the mobile drawer is closed: on desktop they are always
+					 * shown, and they may hold components which have to work
+					 * while the drawer is closed (e.g. always active
+					 * interaction parameters).
+					 */}
+					<AppBuilderContainerWrapper
+						name="left"
+						hidden={!!left?.empty}
+					>
+						{left?.node}
+					</AppBuilderContainerWrapper>
 					{!bottomInNavbar ? undefined : (
-						<IdleWhenHidden
-							idle={!navbarContentLive && hasBottomContent}
+						<AppBuilderContainerWrapper
+							name="bottom"
+							orientation={
+								AppBuilderContainerOrientation.Vertical
+							}
+							hidden={!!bottom?.empty}
 						>
-							<AppBuilderContainerWrapper
-								name="bottom"
-								orientation={
-									AppBuilderContainerOrientation.Vertical
-								}
-								hidden={!!bottom?.empty}
-							>
-								{bottom?.node}
-							</AppBuilderContainerWrapper>
-						</IdleWhenHidden>
+							{bottom?.node}
+						</AppBuilderContainerWrapper>
 					)}
 					{!right ? undefined : !showRightInNavbar ? undefined : (
-						<IdleWhenHidden idle={!navbarContentLive}>
-							<AppBuilderContainerWrapper name="right">
-								{right.node}
-							</AppBuilderContainerWrapper>
-						</IdleWhenHidden>
+						<AppBuilderContainerWrapper name="right">
+							{right.node}
+						</AppBuilderContainerWrapper>
 					)}
 				</AppShell.Navbar>
 				<AppShell.Main
