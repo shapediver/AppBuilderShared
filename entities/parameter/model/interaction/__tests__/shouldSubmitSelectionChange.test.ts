@@ -7,22 +7,9 @@ import {
 } from "../shouldSubmitSelectionChange";
 
 describe("shouldSubmitSelectionChange", () => {
-	it("commits an action whose result the parameter accepts", () => {
+	it("leaves an acceptable action pending until the selection accepts itself", () => {
 		expect(
 			shouldSubmitSelectionChange({
-				fromAction: true,
-				acceptable: true,
-				acceptImmediately: false,
-				pending: true,
-			}),
-		).toBe(true);
-	});
-
-	it("does not commit an action the parameter would refuse", () => {
-		expect(
-			shouldSubmitSelectionChange({
-				fromAction: true,
-				acceptable: false,
 				acceptImmediately: false,
 				pending: true,
 			}),
@@ -32,35 +19,31 @@ describe("shouldSubmitSelectionChange", () => {
 	it("leaves a click pending until the selection accepts itself", () => {
 		expect(
 			shouldSubmitSelectionChange({
-				fromAction: false,
-				acceptable: true,
 				acceptImmediately: false,
 				pending: true,
 			}),
 		).toBe(false);
 	});
 
-	it("commits a click that fills the selection", () => {
+	it("commits a selection that fills the maximum", () => {
 		expect(
 			shouldSubmitSelectionChange({
-				fromAction: false,
-				acceptable: true,
 				acceptImmediately: true,
 				pending: true,
 			}),
 		).toBe(true);
 	});
 
-	it("does not register an action that is sent on this render", () => {
+	it("registers an acceptable action that waits for Confirm", () => {
 		expect(
 			registersPendingSelection({
 				hasPendingSelection: true,
 				acceptsAutomatically: false,
-				fromAction: true,
+				fromAction: false,
 				acceptable: true,
 				cleared: false,
 			}),
-		).toBe(false);
+		).toBe(true);
 	});
 
 	it("registers an action the parameter would refuse", () => {
@@ -169,8 +152,6 @@ describe("shouldSubmitSelectionChange", () => {
 	it("does not submit a selection equal to the committed value", () => {
 		expect(
 			shouldSubmitSelectionChange({
-				fromAction: true,
-				acceptable: true,
 				acceptImmediately: true,
 				pending: false,
 			}),

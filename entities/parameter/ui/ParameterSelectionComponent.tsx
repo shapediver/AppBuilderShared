@@ -284,8 +284,9 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNames,
 		requestSelectionRestore,
 	});
-	// A selection action commits when the result is acceptable, including a
-	// result that does not fill the maximum. A click does not.
+	// A selection action is sent only when the selection accepts itself, the
+	// same as a click. An acceptable result that does not fill the maximum
+	// waits for Confirm.
 	const commitActionSelectionRef = useRef(false);
 	// Set only after the value is handed to the session. The committed value
 	// can arrive a render later, and the hold covers that gap.
@@ -354,8 +355,10 @@ export default function ParameterSelectionComponent(
 		registersPendingSelection({
 			hasPendingSelection,
 			acceptsAutomatically,
+			// The action ref is true for a result that still waits for
+			// Confirm. Only a send that already happened, or one that is
+			// waiting for another draft, stays out of the pending set.
 			fromAction:
-				commitActionSelectionRef.current ||
 				actionHold.suppress ||
 				blockedActionStaysUnregistered(
 					blockedActionKeyRef.current,
@@ -506,8 +509,6 @@ export default function ParameterSelectionComponent(
 			hasPendingSelection || clearedSinceLastConfirmationRef.current;
 		if (
 			shouldSubmitSelectionChange({
-				fromAction,
-				acceptable,
 				acceptImmediately,
 				pending,
 			})
@@ -522,7 +523,6 @@ export default function ParameterSelectionComponent(
 		}
 	}, [
 		acceptImmediately,
-		acceptable,
 		blockedByOtherSelection,
 		selectedNodeNames,
 		selectionKey,
