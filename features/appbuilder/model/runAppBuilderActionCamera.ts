@@ -1,4 +1,5 @@
 import {findNodesByNameFilter} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
+import {findViewportCamera} from "@AppBuilderLib/entities/viewport/lib/cameraForScreenshot";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	IAppBuilderActionDefinition,
@@ -43,41 +44,6 @@ function isCameraType(value: unknown): value is CAMERA_TYPE {
 		typeof value === "string" &&
 		(Object.values(CAMERA_TYPE) as string[]).includes(value)
 	);
-}
-
-function findViewportCamera(
-	viewportApi: IViewportApi,
-	camera: Record<string, unknown>,
-): ICameraApi | undefined {
-	if (typeof camera.id === "string") {
-		const id = camera.id;
-		const byId = Object.entries(viewportApi.cameras).find(
-			([key, value]) => value.id === id || key === id,
-		);
-		if (byId) {
-			return byId[1];
-		}
-	}
-
-	if (typeof camera.name === "string") {
-		const name = camera.name.toLowerCase();
-		const byName = Object.entries(viewportApi.cameras).find(
-			([key, value]) => {
-				if (value.name?.toLowerCase() === name) {
-					return true;
-				}
-				if (!value.name && key.toLowerCase() === name) {
-					return true;
-				}
-				return false;
-			},
-		);
-		if (byName) {
-			return byName[1];
-		}
-	}
-
-	return undefined;
 }
 
 const cleanCameraPositionAndTarget = (
@@ -171,7 +137,7 @@ async function applyCameraAction(
 	if (props.props.camera) {
 		const camera = props.props.camera as Record<string, unknown>;
 		const skipKeys: string[] = [];
-		const existingCamera = findViewportCamera(viewportApi, camera);
+		const existingCamera = findViewportCamera(viewportApi.cameras, camera);
 
 		if (existingCamera) {
 			viewportApi.assignCamera(existingCamera.id);

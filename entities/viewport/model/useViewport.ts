@@ -10,6 +10,7 @@ import {
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ViewportCreateDto} from "../config/viewport";
+import {cameraForScreenshot} from "../lib/cameraForScreenshot";
 import {readActiveCamera} from "../lib/readActiveCamera";
 import {waitUntilReady} from "../lib/waitUntilReady";
 import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
@@ -104,12 +105,17 @@ export function useViewport(props: ViewportCreateDto) {
 					) => {
 						const {contentType, quality, resolution, camera} =
 							props || {};
+						// The viewer looks up cameras[name]. Default cameras
+						// have an id and no name, so "Front" would miss.
 						const screenshot =
 							await viewportApi.getScreenshotAdvanced(
 								contentType,
 								quality,
 								resolution,
-								camera as
+								cameraForScreenshot(
+									viewportApi.cameras,
+									camera,
+								) as
 									| OrthographicCameraProperties
 									| PerspectiveCameraProperties
 									| undefined,
