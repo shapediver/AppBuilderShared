@@ -1,6 +1,7 @@
 import {IAcceptRejectModeSelector} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useLocalComputeSaveReload} from "@AppBuilderLib/features/appbuilder/model/useLocalComputeSaveReload";
 import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
@@ -69,6 +70,7 @@ export function useSession(
 	const promiseChain = useRef(Promise.resolve());
 
 	const eventTracking = useEventTracking();
+	useLocalComputeSaveReload(props?.modelViewUrl ? [props.modelViewUrl] : []);
 
 	useEffect(() => {
 		if (!props?.id) {

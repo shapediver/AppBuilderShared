@@ -16,7 +16,6 @@ import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/ap
 import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
-import {useLocalComputeSaveReload} from "@AppBuilderLib/features/appbuilder/model/useLocalComputeSaveReload";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import AppBuilderActionArQrModal from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionArQrModal";
@@ -193,17 +192,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				instancedSessions: sessions.filter((s) => s.instance),
 			};
 		}, [settings]);
-
-	const localModelViewUrls = useMemo(() => {
-		const sessions = settings?.sessions ?? [];
-		return sessions
-			.map((session) => session.modelViewUrl)
-			.filter(
-				(url): url is string =>
-					typeof url === "string" && url.length > 0,
-			);
-	}, [settings]);
-	useLocalComputeSaveReload(localModelViewUrls);
 
 	const {
 		namespace,
