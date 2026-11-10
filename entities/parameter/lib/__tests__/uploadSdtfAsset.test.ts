@@ -4,6 +4,7 @@
 import {
 	createSdtfUploadCache,
 	formatSdtfParameterValue,
+	sdtfUploadKey,
 } from "../uploadSdtfAsset";
 
 describe("uploadSdtfAsset", () => {
@@ -55,8 +56,36 @@ describe("uploadSdtfAsset", () => {
 		expect(uploadSDTF).toHaveBeenCalledTimes(1);
 		expect(onUploadStart).toHaveBeenCalledTimes(1);
 		expect(onUploadStart.mock.calls[0][1]).toBe(
-			"session-a|https://example.test/out.sdtf",
+			sdtfUploadKey("session-a", "https://example.test/out.sdtf"),
 		);
+	});
+
+	it("keeps uploads separate when a session id contains a pipe", async () => {
+		const uploadA = jest.fn(async () => [{id: "asset-a"}]);
+		const uploadB = jest.fn(async () => [{id: "asset-b"}]);
+		globalThis.fetch = jest.fn(async () => ({
+			arrayBuffer: async () => new ArrayBuffer(4),
+		})) as unknown as typeof fetch;
+		const cache = createSdtfUploadCache();
+
+		const [idA, idB] = await Promise.all([
+			cache.uploadAsset({
+				uploadNamespace: "session|a",
+				url: "https://example.test/out.sdtf",
+				session: {uploadSDTF: uploadA},
+			}),
+			cache.uploadAsset({
+				uploadNamespace: "session",
+				url: "a|https://example.test/out.sdtf",
+				session: {uploadSDTF: uploadB},
+			}),
+		]);
+
+		expect(idA).toBe("asset-a");
+		expect(idB).toBe("asset-b");
+		expect(uploadA).toHaveBeenCalledTimes(1);
+		expect(uploadB).toHaveBeenCalledTimes(1);
+		expect(globalThis.fetch).toHaveBeenCalledTimes(2);
 	});
 
 	it("uploads once per target session for the same url", async () => {

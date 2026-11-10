@@ -51,12 +51,17 @@ export function formatSdtfParameterValue(
  * Keyed by target session and content URL so different chunks of the same
  * output share one download and one upload.
  */
+/** Collision-free key for one target session and content URL. */
+export function sdtfUploadKey(uploadNamespace: string, url: string): string {
+	return JSON.stringify([uploadNamespace, url]);
+}
+
 export function createSdtfUploadCache(): SdtfUploadCache {
 	const uploads = new Map<string, Promise<string | undefined>>();
 
 	return {
 		uploadAsset({uploadNamespace, url, session, onUploadStart}) {
-			const key = `${uploadNamespace}|${url}`;
+			const key = sdtfUploadKey(uploadNamespace, url);
 			const existing = uploads.get(key);
 			if (existing) return existing;
 
