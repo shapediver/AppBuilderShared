@@ -84,6 +84,7 @@ describe("useSelectionActionTarget", () => {
 		const setSelectedNames = jest.fn();
 		const props = createProps({
 			parameter: undefined,
+			namespace: "session",
 			setSelectedNames,
 			ownerKey: "root",
 		});
