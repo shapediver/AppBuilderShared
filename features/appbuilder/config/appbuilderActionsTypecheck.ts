@@ -168,6 +168,30 @@ const cameraSelectorSchema = z
 			camera.name !== undefined ||
 			camera.type !== undefined,
 		{message: "camera requires id, name, or type"},
+	)
+	.refine(
+		(camera) => {
+			if (camera.type === undefined) return true;
+			if (
+				"direction" in camera &&
+				camera.direction !== undefined &&
+				camera.type !== CAMERA_TYPE.ORTHOGRAPHIC
+			) {
+				return false;
+			}
+			if (
+				"fov" in camera &&
+				camera.fov !== undefined &&
+				camera.type !== CAMERA_TYPE.PERSPECTIVE
+			) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message:
+				"direction is only valid for orthographic cameras; fov is only valid for perspective cameras",
+		},
 	);
 
 export const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
