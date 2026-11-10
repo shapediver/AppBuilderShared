@@ -1,3 +1,4 @@
+import {findNamedNodesByNameFilter} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
 import {
 	enterSelectionSlotChain,
 	leaveSelectionSlotChain,
@@ -62,11 +63,19 @@ function getAllAvailableNames(availableNodeNames: {
 function getValidCachedNames(
 	cachedNames: string[] | undefined,
 	availableNodeNames: {[key: string]: {[key: string]: string[]}},
+	liveNames: readonly string[] = [],
 ) {
 	if (!cachedNames || cachedNames.length === 0) return [];
 	const availableNames = getAllAvailableNames(availableNodeNames);
+	// An empty scene is still rebuilding. A partial live match must not drop
+	// the names that are not registered yet. Once some names are available,
+	// a live match is kept as well: the node exists, and its interaction
+	// data arrives a render later.
 	if (availableNames.length === 0) return cachedNames;
-	return cachedNames.filter((name) => availableNames.includes(name));
+	const live = new Set(liveNames);
+	return cachedNames.filter(
+		(name) => availableNames.includes(name) || live.has(name),
+	);
 }
 
 function sameNameSet(a: string[], b: string[]): boolean {
@@ -269,6 +278,7 @@ function InteractionSlotGroup({
 		selectedNodeNames,
 		getSelectedNames: getSelectedNodeNames,
 		maximumSelection: selectionProps.maximumSelection ?? 1,
+		nameFilter: selectionProps.nameFilter,
 		setSelectedNames: (names) => {
 			setSelectedNodeNamesAndRestoreSelection(names);
 			if (!shouldEmitSelectionActionSlots(ownerKey)) return;
@@ -327,9 +337,16 @@ function InteractionSlotGroup({
 		const wasActive = prevProcessActiveRef.current;
 		prevProcessActiveRef.current = processActive;
 		if (!wasActive || processActive) return;
+		const liveNames = selectionProps.nameFilter?.length
+			? findNamedNodesByNameFilter(
+					[...selectionProps.nameFilter],
+					true,
+				).map(({name}) => name)
+			: [];
 		const validCachedNames = getValidCachedNames(
 			selectedNodeNamesCache[cacheKey],
 			availableNodeNames,
+			liveNames,
 		);
 		selectedNodeNamesCache[cacheKey] = validCachedNames;
 		const selectionChanged = !sameNameSet(
@@ -353,6 +370,7 @@ function InteractionSlotGroup({
 		cacheKey,
 		fireNamed,
 		processActive,
+		selectionProps,
 		setSelectedNodeNamesAndRestoreSelection,
 	]);
 

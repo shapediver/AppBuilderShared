@@ -29,8 +29,14 @@ jest.mock("../../useShapeDiverStoreParameters", () => ({
 jest.mock(
 	"@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter",
 	() => ({
-		findNamedNodesByNameFilter: (filters: string[] = []) =>
-			filters.map((name) => ({name, node: {name}})),
+		findNamedNodesByNameFilter: (
+			filters: string[] = [],
+			strictNaming?: boolean,
+		) => {
+			if (strictNaming !== true)
+				throw new Error("selection actions match names strictly");
+			return filters.map((name) => ({name, node: {name}}));
+		},
 	}),
 );
 
@@ -160,6 +166,22 @@ describe("useSelectionActionTarget", () => {
 			"Boxes.1",
 			"Boxes.2",
 		]);
+	});
+
+	it("selects a live name-filter match that is not a candidate yet", () => {
+		const setSelectedNames = jest.fn();
+		renderHook(() =>
+			useSelectionActionTarget(
+				createProps({
+					setSelectedNames,
+					candidateNodes: [],
+					nameFilter: ["Boxes.new"],
+				}),
+			),
+		);
+
+		expect(runOnParameter({select: ["Boxes.new"]})).toEqual(["boxes"]);
+		expect(setSelectedNames).toHaveBeenCalledWith(["Boxes.new"]);
 	});
 
 	it("ignores a scene node which is not a candidate", () => {
