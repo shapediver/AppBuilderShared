@@ -127,10 +127,12 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
  * With {@link parameter}, only that interaction parameter changes (selection,
  * gumball, or rectangle transform; dragging has no selection). The parameter
  * must be mounted. The change goes through its selection, the same way a user
- * selection does: `maximumSelection`, confirmation, and the logic that reacts
- * to the parameter run. If more nodes match {@link select} than
- * `maximumSelection` allows, the first matches in scene order are selected
- * and a warning is logged. The action does not fail.
+ * selection does: `maximumSelection`, `minimumSelection`, confirmation, and
+ * the logic that reacts to the parameter run. A maximum of 1 replaces the
+ * selection, like a click. A greater maximum adds matches until it is full
+ * and does not drop a node this action did not deselect. If more nodes match
+ * {@link select} than the remaining room, the first of those in scene order
+ * are selected and a warning is logged. The action does not fail.
  *
  * For an exclusive rectangle transform (`exclusive: true`), selecting a node
  * makes this parameter the selected one in the viewport and deselects the

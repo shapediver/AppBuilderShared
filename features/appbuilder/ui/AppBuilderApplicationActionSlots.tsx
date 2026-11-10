@@ -18,10 +18,6 @@ import {
 	type ComputationTaskFilter,
 	type ResolvedActionSlot,
 } from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
-import {
-	isComputationSpanOpen,
-	subscribeComputationSpan,
-} from "@AppBuilderLib/features/appbuilder/model/computationSpan";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	addListener,
@@ -125,9 +121,7 @@ function itemsNamed(
 }
 
 function runSlot(
-	handlersRef: MutableRefObject<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>,
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
 	item: ResolvedActionSlot,
 ): void {
 	handlersRef.current[actionSlotHandlerKey(item.eventName, item.index)]?.();
@@ -139,33 +133,9 @@ const COMPUTATION_LISTENERS = [
 	[EVENTTYPE_TASK.TASK_CANCEL, "computationerror", "cancel"],
 ] as const;
 
-const runComputationItems = (
-	items: ResolvedActionSlot[],
-	handlersRef: MutableRefObject<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>,
-	sessionId: string | undefined,
-	namespace: string,
-	taskFilter: ComputationTaskFilter | undefined,
-) => {
-	for (const item of items) {
-		// A parameter filter already decided. Root slots match the session.
-		if (
-			taskFilter ||
-			shouldRunComputationSlot(item.slot, sessionId, namespace)
-		)
-			runSlot(handlersRef, item);
-	}
-};
-
 /**
- * Runs `computationstart` / `computationend` / `computationerror`.
- *
- * A customization that opens a process manager (see `beginComputationSpan`)
- * runs `computationstart` when that span opens, before TASK_START, and
- * `computationend` when the last process manager of the span is gone, after
- * TASK_END. The task events still update a parameter filter. A customization
- * with no span keeps the task events as the slot timing.
+ * Runs `computationstart`/`end`/`error` on TASK_START/END/CANCEL of
+ * SESSION_CUSTOMIZATION. Used by the root and by parameter controls.
  *
  * - Without `taskFilter` (root): a slot runs for the session of its
  *   `eventProps` (default `namespace`). `computationerror` needs status
@@ -173,66 +143,14 @@ const runComputationItems = (
  *   different status).
  * - With `taskFilter` (parameter control): the filter decides. It sees every
  *   task event while the node has any computation slot, so it can track the
- *   tasks it started. `sessionId` is that parameter's session.
+ *   tasks it started.
  */
 export function useComputationSlotListeners(
 	resolved: ResolvedActionSlot[],
-	handlersRef: MutableRefObject<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>,
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
 	namespace: string,
 	taskFilter?: ComputationTaskFilter,
-	sessionId: string = namespace,
 ): void {
-	// One entry per session. A root listener serves every session its slots
-	// name, and two sessions can be in flight together.
-	const spanStateRef = useRef(
-		new Map<string, {ranStart: boolean; sawEnd: boolean}>(),
-	);
-
-	useEffect(() => {
-		return subscribeComputationSpan((event) => {
-			if (taskFilter && event.sessionId !== sessionId) return;
-			if (event.type === "start") {
-				const state = {ranStart: false, sawEnd: false};
-				spanStateRef.current.set(event.sessionId, state);
-				if (taskFilter && !taskFilter.matchesCurrentChange()) return;
-				const matching = itemsNamed(
-					resolved,
-					"computationstart",
-				).filter(
-					(item) =>
-						taskFilter ||
-						shouldRunComputationSlot(
-							item.slot,
-							event.sessionId,
-							namespace,
-						),
-				);
-				if (matching.length === 0) return;
-				state.ranStart = true;
-				runComputationItems(
-					matching,
-					handlersRef,
-					event.sessionId,
-					namespace,
-					taskFilter,
-				);
-				return;
-			}
-			const state = spanStateRef.current.get(event.sessionId);
-			spanStateRef.current.delete(event.sessionId);
-			if (!state?.sawEnd) return;
-			runComputationItems(
-				itemsNamed(resolved, "computationend"),
-				handlersRef,
-				event.sessionId,
-				namespace,
-				taskFilter,
-			);
-		});
-	}, [handlersRef, namespace, resolved, sessionId, taskFilter]);
-
 	useEffect(() => {
 		const hasAny = COMPUTATION_LISTENERS.some(
 			([, eventName]) => itemsNamed(resolved, eventName).length > 0,
@@ -246,85 +164,36 @@ export function useComputationSlotListeners(
 					const taskEvent = event as ITaskEvent;
 					if (taskEvent.type !== TASK_TYPE.SESSION_CUSTOMIZATION)
 						return;
-					const taskSessionId = getTaskSessionId(taskEvent);
 					if (taskFilter) {
 						if (!taskFilter[filterKey](taskEvent)) return;
-					} else if (
+						for (const item of items) runSlot(handlersRef, item);
+						return;
+					}
+					if (
 						eventName === "computationerror" &&
 						!isSessionCustomizationFailedTask(taskEvent)
 					) {
 						return;
-					} else if (
-						eventName !== "computationerror" &&
-						!items.some((item) =>
+					}
+					const sessionId = getTaskSessionId(taskEvent);
+					for (const item of items) {
+						if (
 							shouldRunComputationSlot(
 								item.slot,
-								taskSessionId,
+								sessionId,
 								namespace,
-							),
-						)
-					) {
-						return;
-					}
-					const trackedSessionId = taskSessionId ?? sessionId;
-					if (eventName === "computationerror") {
-						// The executor marks the span failed for the customize
-						// that threw. Clearing the listener state here would
-						// also drop a computationend the span already earned
-						// when a newer customize has joined.
-						runComputationItems(
-							items,
-							handlersRef,
-							taskSessionId,
-							namespace,
-							taskFilter,
-						);
-						return;
-					}
-					const spanOpen = isComputationSpanOpen(trackedSessionId);
-					if (eventName === "computationstart") {
-						const state =
-							spanStateRef.current.get(trackedSessionId);
-						if (spanOpen && state?.ranStart) return;
-						if (spanOpen) {
-							const next = state ?? {
-								ranStart: false,
-								sawEnd: false,
-							};
-							next.ranStart = true;
-							spanStateRef.current.set(trackedSessionId, next);
+							)
+						) {
+							runSlot(handlersRef, item);
 						}
-						runComputationItems(
-							items,
-							handlersRef,
-							taskSessionId,
-							namespace,
-							taskFilter,
-						);
-						return;
 					}
-					if (spanOpen) {
-						const next = spanStateRef.current.get(
-							trackedSessionId,
-						) ?? {ranStart: false, sawEnd: false};
-						next.sawEnd = true;
-						spanStateRef.current.set(trackedSessionId, next);
-						return;
-					}
-					runComputationItems(
-						items,
-						handlersRef,
-						taskSessionId,
-						namespace,
-						taskFilter,
-					);
 				}),
 			);
 		}
 		return () => {
 			tokens.forEach((token) => removeListener(token));
 		};
-	}, [handlersRef, namespace, resolved, sessionId, taskFilter]);
+	}, [handlersRef, namespace, resolved, taskFilter]);
 }
 
 /** One runner per resolved slot; its trigger is written into `handlersRef`. */
@@ -337,9 +206,7 @@ function ActionSlotRunners({
 	registerCustomGlobally,
 }: {
 	resolved: ResolvedActionSlot[];
-	handlersRef: MutableRefObject<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>;
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
 	namespace: string;
 	viewportId: string;
 	fullscreenId?: string;
@@ -359,7 +226,9 @@ function ActionSlotRunners({
 					registerTrigger={(trigger) => {
 						handlersRef.current[
 							actionSlotHandlerKey(eventName, index)
-						] = () => trigger();
+						] = () => {
+							void trigger();
+						};
 					}}
 				/>
 			))}
@@ -390,9 +259,7 @@ function ApplicationSlotListeners({
 	namespace: string;
 	viewportId: string;
 	hasViewport: boolean;
-	handlersRef: MutableRefObject<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>;
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
 }) {
 	const appreadyFiredForNamespace = useRef<string | undefined>(undefined);
 
@@ -481,9 +348,7 @@ export default function AppBuilderApplicationActionSlots({
 	const {viewportComponent, interactionSlotListeners} =
 		useContext(ComponentContext);
 	const InteractionSlotListeners = interactionSlotListeners?.component;
-	const handlersRef = useRef<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>({});
+	const handlersRef = useRef<Record<string, (() => void) | undefined>>({});
 	const resolved = useMemo(
 		() =>
 			pickAllowedActionSlots(
@@ -562,9 +427,7 @@ export function AppBuilderParameterComputationSlots({
 	parameterId: string;
 }) {
 	const {viewportId} = useViewportId();
-	const handlersRef = useRef<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>({});
+	const handlersRef = useRef<Record<string, (() => void) | undefined>>({});
 	const resolved = useMemo(
 		() =>
 			pickAllowedActionSlots(
@@ -595,13 +458,7 @@ export function AppBuilderParameterComputationSlots({
 		);
 	}, [actionSlots]);
 
-	useComputationSlotListeners(
-		resolved,
-		handlersRef,
-		namespace,
-		taskFilter,
-		sessionId,
-	);
+	useComputationSlotListeners(resolved, handlersRef, namespace, taskFilter);
 
 	return (
 		<ActionSlotRunners

@@ -319,12 +319,6 @@ export interface ComputationTaskFilter {
 	end(event: ComputationTaskEvent): boolean;
 	cancel(event: ComputationTaskEvent): boolean;
 	/**
-	 * Whether the parameter's current value differs from the last computed
-	 * one. A computation span opens before TASK_START, after the executor has
-	 * set the value, and uses this so `computationstart` can run then.
-	 */
-	matchesCurrentChange(): boolean;
-	/**
 	 * Listen for commits. Call again after {@link dispose}: React runs the
 	 * effect cleanup and then the effect once more, and the filter object
 	 * stays the one created in `useMemo`.
@@ -417,9 +411,6 @@ export function createParameterComputationTaskFilter(
 		cancel(event) {
 			if (!tasks.delete(event.id)) return false;
 			return isSessionCustomizationFailedTask(event);
-		},
-		matchesCurrentChange() {
-			return getValue() !== lastComputedValue;
 		},
 		listen() {
 			ensureListening();

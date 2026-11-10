@@ -4,8 +4,6 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	applySelectionAction,
-	enterSelectionSlotChain,
-	leaveSelectionSlotChain,
 	registerSelectionActionTarget,
 	resetSelectionActionTargets,
 	setSelectionActionNameFinder,
@@ -41,6 +39,7 @@ const createTarget = (
 	options: {
 		selected?: string[];
 		maximumSelection?: number;
+		minimumSelection?: number;
 		namespace?: string;
 		ownerKey?: string;
 		root?: boolean;
@@ -65,6 +64,7 @@ const createTarget = (
 			names.map((name) => ({name, node: {name} as never})),
 		getSelectedNames: () => selected,
 		getMaximumSelection: () => options.maximumSelection ?? 1,
+		getMinimumSelection: () => options.minimumSelection ?? 0,
 		getNameFilter: () => options.nameFilter ?? [],
 		setSelectedNames,
 	};
@@ -164,7 +164,7 @@ describe("applySelectionAction", () => {
 		});
 		const slotRuns: boolean[] = [];
 		boxes.setSelectedNames.mockImplementation((names: string[]) => {
-			slotRuns.push(shouldEmitSelectionActionSlots("boxes"));
+			slotRuns.push(shouldEmitSelectionActionSlots());
 			if (names[0] === "Boxes.1") {
 				applySelectionAction(
 					{select: ["Boxes.2"]},
@@ -180,63 +180,23 @@ describe("applySelectionAction", () => {
 		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);
 	});
 
-	it("does not run slots for a selection made after the slot handler awaits", () => {
+	it("runs slots again for a later selection action", () => {
 		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
 			root: true,
 			ownerKey: "boxes",
 		});
 		const slotRuns: boolean[] = [];
-		let selectAfterAwait: (() => void) | undefined;
-		boxes.setSelectedNames.mockImplementation((names: string[]) => {
-			slotRuns.push(shouldEmitSelectionActionSlots("boxes"));
-			if (names[0] !== "Boxes.1") return;
-			enterSelectionSlotChain("boxes");
-			selectAfterAwait = () => {
-				applySelectionAction(
-					{select: ["Boxes.2"]},
-					{namespace: "session"},
-				);
-				leaveSelectionSlotChain("boxes");
-			};
+		boxes.setSelectedNames.mockImplementation(() => {
+			slotRuns.push(shouldEmitSelectionActionSlots());
 		});
 		registerSelectionActionTarget(boxes.target);
-
-		run({select: ["Boxes.1"]});
-		selectAfterAwait?.();
-
-		expect(slotRuns).toEqual([true, false]);
-		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);
-	});
-
-	it("still runs another group's slots while one handler is awaiting", () => {
-		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
-			root: true,
-			ownerKey: "boxes",
-		});
-		const other = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
-			root: true,
-			ownerKey: "other",
-		});
-		const slotRuns: {boxes: boolean[]; other: boolean[]} = {
-			boxes: [],
-			other: [],
-		};
-		boxes.setSelectedNames.mockImplementation((names: string[]) => {
-			slotRuns.boxes.push(shouldEmitSelectionActionSlots("boxes"));
-			if (names[0] === "Boxes.1") enterSelectionSlotChain("boxes");
-		});
-		other.setSelectedNames.mockImplementation(() => {
-			slotRuns.other.push(shouldEmitSelectionActionSlots("other"));
-		});
-		registerSelectionActionTarget(boxes.target);
-		registerSelectionActionTarget(other.target);
 
 		run({select: ["Boxes.1"]});
 		run({select: ["Boxes.2"]});
-		leaveSelectionSlotChain("boxes");
 
-		expect(slotRuns.boxes).toEqual([true, false]);
-		expect(slotRuns.other).toEqual([true, true]);
+		expect(slotRuns).toEqual([true, true]);
+		expect(boxes.setSelectedNames).toHaveBeenNthCalledWith(1, ["Boxes.1"]);
+		expect(boxes.setSelectedNames).toHaveBeenNthCalledWith(2, ["Boxes.2"]);
 	});
 
 	it("limits the action to the requested parameter and leaves the root selection", () => {
@@ -333,17 +293,35 @@ describe("applySelectionAction", () => {
 		expect(boxes.setSelectedNames).not.toHaveBeenCalled();
 	});
 
-	it("deselects even when a click would keep the minimum, without a warning", () => {
+	it("ignores a deselect that would drop below the minimum a click keeps", () => {
 		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
 			selected: ["Boxes.1"],
+			minimumSelection: 1,
 		});
 		registerSelectionActionTarget(boxes.target);
 
 		expect(
 			run({deselect: ["Boxes.*"], parameter: {name: "Boxes"}}),
-		).toEqual(["id-boxes"]);
-		expect(boxes.getSelected()).toEqual([]);
+		).toEqual([]);
+		expect(boxes.getSelected()).toEqual(["Boxes.1"]);
+		expect(boxes.setSelectedNames).not.toHaveBeenCalled();
 		expect(Logger.warn).not.toHaveBeenCalled();
+	});
+
+	it("does not drop a selected node to make room for another", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2", "Boxes.3"], {
+			selected: ["Boxes.1", "Boxes.2"],
+			maximumSelection: 2,
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		expect(run({select: ["Boxes.3"], parameter: {name: "Boxes"}})).toEqual(
+			[],
+		);
+		expect(boxes.getSelected()).toEqual(["Boxes.1", "Boxes.2"]);
+		expect(Logger.warn).toHaveBeenCalledWith(
+			expect.stringContaining('parameter "Boxes"'),
+		);
 	});
 
 	it("still replaces a selection", () => {

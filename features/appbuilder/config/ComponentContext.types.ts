@@ -210,9 +210,7 @@ export type AppBuilderInteractionSlotListenersProps = {
 	}>;
 	namespace: string;
 	viewportId: string;
-	handlersRef: MutableRefObject<
-		Record<string, (() => void | Promise<void>) | undefined>
-	>;
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
 };
 
 export interface InteractionSlotListenersMapValueType {

@@ -23,6 +23,11 @@ type SelectionActionTarget = {
 	getCandidates: () => readonly NamedNode[];
 	getSelectedNames: () => readonly string[];
 	getMaximumSelection: () => number;
+	/**
+	 * A deselection which would drop a non-empty selection below this number
+	 * is refused, the same as a click. 0 when a click may clear the selection.
+	 */
+	getMinimumSelection: () => number;
 	setSelectedNames: (names: string[]) => void;
 	/**
 	 * Name filter of the selection group. When it is non-empty, the nodes it
@@ -49,42 +54,15 @@ export type SelectionActionContext = {
 const targets = new Map<string, SelectionActionTarget>();
 
 /**
- * How many selection actions are on the stack. The outermost action runs
- * `selecton` / `selectoff`. A selection action started by those slots still
- * changes the selection, and does not run the slots again. Two slots that
- * select different nodes would otherwise call each other until the page stops.
+ * How many selection actions are on the stack. The action that is applying
+ * runs `selecton` / `selectoff`. A selection action started by those slots
+ * still changes the selection, and does not run the slots again.
  */
 let selectionActionDepth = 0;
 
-/**
- * `selecton` / `selectoff` handlers still running, per selection group.
- * A sequential `executeActions` awaits between steps, so the depth above is
- * already 0 when a later step selects again. Only that group's slots stay
- * quiet. Another App Builder, or another group in the same one, still runs.
- */
-const selectionSlotChains = new Map<string, number>();
-
-/** Whether this group's selection change should run its slots. */
-export function shouldEmitSelectionActionSlots(ownerKey: string): boolean {
-	return (
-		selectionActionDepth <= 1 &&
-		(selectionSlotChains.get(ownerKey) ?? 0) === 0
-	);
-}
-
-/** A selection slot handler started. Pair with {@link leaveSelectionSlotChain}. */
-export function enterSelectionSlotChain(ownerKey: string): void {
-	selectionSlotChains.set(
-		ownerKey,
-		(selectionSlotChains.get(ownerKey) ?? 0) + 1,
-	);
-}
-
-/** The selection slot handler settled, including its awaited actions. */
-export function leaveSelectionSlotChain(ownerKey: string): void {
-	const next = (selectionSlotChains.get(ownerKey) ?? 0) - 1;
-	if (next <= 0) selectionSlotChains.delete(ownerKey);
-	else selectionSlotChains.set(ownerKey, next);
+/** Whether the selection change of the action that is applying should run slots. */
+export function shouldEmitSelectionActionSlots(): boolean {
+	return selectionActionDepth <= 1;
 }
 
 type NameFinder = (nameFilter: readonly string[]) => readonly string[];
@@ -118,7 +96,6 @@ export const registerSelectionActionTarget = (
 export const resetSelectionActionTargets = () => {
 	targets.clear();
 	selectionActionDepth = 0;
-	selectionSlotChains.clear();
 };
 
 const uniqueNames = (names: readonly string[]): string[] => {
@@ -182,8 +159,8 @@ const resolveRequestedParameter = (
  * whose candidates match change. Groups of another mounted root are left
  * alone. With `parameter`, only that mounted interaction parameter changes.
  * A node targeted by both lists is selected. A result equal to the current
- * selection is not applied. An explicit deselect may clear a selection that
- * a click would keep (the minimum applies to the select manager only).
+ * selection is not applied. A deselect that would drop a non-empty selection
+ * below the minimum a click keeps is not applied.
  *
  * @returns The ids of the parameters (or the owner keys of the root groups)
  * whose selection was changed.
@@ -250,6 +227,7 @@ function applySelectionActionOnce(
 			new Set(matchingNames(allowed, select)),
 			new Set(matchingNames(allowed, deselect)),
 			maximumSelection,
+			target.getMinimumSelection(),
 		);
 		if (result.exceededBy > 0) {
 			const where = target.parameter

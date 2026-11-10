@@ -8,6 +8,7 @@ const resolve = (options: {
 	selectMatches?: ReadonlySet<string>;
 	deselectMatches?: ReadonlySet<string>;
 	maximumSelection?: number;
+	minimumSelection?: number;
 }) =>
 	resolveSelectionActionChange(
 		options.candidateNames ?? candidateNames,
@@ -15,6 +16,7 @@ const resolve = (options: {
 		options.selectMatches ?? new Set<string>(),
 		options.deselectMatches ?? new Set<string>(),
 		options.maximumSelection ?? Infinity,
+		options.minimumSelection ?? 0,
 	);
 
 describe("resolveSelectionActionChange", () => {
@@ -100,15 +102,49 @@ describe("resolveSelectionActionChange", () => {
 		expect(result.exceededBy).toBe(1);
 	});
 
-	it("drops selected nodes which do not fit next to the new ones", () => {
+	it("does not drop a selected node to make room for another", () => {
 		const result = resolve({
 			selectedNames: ["Box.1", "Box.2"],
 			selectMatches: new Set(["Box.4"]),
 			maximumSelection: 2,
 		});
 
-		expect(result.names).toEqual(["Box.1", "Box.4"]);
-		expect(result.exceededBy).toBe(0);
+		expect(result.names).toEqual(["Box.1", "Box.2"]);
+		expect(result.changed).toBe(false);
+		expect(result.exceededBy).toBe(1);
+	});
+
+	it("fills the remaining room with the first matches in scene order", () => {
+		const result = resolve({
+			selectedNames: ["Box.4"],
+			selectMatches: new Set(["Box.1", "Box.2", "Box.3"]),
+			maximumSelection: 2,
+		});
+
+		expect(result.names).toEqual(["Box.4", "Box.1"]);
+		expect(result.exceededBy).toBe(2);
+	});
+
+	it("ignores a deselect that would drop below the minimum", () => {
+		const kept = resolve({
+			selectedNames: ["Box.1"],
+			deselectMatches: new Set(["Box.1"]),
+			maximumSelection: 1,
+			minimumSelection: 1,
+		});
+
+		expect(kept.changed).toBe(false);
+		expect(kept.names).toEqual(["Box.1"]);
+
+		const partial = resolve({
+			selectedNames: ["Box.1", "Box.2", "Box.3"],
+			deselectMatches: new Set(["Box.1", "Box.2"]),
+			maximumSelection: 3,
+			minimumSelection: 2,
+		});
+
+		expect(partial.names).toEqual(["Box.2", "Box.3"]);
+		expect(partial.changed).toBe(true);
 	});
 
 	it("ignores matches which are not candidates", () => {

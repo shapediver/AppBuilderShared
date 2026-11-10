@@ -29,44 +29,8 @@ type SourceEntry = {
  * @param source The parameter value source
  * @returns
  */
-const createSourceKey = (
-	source: IAppBuilderParameterValueSourceDefinition,
-	namespace?: string,
-) => `${namespace ?? ""}|${source.type + ""}|${JSON.stringify(source.props)}`;
-
-/** Namespaces for which a source object is on the stack or already flattened. */
-type SourceVisits = WeakMap<
-	IAppBuilderParameterValueSourceDefinition,
-	Set<string>
->;
-
-const visitNamespace = (namespace?: string) => namespace ?? "";
-
-const hasSourceVisit = (
-	visits: SourceVisits,
-	source: IAppBuilderParameterValueSourceDefinition,
-	namespace?: string,
-) => visits.get(source)?.has(visitNamespace(namespace)) ?? false;
-
-const addSourceVisit = (
-	visits: SourceVisits,
-	source: IAppBuilderParameterValueSourceDefinition,
-	namespace?: string,
-) => {
-	let namespaces = visits.get(source);
-	if (!namespaces) {
-		namespaces = new Set();
-		visits.set(source, namespaces);
-	}
-	namespaces.add(visitNamespace(namespace));
-};
-
-const removeSourceVisit = (
-	visits: SourceVisits,
-	source: IAppBuilderParameterValueSourceDefinition,
-	namespace?: string,
-) => {
-	visits.get(source)?.delete(visitNamespace(namespace));
+const createSourceKey = (source: IAppBuilderParameterValueSourceDefinition) => {
+	return `${source.type + ""}|${JSON.stringify(source.props)}`;
 };
 
 /**
@@ -82,8 +46,8 @@ const removeSourceVisit = (
 const addSourceToFlatMap = (
 	parameterInfo: ParameterValueDefinition,
 	map: Map<string, SourceEntry>,
-	resolving: SourceVisits,
-	resolved: SourceVisits,
+	resolving: WeakSet<IAppBuilderParameterValueSourceDefinition>,
+	resolved: WeakSet<IAppBuilderParameterValueSourceDefinition>,
 ) => {
 	const {id, value, namespace} = parameterInfo;
 
@@ -96,16 +60,16 @@ const addSourceToFlatMap = (
 
 	// cycle detection
 	// The source is already being resolved higher up in the call stack
-	if (hasSourceVisit(resolving, value, namespace)) {
+	if (resolving.has(value)) {
 		Logger.warn(
 			`Cycle detected while flattening Parameter Value Sources. Source with id '${id}' is already being resolved higher up in the call stack.`,
 		);
 		return;
 	}
-	// already resolved for this namespace
-	if (hasSourceVisit(resolved, value, namespace)) return;
+	// already resolved
+	if (resolved.has(value)) return;
 
-	addSourceVisit(resolving, value, namespace);
+	resolving.add(value);
 
 	// check for nested sources, currently only Export sources can have nested sources
 	const nested = isExportSource(value) && value.props.parameterValues;
@@ -129,7 +93,7 @@ const addSourceToFlatMap = (
 				isParameterSource(child)
 			) {
 				// track this nested source
-				const childSourceKey = createSourceKey(child, nestedNamespace);
+				const childSourceKey = createSourceKey(child);
 				nestedSourceKeys.set(childKey, childSourceKey);
 			}
 
@@ -143,7 +107,7 @@ const addSourceToFlatMap = (
 	}
 
 	// add to map if not already present
-	const key = createSourceKey(value, namespace);
+	const key = createSourceKey(value);
 	if (!map.has(key)) {
 		map.set(key, {
 			index: map.size,
@@ -155,9 +119,9 @@ const addSourceToFlatMap = (
 		});
 	}
 
-	// mark as resolved for this namespace
-	removeSourceVisit(resolving, value, namespace);
-	addSourceVisit(resolved, value, namespace);
+	// mark as resolved
+	resolving.delete(value);
+	resolved.add(value);
 };
 
 /**
@@ -172,8 +136,8 @@ const flattenSources = (
 	const map: Map<string, SourceEntry> = new Map();
 
 	// sets for cycle detection
-	const resolving: SourceVisits = new WeakMap();
-	const resolved: SourceVisits = new WeakMap();
+	const resolving = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
+	const resolved = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
 
 	if (parameterValues) {
 		for (const param of parameterValues) {
@@ -246,7 +210,7 @@ export function useResolveParameterValues(props?: {
 				)
 					return undefined;
 
-				const entry = flat.get(createSourceKey(value, param.namespace));
+				const entry = flat.get(createSourceKey(value));
 				if (!entry) {
 					Logger.warn(
 						`Top-level parameter value source not found in flattened map for parameter ${id}.`,
@@ -455,7 +419,7 @@ export function useResolveParameterValues(props?: {
 
 		for (const pending of resolutionState.pendingSources) {
 			const entry = flatArray[pending.entryIndex];
-			const key = createSourceKey(entry.source, entry.namespace);
+			const key = createSourceKey(entry.source);
 			newResolvedMap.set(key, undefined);
 		}
 
@@ -485,7 +449,7 @@ export function useResolveParameterValues(props?: {
 		for (let i = 0; i < currentPassSources.length; i++) {
 			const source = currentPassSources[i];
 			const entry = flatArray[source.entryIndex];
-			const key = createSourceKey(entry.source, entry.namespace);
+			const key = createSourceKey(entry.source);
 			newResolvedMap.set(key, currentPassResolved[i]);
 
 			// Remove from pending
@@ -524,7 +488,7 @@ export function useResolveParameterValues(props?: {
 		const result: unknown[] = [];
 
 		for (const entry of flatArray) {
-			const key = createSourceKey(entry.source, entry.namespace);
+			const key = createSourceKey(entry.source);
 			const resolved = resolutionState.resolvedMap.get(key);
 			result.push(resolved);
 		}

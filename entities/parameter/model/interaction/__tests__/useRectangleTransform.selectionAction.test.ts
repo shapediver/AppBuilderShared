@@ -164,6 +164,7 @@ function useParameter(name: keyof typeof PROPS) {
 		candidateNodes: state.candidateNodes,
 		selectedNodeNames: state.selectedNodeNames,
 		maximumSelection: props.maximumSelection ?? 1,
+		minimumSelection: state.keptMinimumSelection,
 		setSelectedNames: state.setSelectedNodeNames,
 		parameter: {namespace: "session", id: name, name},
 	});
@@ -239,14 +240,15 @@ describe("selection action on an exclusive rectangle transform", () => {
 		expect(result.current.First).toEqual(["Boxes.box_1"]);
 	});
 
-	it("deselects even when a click would keep the minimum selection", () => {
+	it("keeps a selection a click would not drop below the minimum", () => {
 		const {result} = renderParameters();
 		run("First", {select: ["Boxes.box_1"]});
 
 		run("First", {deselect: ["Boxes.box_1"]});
 
-		expect(result.current.First).toEqual([]);
-		expect(exclusiveSelection.getHolder("viewport")).toBeUndefined();
+		expect(result.current.First).toEqual(["Boxes.box_1"]);
+		expect(exclusiveSelection.getHolder("viewport")).toBeDefined();
+		expect(lastGizmoNodes()).toEqual([sceneNode("Boxes.box_1")]);
 	});
 
 	it("deselects to empty without a minimum selection and releases the viewport", () => {

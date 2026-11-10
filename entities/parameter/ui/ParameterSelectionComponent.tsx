@@ -38,13 +38,6 @@ import {getResetValue} from "../lib/parameterResetValue";
 import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
-import {
-	blockedActionStaysUnregistered,
-	nextActionPendingHold,
-	registersPendingSelection,
-	shouldRetryBlockedAction,
-	shouldSubmitSelectionChange,
-} from "../model/interaction/shouldSubmitSelectionChange";
 import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
@@ -284,15 +277,10 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNames,
 		requestSelectionRestore,
 	});
-	// A selection action is sent only when the selection accepts itself, the
-	// same as a click. An acceptable result that does not fill the maximum
-	// waits for Confirm.
+	// An action sets the selected names the way a click does. The effect below
+	// submits when the selection accepts itself. That change must not be
+	// swallowed by skipNextAutomaticConfirmationRef.
 	const commitActionSelectionRef = useRef(false);
-	// Set only after the value is handed to the session. The committed value
-	// can arrive a render later, and the hold covers that gap.
-	const submittedActionKeyRef = useRef<string | null>(null);
-	// An action whose send was skipped because another draft is waiting.
-	const blockedActionKeyRef = useRef<string | null>(null);
 	// Used only when a selection action names this parameter.
 	useSelectionActionTarget({
 		ownerKey: selectionOwnerKey,
@@ -335,39 +323,10 @@ export default function ParameterSelectionComponent(
 	// Only a draft which needs a confirmation is registered as pending: a draft
 	// which is accepted automatically is committed right away, it must not
 	// switch the other selection parameters to confirmation mode meanwhile.
-	const selectionKey = JSON.stringify(selectedNodeNames);
-	const actionHold = nextActionPendingHold(submittedActionKeyRef.current, {
-		hasPendingSelection,
-		selectionKey,
-	});
-	submittedActionKeyRef.current = actionHold.heldKey;
-	// Another draft already waiting means this action cannot be sent yet.
-	// It stays out of the pending set so that draft can still be confirmed,
-	// and the retry below sends this one once that happens.
-	const blockedByOtherSelection =
-		alwaysActive &&
-		hasOtherPendingSelectionInScope(
-			selectionOwnerKey,
-			`${namespace}-${viewportId}`,
-		);
 	const hasOtherPendingSelection = usePendingSelectionRegistry(
 		selectionOwnerKey,
 		`${namespace}-${viewportId}`,
-		registersPendingSelection({
-			hasPendingSelection,
-			acceptsAutomatically,
-			// The action ref is true for a result that still waits for
-			// Confirm. Only a send that already happened, or one that is
-			// waiting for another draft, stays out of the pending set.
-			fromAction:
-				actionHold.suppress ||
-				blockedActionStaysUnregistered(
-					blockedActionKeyRef.current,
-					selectionKey,
-				),
-			acceptable,
-			cleared: clearedSinceLastConfirmationRef.current,
-		}),
+		hasPendingSelection && !acceptsAutomatically,
 	);
 	// Keep the established automatic behavior unless another selection parameter
 	// has an outstanding pending selection. A committed batch is not pending
@@ -506,48 +465,10 @@ export default function ParameterSelectionComponent(
 		// committed value adopted into the selection, or a pruned selection which
 		// was committed without a computation). A cleared selection is the
 		// exception, it may legitimately submit the committed (reset) value again.
-		const pending =
-			hasPendingSelection || clearedSinceLastConfirmationRef.current;
-		if (
-			shouldSubmitSelectionChange({
-				acceptImmediately,
-				pending,
-			})
-		) {
-			if (blockedByOtherSelection) {
-				if (fromAction) blockedActionKeyRef.current = selectionKey;
-				return;
-			}
-			blockedActionKeyRef.current = null;
-			if (fromAction) submittedActionKeyRef.current = selectionKey;
-			changeValueRef.current(selectedNodeNames);
-		}
-	}, [
-		acceptImmediately,
-		blockedByOtherSelection,
-		selectedNodeNames,
-		selectionKey,
-	]);
-	// The skipped action is sent once the other draft is confirmed or cancelled.
-	useEffect(() => {
-		if (
-			!shouldRetryBlockedAction({
-				blockedKey: blockedActionKeyRef.current,
-				selectionKey,
-				otherPending: hasOtherPendingSelection,
-			})
-		) {
-			if (
-				blockedActionKeyRef.current &&
-				blockedActionKeyRef.current !== selectionKey
-			)
-				blockedActionKeyRef.current = null;
+		if (!hasPendingSelection && !clearedSinceLastConfirmationRef.current)
 			return;
-		}
-		blockedActionKeyRef.current = null;
-		submittedActionKeyRef.current = selectionKey;
-		changeValueRef.current(selectedNodeNames);
-	}, [hasOtherPendingSelection, selectedNodeNames, selectionKey]);
+		if (acceptImmediately) changeValueRef.current(selectedNodeNames);
+	}, [acceptImmediately, hasPendingSelection, selectedNodeNames]);
 
 	/**
 	 * Callback function to reset the selected node names.
