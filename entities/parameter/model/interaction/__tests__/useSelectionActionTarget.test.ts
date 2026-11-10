@@ -162,6 +162,22 @@ describe("useSelectionActionTarget", () => {
 		]);
 	});
 
+	it("selects a live name-filter match that is not a candidate yet", () => {
+		const setSelectedNames = jest.fn();
+		renderHook(() =>
+			useSelectionActionTarget(
+				createProps({
+					setSelectedNames,
+					candidateNodes: [],
+					nameFilter: ["Boxes.new"],
+				}),
+			),
+		);
+
+		expect(runOnParameter({select: ["Boxes.new"]})).toEqual(["boxes"]);
+		expect(setSelectedNames).toHaveBeenCalledWith(["Boxes.new"]);
+	});
+
 	it("ignores a scene node which is not a candidate", () => {
 		const setSelectedNames = jest.fn();
 		renderHook(() =>
