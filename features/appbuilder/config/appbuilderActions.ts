@@ -438,11 +438,23 @@ export type IAppBuilderActionPropsImportModelState = object;
 export type IAppBuilderLegacyActionPropsImportModelState =
 	IAppBuilderActionPropsImportModelState & IAppBuilderActionPropsCommon;
 
+/**
+ * Camera values for a camera action. Each field is checked against the type of the
+ * camera it is applied to.
+ */
+export type IAppBuilderPropsCameraValues =
+	| (Partial<OrthographicCameraProperties> & {
+			/** Not used for orthographic cameras. */
+			fov?: never;
+	  })
+	| (Partial<PerspectiveCameraProperties> & {
+			/** Not used for perspective cameras. */
+			direction?: never;
+	  });
+
 type IAppBuilderPropsCameraCommon = {
 	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
-	camera?:
-		| Partial<OrthographicCameraProperties>
-		| Partial<PerspectiveCameraProperties>;
+	camera?: IAppBuilderPropsCameraValues;
 	/** Camera properties, including duration and easing. */
 	options?: ICameraOptions;
 };

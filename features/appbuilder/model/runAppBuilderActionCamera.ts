@@ -172,16 +172,18 @@ async function applyCameraAction(
 		}
 
 		if (newCamera) {
+			const resolvedCamera = newCamera;
 			if (camera.position || camera.target) {
 				const {position, target} = cleanCameraPositionAndTarget(
-					newCamera,
+					resolvedCamera,
 					toVec3(camera.position as ArrayLike<number> | undefined),
 					toVec3(camera.target as ArrayLike<number> | undefined),
 				);
-				newCamera.position = position;
-				newCamera.target = target;
+				resolvedCamera.position = position;
+				resolvedCamera.target = target;
 			}
 
+			const cameraLabel = resolvedCamera.name ?? resolvedCamera.id;
 			Object.keys(camera).forEach((key) => {
 				if (
 					key !== "type" &&
@@ -189,8 +191,27 @@ async function applyCameraAction(
 					key !== "target" &&
 					!skipKeys.includes(key)
 				) {
-					(newCamera as unknown as Record<string, unknown>)[key] =
-						camera[key];
+					if (
+						key === "direction" &&
+						resolvedCamera.type !== CAMERA_TYPE.ORTHOGRAPHIC
+					) {
+						Logger.warn(
+							`Skipping "direction" for camera "${cameraLabel}" (type ${resolvedCamera.type}).`,
+						);
+						return;
+					}
+					if (
+						key === "fov" &&
+						resolvedCamera.type !== CAMERA_TYPE.PERSPECTIVE
+					) {
+						Logger.warn(
+							`Skipping "fov" for camera "${cameraLabel}" (type ${resolvedCamera.type}).`,
+						);
+						return;
+					}
+					(resolvedCamera as unknown as Record<string, unknown>)[
+						key
+					] = camera[key];
 				}
 			});
 		}

@@ -105,6 +105,7 @@ export type {
 	IAppBuilderLegacyActionPropsUndo,
 	IAppBuilderPropsAnimateCamera,
 	IAppBuilderPropsAssignCamera,
+	IAppBuilderPropsCameraValues,
 	IAppBuilderPropsResetCamera,
 	IAppBuilderPropsSetCamera,
 	IAppBuilderPropsZoomToCamera,
