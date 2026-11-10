@@ -299,6 +299,7 @@ export default function ParameterSelectionComponent(
 		candidateNodes,
 		selectedNodeNames,
 		maximumSelection,
+		nameFilter: selectionProps.nameFilter,
 		setSelectedNames: (names) => {
 			commitActionSelectionRef.current = true;
 			setSelectedNodeNames(names);

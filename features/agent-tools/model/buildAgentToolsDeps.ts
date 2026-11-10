@@ -20,6 +20,7 @@ import {
 	type IAppBuilderActionPropsCreateModelState,
 	type IAppBuilderActionPropsImportModelState,
 	type IAppBuilderControlActionRef,
+	type IAppBuilderPropsCameraValues,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionType";
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
@@ -125,7 +126,9 @@ async function setViewportCamera(
 				props: {
 					type: "assign",
 					viewportId: args.viewportId,
-					props: {camera: assign},
+					props: {
+						camera: assign as IAppBuilderPropsCameraValues,
+					},
 				},
 			},
 			namespace,

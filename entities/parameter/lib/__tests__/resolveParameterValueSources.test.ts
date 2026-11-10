@@ -240,6 +240,98 @@ describe("resolveParameterValueSources", () => {
 		}
 	});
 
+	it("uploads one sdTF when two sources select different chunks of the same output", async () => {
+		const uploadSDTF = jest.fn(async () => [{id: "asset-1"}]);
+		const addProcess = jest.fn();
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = jest.fn(async () => ({
+			arrayBuffer: async () => new ArrayBuffer(4),
+		})) as unknown as typeof fetch;
+
+		const output = {
+			id: "out",
+			name: "Result",
+			content: [{href: "https://example.test/out.sdtf"}],
+		};
+		useShapeDiverStoreSession.getState = () =>
+			({
+				sessions: {
+					session: {
+						parameters: {
+							Mesh: {
+								id: "Mesh",
+								name: "Mesh",
+								type: "sMesh",
+							},
+							Surfaces: {
+								id: "Surfaces",
+								name: "Surfaces",
+								type: "sMesh",
+							},
+						},
+						outputs: {Result: output},
+						exports: {},
+						uploadSDTF,
+					},
+				},
+			}) as unknown as ReturnType<typeof originalSessionGetState>;
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getOutput: () => undefined,
+			}) as unknown as ReturnType<typeof originalParameterGetState>;
+		useShapeDiverStoreProcessManager.getState = () =>
+			({
+				createProcessManager: jest.fn(() => "pm"),
+				addProcess,
+			}) as unknown as ReturnType<typeof originalProcessGetState>;
+
+		try {
+			const values = await resolveParameterValueSources(
+				[
+					{
+						id: "Mesh",
+						value: {
+							type: "sdtf",
+							props: {
+								name: "Result",
+								chunk: {name: "Mesh"},
+							},
+						},
+					},
+					{
+						id: "Surfaces",
+						value: {
+							type: "sdtf",
+							props: {
+								name: "Result",
+								chunk: {name: "Surfaces"},
+							},
+						},
+					},
+				],
+				{namespace: "session"},
+			);
+
+			expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+			expect(uploadSDTF).toHaveBeenCalledTimes(1);
+			expect(addProcess).toHaveBeenCalledTimes(1);
+			expect(values).toEqual([
+				JSON.stringify(
+					{asset: {id: "asset-1", chunk: {name: "Mesh"}}},
+					null,
+					2,
+				),
+				JSON.stringify(
+					{asset: {id: "asset-1", chunk: {name: "Surfaces"}}},
+					null,
+					2,
+				),
+			]);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
 	it("uploads the same sdTF source separately for each target session", async () => {
 		const uploadA = jest.fn(async () => [{id: "asset-a"}]);
 		const uploadB = jest.fn(async () => [{id: "asset-b"}]);

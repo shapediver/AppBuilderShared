@@ -61,6 +61,12 @@ jest.mock("../AppBuilderActionSlotRunner", () => ({
 	},
 }));
 
+import {
+	beginComputationSpan,
+	failComputationSpan,
+	resetComputationSpansForTests,
+} from "@AppBuilderLib/features/appbuilder/model/computationSpan";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {render} from "@testing-library/react";
 import type {
 	IAppBuilderActionDefinition,
@@ -116,6 +122,14 @@ describe("useComputationSlotListeners", () => {
 		sessionParameters.p1 = {value: "1"};
 		sessionParameters.p2 = {value: "1"};
 		mockRun.mockReset();
+		resetComputationSpansForTests();
+	});
+
+	afterEach(() => {
+		const {processManagers, removeProcessManager} =
+			useShapeDiverStoreProcessManager.getState();
+		for (const id of Object.keys(processManagers)) removeProcessManager(id);
+		resetComputationSpansForTests();
 	});
 
 	it("runs the root slots for every customization of the session", () => {
@@ -178,6 +192,221 @@ describe("useComputationSlotListeners", () => {
 		emit("task.cancel", "t1", {status: SUPERSEDED});
 		emit("task.cancel", "t2", {status: FAILED});
 		expect(ran()).toEqual(["error"]);
+	});
+
+	it("runs computationend when the last process manager of the computation ends", async () => {
+		const actionSlots: IAppBuilderRootActionSlots = {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+		};
+		render(
+			<AppBuilderApplicationActionSlots
+				actionSlots={actionSlots}
+				namespace="s1"
+			/>,
+		);
+		const store = useShapeDiverStoreProcessManager.getState();
+		const first = store.createProcessManager("s1");
+		let resolveFirst: () => void;
+		const firstPromise = new Promise<void>((resolve) => {
+			resolveFirst = resolve;
+		});
+		store.addProcess(first, {
+			name: "Session Process",
+			promise: firstPromise,
+		});
+		beginComputationSpan("s1", first);
+		expect(ran()).toEqual(["start"]);
+
+		emit("task.start", "t1");
+		emit("task.end", "t1");
+		expect(ran()).toEqual(["start"]);
+
+		const second = useShapeDiverStoreProcessManager
+			.getState()
+			.createProcessManager("s1");
+		let resolveSecond: () => void;
+		const secondPromise = new Promise<void>((resolve) => {
+			resolveSecond = resolve;
+		});
+		useShapeDiverStoreProcessManager.getState().addProcess(second, {
+			name: "Instance Process",
+			promise: secondPromise,
+		});
+
+		resolveFirst!();
+		await firstPromise;
+		expect(ran()).toEqual(["start"]);
+
+		resolveSecond!();
+		await secondPromise;
+		expect(ran()).toEqual(["start", "end"]);
+	});
+
+	it("runs a parameter's computationend after the span closes", async () => {
+		renderControl("p1", {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+		});
+		sessionParameters.p1.value = "2";
+		const store = useShapeDiverStoreProcessManager.getState();
+		const id = store.createProcessManager("s1");
+		let resolveProcess: () => void;
+		const promise = new Promise<void>((resolve) => {
+			resolveProcess = resolve;
+		});
+		store.addProcess(id, {name: "Session Process", promise});
+		beginComputationSpan("s1", id);
+		expect(ran()).toEqual(["start"]);
+
+		emit("task.start", "t1");
+		emit("task.end", "t1");
+		expect(ran()).toEqual(["start"]);
+
+		resolveProcess!();
+		await promise;
+		expect(ran()).toEqual(["start", "end"]);
+	});
+
+	it("does not run a parameter's slots for a span that did not change it", async () => {
+		renderControl("p1", {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+		});
+		const store = useShapeDiverStoreProcessManager.getState();
+		const id = store.createProcessManager("s1");
+		let resolveProcess: () => void;
+		const promise = new Promise<void>((resolve) => {
+			resolveProcess = resolve;
+		});
+		store.addProcess(id, {name: "Session Process", promise});
+		beginComputationSpan("s1", id);
+		emit("task.start", "t1");
+		emit("task.end", "t1");
+		resolveProcess!();
+		await promise;
+		expect(ran()).toEqual([]);
+	});
+
+	it("does not run computationend when the customize fails", async () => {
+		const actionSlots: IAppBuilderRootActionSlots = {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+		};
+		render(
+			<AppBuilderApplicationActionSlots
+				actionSlots={actionSlots}
+				namespace="s1"
+			/>,
+		);
+		const store = useShapeDiverStoreProcessManager.getState();
+		const id = store.createProcessManager("s1");
+		let resolveProcess: () => void;
+		const promise = new Promise<void>((resolve) => {
+			resolveProcess = resolve;
+		});
+		store.addProcess(id, {name: "Session Process", promise});
+		const generation = beginComputationSpan("s1", id);
+		emit("task.end", "t1");
+		failComputationSpan("s1", generation);
+		resolveProcess!();
+		await promise;
+		expect(ran()).toEqual(["start"]);
+	});
+
+	it("keeps computationend when a failed task no longer owns the span", async () => {
+		const actionSlots: IAppBuilderRootActionSlots = {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+			computationerror: {action: action("error")},
+		};
+		render(
+			<AppBuilderApplicationActionSlots
+				actionSlots={actionSlots}
+				namespace="s1"
+			/>,
+		);
+		const store = useShapeDiverStoreProcessManager.getState();
+		const older = store.createProcessManager("s1");
+		let resolveOlder: () => void;
+		const olderPromise = new Promise<void>((resolve) => {
+			resolveOlder = resolve;
+		});
+		store.addProcess(older, {
+			name: "Session Process",
+			promise: olderPromise,
+		});
+		beginComputationSpan("s1", older);
+		emit("task.end", "t1");
+
+		const newer = useShapeDiverStoreProcessManager
+			.getState()
+			.createProcessManager("s1");
+		let resolveNewer: () => void;
+		const newerPromise = new Promise<void>((resolve) => {
+			resolveNewer = resolve;
+		});
+		useShapeDiverStoreProcessManager.getState().addProcess(newer, {
+			name: "Session Process",
+			promise: newerPromise,
+		});
+		beginComputationSpan("s1", newer);
+		emit("task.cancel", "t1", {status: FAILED});
+		expect(ran()).toEqual(["start", "error"]);
+
+		resolveOlder!();
+		await olderPromise;
+		resolveNewer!();
+		await newerPromise;
+		expect(ran()).toEqual(["start", "error", "end"]);
+	});
+
+	it("runs computationend of a customize that joins after an older one failed", async () => {
+		const actionSlots: IAppBuilderRootActionSlots = {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+		};
+		render(
+			<AppBuilderApplicationActionSlots
+				actionSlots={actionSlots}
+				namespace="s1"
+			/>,
+		);
+		const store = useShapeDiverStoreProcessManager.getState();
+		const older = store.createProcessManager("s1");
+		let resolveOlder: () => void;
+		const olderPromise = new Promise<void>((resolve) => {
+			resolveOlder = resolve;
+		});
+		store.addProcess(older, {
+			name: "Session Process",
+			promise: olderPromise,
+		});
+		const olderGeneration = beginComputationSpan("s1", older);
+		failComputationSpan("s1", olderGeneration);
+
+		const newer = useShapeDiverStoreProcessManager
+			.getState()
+			.createProcessManager("s1");
+		let resolveNewer: () => void;
+		const newerPromise = new Promise<void>((resolve) => {
+			resolveNewer = resolve;
+		});
+		useShapeDiverStoreProcessManager.getState().addProcess(newer, {
+			name: "Session Process",
+			promise: newerPromise,
+		});
+		beginComputationSpan("s1", newer);
+		emit("task.end", "t2");
+		expect(ran()).toEqual(["start"]);
+
+		resolveOlder!();
+		await olderPromise;
+		expect(ran()).toEqual(["start"]);
+
+		resolveNewer!();
+		await newerPromise;
+		expect(ran()).toEqual(["start", "end"]);
 	});
 
 	it("registers no listener without computation slots", () => {

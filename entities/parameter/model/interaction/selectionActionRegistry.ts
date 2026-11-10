@@ -24,6 +24,13 @@ type SelectionActionTarget = {
 	getSelectedNames: () => readonly string[];
 	getMaximumSelection: () => number;
 	setSelectedNames: (names: string[]) => void;
+	/**
+	 * Name filter of the selection group. When it is non-empty, the nodes it
+	 * matches in the live scene are the candidates. The React candidate list
+	 * lags a computation: the node a `computationend` action selects is
+	 * already in the scene and not in that list yet.
+	 */
+	getNameFilter?: () => readonly string[];
 };
 
 export type SelectionActionRequest = {
@@ -114,18 +121,41 @@ export const resetSelectionActionTargets = () => {
 	selectionSlotChains.clear();
 };
 
-const matchingCandidateNames = (
-	candidates: readonly NamedNode[],
-	nameFilter: readonly string[],
+const uniqueNames = (names: readonly string[]): string[] => {
+	const seen = new Set<string>();
+	const unique: string[] = [];
+	for (const name of names) {
+		if (seen.has(name)) continue;
+		seen.add(name);
+		unique.push(name);
+	}
+
+	return unique;
+};
+
+/**
+ * Nodes the action may change. A name filter is matched against the live
+ * scene. Without one, the React candidate list is the scene the group knows.
+ */
+const namesAllowedByTarget = (target: SelectionActionTarget): string[] => {
+	const filter = target.getNameFilter?.() ?? [];
+	if (filter.length > 0) return uniqueNames(findMatchingNames(filter));
+
+	return uniqueNames(target.getCandidates().map(({name}) => name));
+};
+
+const matchingNames = (
+	allowed: readonly string[],
+	patterns: readonly string[],
 ): string[] => {
-	if (nameFilter.length === 0 || candidates.length === 0) return [];
-	const matched = new Set(findMatchingNames(nameFilter));
+	if (patterns.length === 0 || allowed.length === 0) return [];
+	const matched = new Set(findMatchingNames(patterns));
 	const names: string[] = [];
 	const seen = new Set<string>();
-	for (const candidate of candidates) {
-		if (!matched.has(candidate.name) || seen.has(candidate.name)) continue;
-		seen.add(candidate.name);
-		names.push(candidate.name);
+	for (const name of allowed) {
+		if (!matched.has(name) || seen.has(name)) continue;
+		seen.add(name);
+		names.push(name);
 	}
 
 	return names;
@@ -211,14 +241,14 @@ function applySelectionActionOnce(
 
 	const changed: string[] = [];
 	for (const target of candidates) {
-		const candidateNodes = target.getCandidates();
+		const allowed = namesAllowedByTarget(target);
 		const selectedNames = target.getSelectedNames();
 		const maximumSelection = target.getMaximumSelection();
 		const result = resolveSelectionActionChange(
-			candidateNodes.map(({name}) => name),
+			allowed,
 			selectedNames,
-			new Set(matchingCandidateNames(candidateNodes, select)),
-			new Set(matchingCandidateNames(candidateNodes, deselect)),
+			new Set(matchingNames(allowed, select)),
+			new Set(matchingNames(allowed, deselect)),
 			maximumSelection,
 		);
 		if (result.exceededBy > 0) {

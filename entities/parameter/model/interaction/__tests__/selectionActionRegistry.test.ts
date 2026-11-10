@@ -44,6 +44,7 @@ const createTarget = (
 		namespace?: string;
 		ownerKey?: string;
 		root?: boolean;
+		nameFilter?: string[];
 	} = {},
 ) => {
 	let selected = options.selected ?? [];
@@ -64,6 +65,7 @@ const createTarget = (
 			names.map((name) => ({name, node: {name} as never})),
 		getSelectedNames: () => selected,
 		getMaximumSelection: () => options.maximumSelection ?? 1,
+		getNameFilter: () => options.nameFilter ?? [],
 		setSelectedNames,
 	};
 
@@ -113,6 +115,29 @@ describe("applySelectionAction", () => {
 		expect(boxes.setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
 		expect(spheres.setSelectedNames).not.toHaveBeenCalled();
 		expect(parameter.setSelectedNames).not.toHaveBeenCalled();
+	});
+
+	it("selects a node the name filter finds when the candidate list is stale", () => {
+		setSelectionActionNameFinder((filters) => {
+			const names = ["Boxes.1", "Boxes.new"];
+			return names.filter((name) =>
+				filters.some((filter) =>
+					filter.endsWith("*")
+						? name.startsWith(filter.slice(0, -1))
+						: name === filter,
+				),
+			);
+		});
+		const boxes = createTarget("Boxes", ["Boxes.1"], {
+			root: true,
+			maximumSelection: 1,
+			nameFilter: ["Boxes.*"],
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		run({select: ["Boxes.new"]});
+
+		expect(boxes.getSelected()).toEqual(["Boxes.new"]);
 	});
 
 	it("does not change a root selection of another App Builder", () => {
