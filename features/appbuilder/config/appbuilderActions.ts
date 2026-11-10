@@ -83,6 +83,10 @@ export type IAppBuilderActionDefinition =
 			props: IAppBuilderActionPropsSetContainerVisibility;
 	  }
 	| {
+			type: AppBuilderActionType.Selection;
+			props: IAppBuilderActionPropsSelection;
+	  }
+	| {
 			type: AppBuilderActionType.ExecuteActions;
 			props: IAppBuilderActionPropsExecuteActions;
 	  };
@@ -110,6 +114,50 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
 	/** Mode of the action. */
 	mode: "open" | "close" | "toggle";
 }
+
+/**
+ * Properties of a "selection" action.
+ *
+ * Without {@link parameter}, the action changes the root scene selection:
+ * each root `selecton` / `selectoff` group (`eventProps.type: "selection"`)
+ * whose candidates match. That change behaves like a selection in the group,
+ * so the group's `selecton` (non-empty result) or `selectoff` (empty result)
+ * runs. A result equal to the current selection does nothing.
+ *
+ * With {@link parameter}, only that interaction parameter changes (selection,
+ * gumball, or rectangle transform; dragging has no selection). The parameter
+ * must be mounted. The change goes through its selection, the same way a user
+ * selection does: `maximumSelection`, confirmation, and the logic that reacts
+ * to the parameter run. If more nodes match {@link select} than
+ * `maximumSelection` allows, the first matches in scene order are selected
+ * and a warning is logged. The action does not fail.
+ *
+ * Names are node names as used by a `nameFilter` (output name, then the
+ * hierarchical node names separated by dots) and can contain the wildcard
+ * `*`. A node targeted by both {@link select} and {@link deselect} is
+ * selected.
+ *
+ * @docAttached
+ * @category feature
+ * @configPath actions.selection.props
+ * @displayName IAppBuilderActionPropsSelection
+ */
+export interface IAppBuilderActionPropsSelection {
+	/** Name filters of the nodes to select. */
+	select?: string[];
+	/** Name filters of the nodes to deselect. */
+	deselect?: string[];
+	/**
+	 * Interaction parameter whose selection changes. Without it, the action
+	 * changes the root scene selection of the matching `selecton` /
+	 * `selectoff` groups.
+	 */
+	parameter?: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
+}
+
+/** Properties of a legacy "selection" action. */
+export type IAppBuilderLegacyActionPropsSelection =
+	IAppBuilderActionPropsSelection & IAppBuilderActionPropsCommon;
 
 /**
  * Properties of an "executeActions" action.
@@ -581,6 +629,10 @@ export type IAppBuilderLegacyActionDefinition =
 			props: IAppBuilderLegacyActionPropsMessageToParent;
 	  }
 	| {
+			type: AppBuilderActionType.Selection;
+			props: IAppBuilderLegacyActionPropsSelection;
+	  }
+	| {
 			type: AppBuilderActionType.ExecuteActions;
 			props: IAppBuilderLegacyActionPropsExecuteActions;
 	  };
@@ -820,6 +872,16 @@ export function isMessageToParentAction(
 	{type: AppBuilderActionType.MessageToParent}
 > {
 	return isActionType(action, AppBuilderActionType.MessageToParent);
+}
+
+/** assert action type "selection" */
+export function isSelectionAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Selection}
+> {
+	return isActionType(action, AppBuilderActionType.Selection);
 }
 
 /** assert action type "executeActions" */

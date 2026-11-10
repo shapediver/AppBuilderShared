@@ -156,6 +156,11 @@ export function legacyActionToDefinition(
 				type: action.type,
 				props: stripLegacyCommonProps(action.props),
 			};
+		case AppBuilderActionType.Selection:
+			return {
+				type: action.type,
+				props: stripLegacyCommonProps(action.props),
+			};
 		case AppBuilderActionType.ExecuteActions:
 			return {
 				type: action.type,

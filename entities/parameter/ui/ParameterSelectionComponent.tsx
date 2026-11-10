@@ -48,6 +48,7 @@ import {
 	usePendingSelectionRegistry,
 } from "../model/interaction/usePendingSelectionRegistry";
 import {useSelection} from "../model/interaction/useSelection";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import {useSelectionActivationState} from "../model/interaction/useSelectionActivationState";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
 import {useSuspendedSelectionRestore} from "../model/interaction/useSuspendedSelectionRestore";
@@ -275,6 +276,19 @@ export default function ParameterSelectionComponent(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		requestSelectionRestore,
+	});
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: selectionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		maximumSelection,
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
 	});
 
 	const acceptable =

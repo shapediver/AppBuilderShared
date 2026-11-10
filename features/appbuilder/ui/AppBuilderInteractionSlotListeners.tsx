@@ -1,4 +1,5 @@
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
+import {useSelectionActionTarget} from "@AppBuilderLib/entities/parameter/model/interaction/useSelectionActionTarget";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import type {AppBuilderInteractionSlotListenersProps} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -192,7 +193,9 @@ function InteractionSlotGroup({
 	}, [mergedEventProps]);
 
 	const {
+		candidateNodes,
 		selectedNodeNames,
+		getSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
 		componentId,
@@ -214,6 +217,23 @@ function InteractionSlotGroup({
 		},
 		[handlersRef],
 	);
+
+	// Default target of a selection action that does not name a parameter.
+	// A change runs selecton (non-empty) or selectoff (empty), like a click
+	// on this group. The action skips a result equal to the current selection,
+	// so a slot that runs the same action does not loop.
+	useSelectionActionTarget({
+		ownerKey: `root-selection:${cacheKey}`,
+		candidateNodes,
+		selectedNodeNames,
+		getSelectedNames: getSelectedNodeNames,
+		maximumSelection: selectionProps.maximumSelection ?? 1,
+		setSelectedNames: (names) => {
+			setSelectedNodeNamesAndRestoreSelection(names);
+			if (names.length > 0) fireNamed("selecton");
+			else fireNamed("selectoff");
+		},
+	});
 
 	useEffect(() => {
 		const tokens = VIEWER_INTERACTION_EVENTS.map((eventType) =>
