@@ -14,6 +14,7 @@ import {
 import {
 	addListener,
 	EVENTTYPE_VIEWPORT,
+	type ITreeNode,
 	type IViewportEvent,
 	removeListener,
 } from "@shapediver/viewer.session";

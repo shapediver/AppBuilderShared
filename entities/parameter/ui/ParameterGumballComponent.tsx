@@ -208,6 +208,7 @@ export default function ParameterGumballComponent(
 		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
+		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,

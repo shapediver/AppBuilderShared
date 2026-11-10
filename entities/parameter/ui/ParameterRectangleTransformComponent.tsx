@@ -214,6 +214,7 @@ export default function ParameterRectangleTransformComponent(
 		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
+		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
