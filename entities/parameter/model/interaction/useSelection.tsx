@@ -7,6 +7,7 @@ import {ITreeNode} from "@shapediver/viewer.session";
 import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
+import {selectionMaximumAdmitsNodes} from "./selectionMaximumAdmitsNodes";
 import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
 import {useHoverManager} from "./useHoverManager";
 import {
@@ -105,7 +106,11 @@ export function useSelection(
 	} = useSelectManager(
 		viewportId,
 		componentId,
-		activate ? selectionProps : undefined,
+		// A maximum below 1 cannot hold a node. Skip the select manager so a
+		// hover-only group still hovers and a click does not select it.
+		activate && selectionMaximumAdmitsNodes(selectionProps.maximumSelection)
+			? selectionProps
+			: undefined,
 	);
 
 	// store the select manager in a ref
@@ -216,7 +221,11 @@ export function useSelection(
 							outputId,
 							patterns: pattern,
 							interactionSettings: {
-								select: !singleCandidateSuppressed,
+								select:
+									!singleCandidateSuppressed &&
+									selectionMaximumAdmitsNodes(
+										selectionProps.maximumSelection,
+									),
 								hover:
 									!singleCandidateSuppressed &&
 									selectionProps.hover,
@@ -238,7 +247,11 @@ export function useSelection(
 						componentId,
 						patterns: pattern,
 						interactionSettings: {
-							select: !singleCandidateSuppressed,
+							select:
+								!singleCandidateSuppressed &&
+								selectionMaximumAdmitsNodes(
+									selectionProps.maximumSelection,
+								),
 							hover:
 								!singleCandidateSuppressed &&
 								selectionProps.hover,

@@ -219,7 +219,6 @@ export default function ParameterRectangleTransformComponent(
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
-		keptMinimumSelection,
 	} = useRectangleTransform(
 		sessionDependencies,
 		viewportId,
@@ -271,7 +270,6 @@ export default function ParameterRectangleTransformComponent(
 		selectedNodeNames,
 		// the same default as the selection of the rectangle transform
 		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
-		keptMinimumSelection,
 		setSelectedNames: setSelectedNodeNames,
 		parameter: {
 			namespace,
