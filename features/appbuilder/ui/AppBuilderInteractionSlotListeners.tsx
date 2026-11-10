@@ -1,4 +1,10 @@
+import {findNamedNodesByNameFilter} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
+import {
+	runSelectionSlotDispatch,
+	shouldEmitSelectionActionSlots,
+} from "@AppBuilderLib/entities/parameter/model/interaction/selectionActionRegistry";
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
+import {useSelectionActionTarget} from "@AppBuilderLib/entities/parameter/model/interaction/useSelectionActionTarget";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import type {AppBuilderInteractionSlotListenersProps} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -27,6 +33,7 @@ import {
 	getActionSlotEventProps,
 	isAppBuilderInteractionEvent,
 	mapViewerInteractionEventToSlot,
+	selectionSlotCacheKey,
 	selectionSlotGroupKey,
 	selectionSlotNameFilterKey,
 	type ResolvedActionSlot,
@@ -55,11 +62,19 @@ function getAllAvailableNames(availableNodeNames: {
 function getValidCachedNames(
 	cachedNames: string[] | undefined,
 	availableNodeNames: {[key: string]: {[key: string]: string[]}},
+	liveNames: readonly string[] = [],
 ) {
 	if (!cachedNames || cachedNames.length === 0) return [];
 	const availableNames = getAllAvailableNames(availableNodeNames);
+	// An empty scene is still rebuilding. A partial live match must not drop
+	// the names that are not registered yet. Once some names are available,
+	// a live match is kept as well: the node exists, and its interaction
+	// data arrives a render later.
 	if (availableNames.length === 0) return cachedNames;
-	return cachedNames.filter((name) => availableNames.includes(name));
+	const live = new Set(liveNames);
+	return cachedNames.filter(
+		(name) => availableNames.includes(name) || live.has(name),
+	);
 }
 
 function sameNameSet(a: string[], b: string[]): boolean {
@@ -134,7 +149,11 @@ function InteractionSlotGroup({
 		[items],
 	);
 	const resolvedViewportId = mergedEventProps.viewportId ?? viewportId;
-	const cacheKey = selectionSlotGroupKey(mergedEventProps, viewportId);
+	const cacheKey = selectionSlotCacheKey(
+		namespace,
+		mergedEventProps,
+		viewportId,
+	);
 	const [selectionAllowed, setSelectionAllowed] = useState(true);
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 	const restoringRef = useRef(false);
@@ -192,7 +211,9 @@ function InteractionSlotGroup({
 	}, [mergedEventProps]);
 
 	const {
+		candidateNodes,
 		selectedNodeNames,
+		getSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
 		componentId,
@@ -205,15 +226,43 @@ function InteractionSlotGroup({
 
 	const itemsRef = useRef(items);
 	itemsRef.current = items;
+	const ownerKey = `root-selection:${namespace}:${cacheKey}`;
 
 	const fireNamed = useCallback(
 		(eventName: string) => {
-			for (const item of itemsRef.current) {
-				if (item.eventName === eventName) runSlot(handlersRef, item);
-			}
+			// Held only while the handlers run. An action they start does not
+			// deliver selecton / selectoff again. A later action does.
+			runSelectionSlotDispatch(() => {
+				for (const item of itemsRef.current) {
+					if (item.eventName === eventName)
+						runSlot(handlersRef, item);
+				}
+			});
 		},
 		[handlersRef],
 	);
+
+	// Default target of a selection action that does not name a parameter.
+	// A change runs selecton (non-empty) or selectoff (empty), like a click
+	// on this group. While that action is applying, those slots do not run
+	// selecton / selectoff again for the same change.
+	useSelectionActionTarget({
+		// The namespace is part of the key. Two App Builders can share a
+		// viewport and the same selection config, and must both stay registered.
+		ownerKey,
+		namespace,
+		candidateNodes,
+		selectedNodeNames,
+		getSelectedNames: getSelectedNodeNames,
+		maximumSelection: selectionProps.maximumSelection ?? 1,
+		nameFilter: selectionProps.nameFilter,
+		setSelectedNames: (names) => {
+			setSelectedNodeNamesAndRestoreSelection(names);
+			if (!shouldEmitSelectionActionSlots()) return;
+			if (names.length > 0) fireNamed("selecton");
+			else fireNamed("selectoff");
+		},
+	});
 
 	useEffect(() => {
 		const tokens = VIEWER_INTERACTION_EVENTS.map((eventType) =>
@@ -265,9 +314,16 @@ function InteractionSlotGroup({
 		const wasActive = prevProcessActiveRef.current;
 		prevProcessActiveRef.current = processActive;
 		if (!wasActive || processActive) return;
+		const liveNames = selectionProps.nameFilter?.length
+			? findNamedNodesByNameFilter(
+					[...selectionProps.nameFilter],
+					true,
+				).map(({name}) => name)
+			: [];
 		const validCachedNames = getValidCachedNames(
 			selectedNodeNamesCache[cacheKey],
 			availableNodeNames,
+			liveNames,
 		);
 		selectedNodeNamesCache[cacheKey] = validCachedNames;
 		const selectionChanged = !sameNameSet(
@@ -291,6 +347,7 @@ function InteractionSlotGroup({
 		cacheKey,
 		fireNamed,
 		processActive,
+		selectionProps,
 		setSelectedNodeNamesAndRestoreSelection,
 	]);
 

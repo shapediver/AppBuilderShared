@@ -1,3 +1,4 @@
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
@@ -44,7 +45,7 @@ export interface IRectangleTransformState {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
 	 */
-	candidateNodes: Array<{nodeId: string; name: string}>;
+	candidateNodes: Array<{nodeId: string; name: string; node: ITreeNode}>;
 	/**
 	 * The transformed node names.
 	 */
@@ -96,6 +97,11 @@ export interface IRectangleTransformState {
 	) => boolean;
 	/** Close the active rectangle transform before restoring a transformation. */
 	closeTransform: () => void;
+	/**
+	 * A deselection which would drop a non-empty selection below this number
+	 * is refused (0 unless the parameter is exclusive).
+	 */
+	keptMinimumSelection: number;
 }
 
 /**
@@ -140,11 +146,10 @@ export function useRectangleTransform(
 	const selectionSettings = useMemo(() => {
 		if (!rectangleTransformProps) return {};
 
-		const nameFilter: string[] = [];
-		nameFilter.push(...(rectangleTransformProps.nameFilter ?? []));
-		rectangleTransformProps.objects?.forEach((element) => {
-			nameFilter.push(element.nameFilter);
-		});
+		const nameFilter = combinedSelectionNameFilter(
+			rectangleTransformProps.nameFilter,
+			rectangleTransformProps.objects,
+		);
 
 		// an exclusive parameter shows a preview on hover (see
 		// useRectangleTransformPreview), the hover setting only controls
@@ -168,6 +173,10 @@ export function useRectangleTransform(
 	// an exclusive parameter starts without a selection, and at most one
 	// exclusive parameter per viewport has a selection
 	const exclusive = resolveExclusive(rectangleTransformProps);
+	// the minimum only applies once the user selected something
+	const keptMinimumSelection = exclusive
+		? (selectionSettings.minimumSelection ?? 0)
+		: 0;
 
 	// track whether the maximum number of selections has been reached
 	const [maxReached, setMaxReached] = useState(false);
@@ -187,8 +196,7 @@ export function useRectangleTransform(
 		strictNaming,
 		false,
 		undefined,
-		// the minimum only applies once the user selected something
-		exclusive ? (selectionSettings.minimumSelection ?? 0) : 0,
+		keptMinimumSelection,
 		// selection is off while the maximum is filled; still drop deleted nodes
 		maxReached,
 	);
@@ -566,6 +574,7 @@ export function useRectangleTransform(
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
+		keptMinimumSelection,
 	};
 }
 

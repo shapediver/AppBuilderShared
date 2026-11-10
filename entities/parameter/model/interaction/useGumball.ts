@@ -1,3 +1,4 @@
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
@@ -13,6 +14,7 @@ import {
 import {
 	addListener,
 	EVENTTYPE_VIEWPORT,
+	type ITreeNode,
 	type IViewportEvent,
 	removeListener,
 } from "@shapediver/viewer.session";
@@ -34,7 +36,7 @@ export interface IGumballState {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
 	 */
-	candidateNodes: Array<{nodeId: string; name: string}>;
+	candidateNodes: Array<{nodeId: string; name: string; node: ITreeNode}>;
 	/**
 	 * The transformed node names.
 	 */
@@ -130,11 +132,10 @@ export function useGumball(
 	const selectionSettings = useMemo(() => {
 		if (!gumballProps) return {};
 
-		const nameFilter: string[] = [];
-		nameFilter.push(...(gumballProps.nameFilter ?? []));
-		gumballProps.objects?.forEach((element) => {
-			nameFilter.push(element.nameFilter);
-		});
+		const nameFilter = combinedSelectionNameFilter(
+			gumballProps.nameFilter,
+			gumballProps.objects,
+		);
 
 		return {
 			nameFilter,

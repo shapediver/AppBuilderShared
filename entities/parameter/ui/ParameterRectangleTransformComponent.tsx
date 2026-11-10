@@ -4,6 +4,7 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib/automaticSceneUpdate";
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {
 	hasLocalTransformationDelta,
@@ -48,6 +49,7 @@ import {useInteractionEnginePause} from "../model/interaction/useInteractionEngi
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterResetRow from "./ParameterResetRow";
 
@@ -218,6 +220,7 @@ export default function ParameterRectangleTransformComponent(
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
+		keptMinimumSelection,
 	} = useRectangleTransform(
 		sessionDependencies,
 		viewportId,
@@ -261,6 +264,29 @@ export default function ParameterRectangleTransformComponent(
 		automaticallyActivated,
 		candidateNodes,
 		active: rectangleTransformActive,
+	});
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: interactionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		// the same default as the selection of the rectangle transform
+		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
+		// a click refuses a deselect below this (0 unless the parameter is exclusive)
+		minimumSelection: keptMinimumSelection,
+		nameFilter: combinedSelectionNameFilter(
+			rectangleTransformProps.nameFilter,
+			rectangleTransformProps.objects,
+		),
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
+		// a user cannot select either: an exclusive selection would clear the
+		// rectangle of the owner without showing one
+		enabled: !ownershipBlocked,
 	});
 	const rectangleTransformRegistered =
 		rectangleTransformActive && !ownershipBlocked;

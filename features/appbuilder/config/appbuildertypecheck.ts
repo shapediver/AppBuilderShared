@@ -7,6 +7,7 @@ import {
 	IAppBuilderActionPropsImportModelStateSchema,
 	IAppBuilderActionPropsRedoSchema,
 	IAppBuilderActionPropsResetParameterValuesSchema,
+	IAppBuilderActionPropsSelectionSchema,
 	IAppBuilderActionPropsSetParameterValueSchema,
 	IAppBuilderActionPropsSetParameterValuesSchema,
 	IAppBuilderActionPropsSoundSchema,
@@ -472,6 +473,12 @@ const IAppBuilderLegacyActionPropsMessageToParentSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+// Zod type definition for IAppBuilderLegacyActionPropsSelection
+const IAppBuilderLegacyActionPropsSelectionSchema =
+	IAppBuilderActionPropsSelectionSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Assigned after IAppBuilderActionDefinitionSchemaBase so nested executeActions
 // can recursively validate IAppBuilderActionDefinition values.
 // eslint-disable-next-line prefer-const -- declaration must precede the recursive schema body
@@ -562,6 +569,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.MessageToParent),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Selection),
+		props: IAppBuilderLegacyActionPropsSelectionSchema,
 	}),
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.ExecuteActions),
@@ -709,6 +720,10 @@ const IAppBuilderActionDefinitionSchemaBase = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.MessageToParent),
 		props: IAppBuilderActionPropsMessageToParentSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Selection),
+		props: IAppBuilderActionPropsSelectionSchema,
 	}),
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.ExecuteActions),

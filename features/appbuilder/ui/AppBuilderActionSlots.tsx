@@ -161,9 +161,7 @@ export default function AppBuilderActionSlots({
 							(() => void) | undefined
 						>;
 						const key = actionSlotHandlerKey(eventName, index);
-						map[key] = () => {
-							void trigger();
-						};
+						map[key] = () => trigger();
 						map[eventName] = () => {
 							for (const item of resolved) {
 								if (item.eventName !== eventName) continue;
