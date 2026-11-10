@@ -29,6 +29,12 @@ export type UseSelectionActionTargetProps = {
 	getSelectedNames?: () => readonly string[];
 	/** `Infinity` if unlimited. */
 	maximumSelection: number;
+	/**
+	 * Name filter of this selection group. A non-empty filter is matched
+	 * against the live scene, so a node created by the computation that just
+	 * ended can be selected before React's candidate list includes it.
+	 */
+	nameFilter?: readonly string[];
 	setSelectedNames: (names: string[]) => void;
 	/**
 	 * Namespace of a root interaction slot group. An interaction parameter
@@ -86,6 +92,7 @@ export function useSelectionActionTarget(props: UseSelectionActionTargetProps) {
 							propsRef.current.selectedNodeNames,
 						getMaximumSelection: () =>
 							propsRef.current.maximumSelection,
+						getNameFilter: () => propsRef.current.nameFilter ?? [],
 						setSelectedNames: (names) => {
 							// Actions in a row see this selection before the next render.
 							propsRef.current = {

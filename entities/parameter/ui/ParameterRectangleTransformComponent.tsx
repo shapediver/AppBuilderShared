@@ -270,6 +270,7 @@ export default function ParameterRectangleTransformComponent(
 		selectedNodeNames,
 		// the same default as the selection of the rectangle transform
 		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
+		nameFilter: rectangleTransformProps.nameFilter,
 		setSelectedNames: setSelectedNodeNames,
 		parameter: {
 			namespace,

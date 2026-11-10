@@ -230,6 +230,7 @@ export default function ParameterGumballComponent(
 		candidateNodes,
 		selectedNodeNames,
 		maximumSelection: gumballProps.maximumSelection ?? Infinity,
+		nameFilter: gumballProps.nameFilter,
 		setSelectedNames: setSelectedNodeNames,
 		parameter: {
 			namespace,
