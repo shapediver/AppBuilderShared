@@ -1,3 +1,4 @@
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
@@ -230,7 +231,10 @@ export default function ParameterGumballComponent(
 		candidateNodes,
 		selectedNodeNames,
 		maximumSelection: gumballProps.maximumSelection ?? Infinity,
-		nameFilter: gumballProps.nameFilter,
+		nameFilter: combinedSelectionNameFilter(
+			gumballProps.nameFilter,
+			gumballProps.objects,
+		),
 		setSelectedNames: setSelectedNodeNames,
 		parameter: {
 			namespace,

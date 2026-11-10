@@ -268,9 +268,10 @@ export function useComputationSlotListeners(
 					}
 					const trackedSessionId = taskSessionId ?? sessionId;
 					if (eventName === "computationerror") {
-						// The executor marks the span failed. Doing it here
-						// would also fail a newer customize that already joined.
-						spanStateRef.current.delete(trackedSessionId);
+						// The executor marks the span failed for the customize
+						// that threw. Clearing the listener state here would
+						// also drop a computationend the span already earned
+						// when a newer customize has joined.
 						runComputationItems(
 							items,
 							handlersRef,

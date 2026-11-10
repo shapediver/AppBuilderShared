@@ -4,6 +4,7 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib/automaticSceneUpdate";
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {
 	hasLocalTransformationDelta,
@@ -270,7 +271,10 @@ export default function ParameterRectangleTransformComponent(
 		selectedNodeNames,
 		// the same default as the selection of the rectangle transform
 		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
-		nameFilter: rectangleTransformProps.nameFilter,
+		nameFilter: combinedSelectionNameFilter(
+			rectangleTransformProps.nameFilter,
+			rectangleTransformProps.objects,
+		),
 		setSelectedNames: setSelectedNodeNames,
 		parameter: {
 			namespace,

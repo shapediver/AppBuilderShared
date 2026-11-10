@@ -29,8 +29,14 @@ jest.mock("../../useShapeDiverStoreParameters", () => ({
 jest.mock(
 	"@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter",
 	() => ({
-		findNamedNodesByNameFilter: (filters: string[] = []) =>
-			filters.map((name) => ({name, node: {name}})),
+		findNamedNodesByNameFilter: (
+			filters: string[] = [],
+			strictNaming?: boolean,
+		) => {
+			if (strictNaming !== true)
+				throw new Error("selection actions match names strictly");
+			return filters.map((name) => ({name, node: {name}}));
+		},
 	}),
 );
 

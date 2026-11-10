@@ -67,11 +67,11 @@ function getValidCachedNames(
 ) {
 	if (!cachedNames || cachedNames.length === 0) return [];
 	const availableNames = getAllAvailableNames(availableNodeNames);
-	// An empty scene is still rebuilding. A name the live filter matches is
-	// kept too: the node exists, and the interaction data that fills
-	// availableNodeNames arrives a render later.
-	if (availableNames.length === 0 && liveNames.length === 0)
-		return cachedNames;
+	// An empty scene is still rebuilding. A partial live match must not drop
+	// the names that are not registered yet. Once some names are available,
+	// a live match is kept as well: the node exists, and its interaction
+	// data arrives a render later.
+	if (availableNames.length === 0) return cachedNames;
 	const live = new Set(liveNames);
 	return cachedNames.filter(
 		(name) => availableNames.includes(name) || live.has(name),
@@ -338,9 +338,10 @@ function InteractionSlotGroup({
 		prevProcessActiveRef.current = processActive;
 		if (!wasActive || processActive) return;
 		const liveNames = selectionProps.nameFilter?.length
-			? findNamedNodesByNameFilter([...selectionProps.nameFilter]).map(
-					({name}) => name,
-				)
+			? findNamedNodesByNameFilter(
+					[...selectionProps.nameFilter],
+					true,
+				).map(({name}) => name)
 			: [];
 		const validCachedNames = getValidCachedNames(
 			selectedNodeNamesCache[cacheKey],

@@ -314,6 +314,53 @@ describe("useComputationSlotListeners", () => {
 		expect(ran()).toEqual(["start"]);
 	});
 
+	it("keeps computationend when a failed task no longer owns the span", async () => {
+		const actionSlots: IAppBuilderRootActionSlots = {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+			computationerror: {action: action("error")},
+		};
+		render(
+			<AppBuilderApplicationActionSlots
+				actionSlots={actionSlots}
+				namespace="s1"
+			/>,
+		);
+		const store = useShapeDiverStoreProcessManager.getState();
+		const older = store.createProcessManager("s1");
+		let resolveOlder: () => void;
+		const olderPromise = new Promise<void>((resolve) => {
+			resolveOlder = resolve;
+		});
+		store.addProcess(older, {
+			name: "Session Process",
+			promise: olderPromise,
+		});
+		beginComputationSpan("s1", older);
+		emit("task.end", "t1");
+
+		const newer = useShapeDiverStoreProcessManager
+			.getState()
+			.createProcessManager("s1");
+		let resolveNewer: () => void;
+		const newerPromise = new Promise<void>((resolve) => {
+			resolveNewer = resolve;
+		});
+		useShapeDiverStoreProcessManager.getState().addProcess(newer, {
+			name: "Session Process",
+			promise: newerPromise,
+		});
+		beginComputationSpan("s1", newer);
+		emit("task.cancel", "t1", {status: FAILED});
+		expect(ran()).toEqual(["start", "error"]);
+
+		resolveOlder!();
+		await olderPromise;
+		resolveNewer!();
+		await newerPromise;
+		expect(ran()).toEqual(["start", "error", "end"]);
+	});
+
 	it("runs computationend of a customize that joins after an older one failed", async () => {
 		const actionSlots: IAppBuilderRootActionSlots = {
 			computationstart: {action: action("start")},

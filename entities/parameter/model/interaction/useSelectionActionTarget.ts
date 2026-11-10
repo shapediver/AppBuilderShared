@@ -13,7 +13,9 @@ import {
 setSelectionActionNameFinder((nameFilter) => {
 	if (nameFilter.length === 0) return [];
 
-	return findNamedNodesByNameFilter([...nameFilter]).map(({name}) => name);
+	return findNamedNodesByNameFilter([...nameFilter], true).map(
+		({name}) => name,
+	);
 });
 
 export type UseSelectionActionTargetProps = {

@@ -330,11 +330,18 @@ function createGenericParameterExecutorForSession(
 		const {resolve, reject, processManagerId} =
 			registerInProcessManager(session);
 
-		const valuesChange = Object.keys(values).some(
-			(id) => session.parameters[id].value !== values[id],
-		);
-
 		try {
+			// The same check `customize` uses to return before any task.
+			// Reading it here keeps a missing parameter inside the try, so
+			// the process manager is still rejected.
+			const valuesChange = Object.keys(values).some((id) => {
+				const parameter = session.parameters[id];
+				return (
+					parameter !== undefined &&
+					parameter.sessionValue !== values[id]
+				);
+			});
+
 			// set values and call customize
 			Object.keys(values).forEach(
 				(id) => (session.parameters[id].value = values[id]),
