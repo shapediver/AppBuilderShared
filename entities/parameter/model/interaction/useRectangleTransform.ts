@@ -1,3 +1,4 @@
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
@@ -145,11 +146,10 @@ export function useRectangleTransform(
 	const selectionSettings = useMemo(() => {
 		if (!rectangleTransformProps) return {};
 
-		const nameFilter: string[] = [];
-		nameFilter.push(...(rectangleTransformProps.nameFilter ?? []));
-		rectangleTransformProps.objects?.forEach((element) => {
-			nameFilter.push(element.nameFilter);
-		});
+		const nameFilter = combinedSelectionNameFilter(
+			rectangleTransformProps.nameFilter,
+			rectangleTransformProps.objects,
+		);
 
 		// an exclusive parameter shows a preview on hover (see
 		// useRectangleTransformPreview), the hover setting only controls
