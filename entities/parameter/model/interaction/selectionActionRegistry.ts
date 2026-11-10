@@ -23,6 +23,11 @@ type SelectionActionTarget = {
 	getCandidates: () => readonly NamedNode[];
 	getSelectedNames: () => readonly string[];
 	getMaximumSelection: () => number;
+	/**
+	 * A change which would drop a non-empty selection below this number is
+	 * ignored, like a deselection by the user. Omitted is 0.
+	 */
+	getKeptMinimumSelection?: () => number;
 	setSelectedNames: (names: string[]) => void;
 };
 
@@ -152,7 +157,8 @@ const resolveRequestedParameter = (
  * whose candidates match change. Groups of another mounted root are left
  * alone. With `parameter`, only that mounted interaction parameter changes.
  * A node targeted by both lists is selected. A result equal to the current
- * selection is not applied.
+ * selection is not applied, nor is one which drops a non-empty selection
+ * below the target's kept minimum.
  *
  * @returns The ids of the parameters (or the owner keys of the root groups)
  * whose selection was changed.
@@ -229,6 +235,13 @@ function applySelectionActionOnce(
 			);
 		}
 		if (!result.changed) continue;
+		const keptMinimum = target.getKeptMinimumSelection?.() ?? 0;
+		if (
+			selectedNames.length > 0 &&
+			result.names.length < keptMinimum &&
+			result.names.length < selectedNames.length
+		)
+			continue;
 		target.setSelectedNames(result.names);
 		changed.push(target.parameter?.id ?? target.ownerKey);
 	}

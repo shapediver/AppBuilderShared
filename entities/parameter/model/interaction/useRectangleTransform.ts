@@ -96,6 +96,11 @@ export interface IRectangleTransformState {
 	) => boolean;
 	/** Close the active rectangle transform before restoring a transformation. */
 	closeTransform: () => void;
+	/**
+	 * A deselection which would drop a non-empty selection below this number
+	 * is refused (0 unless the parameter is exclusive).
+	 */
+	keptMinimumSelection: number;
 }
 
 /**
@@ -168,6 +173,10 @@ export function useRectangleTransform(
 	// an exclusive parameter starts without a selection, and at most one
 	// exclusive parameter per viewport has a selection
 	const exclusive = resolveExclusive(rectangleTransformProps);
+	// the minimum only applies once the user selected something
+	const keptMinimumSelection = exclusive
+		? (selectionSettings.minimumSelection ?? 0)
+		: 0;
 
 	// track whether the maximum number of selections has been reached
 	const [maxReached, setMaxReached] = useState(false);
@@ -187,8 +196,7 @@ export function useRectangleTransform(
 		strictNaming,
 		false,
 		undefined,
-		// the minimum only applies once the user selected something
-		exclusive ? (selectionSettings.minimumSelection ?? 0) : 0,
+		keptMinimumSelection,
 		// selection is off while the maximum is filled; still drop deleted nodes
 		maxReached,
 	);
@@ -566,6 +574,7 @@ export function useRectangleTransform(
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
+		keptMinimumSelection,
 	};
 }
 
