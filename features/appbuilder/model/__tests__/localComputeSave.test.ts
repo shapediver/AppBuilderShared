@@ -2,6 +2,7 @@ import {
 	isLocalComputeModelViewUrl,
 	localComputeSaveShouldReload,
 	openLocalComputeSaveConnection,
+	retainLocalComputeSaveConnection,
 	type LocalComputeSaveSource,
 } from "../localComputeSave";
 
@@ -72,6 +73,53 @@ describe("local Grasshopper save reload", () => {
 			false,
 		);
 		connection.close();
+	});
+
+	it("opens one save stream when two callers name the same server", () => {
+		const source = new FakeSource();
+		let opened = 0;
+		const open = () => {
+			opened += 1;
+			return source;
+		};
+		const first = retainLocalComputeSaveConnection(
+			"http://127.0.0.1:8765/ticket/a",
+			() => undefined,
+			open,
+		);
+		const second = retainLocalComputeSaveConnection(
+			"http://127.0.0.1:8765/api/v2/ticket/b",
+			() => undefined,
+			open,
+		);
+
+		expect(opened).toBe(1);
+		first.release();
+		expect(source.closed).toBe(false);
+		second.release();
+		expect(source.closed).toBe(true);
+	});
+
+	it("opens a separate save stream per port", () => {
+		let opened = 0;
+		const open = () => {
+			opened += 1;
+			return new FakeSource();
+		};
+		const first = retainLocalComputeSaveConnection(
+			"http://127.0.0.1:8765",
+			() => undefined,
+			open,
+		);
+		const second = retainLocalComputeSaveConnection(
+			"http://127.0.0.1:8766",
+			() => undefined,
+			open,
+		);
+
+		expect(opened).toBe(2);
+		first.release();
+		second.release();
 	});
 
 	it("does not reload a session whose port is different from the save event", () => {

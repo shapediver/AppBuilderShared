@@ -1,7 +1,7 @@
 /**
  * A local Grasshopper server is one document on 127.0.0.1 and its own port.
- * App Builder opens one save stream per such session and reloads the page when
- * that document is saved. A ShapeDiver host never opens the stream.
+ * App Builder opens one save stream per server and reloads the page when that
+ * document is saved. A ShapeDiver host never opens the stream.
  */
 
 export const LOCAL_COMPUTE_SAVE_EVENT = "save";
@@ -71,6 +71,49 @@ export function openLocalComputeSaveConnection(
 	return {
 		close() {
 			source.close();
+		},
+	};
+}
+
+/**
+ * One open stream per localhost origin. Session hooks retain the same server
+ * independently, and the last release closes the stream.
+ */
+const saveConnections = new Map<string, {count: number; close: () => void}>();
+
+export function retainLocalComputeSaveConnection(
+	modelViewUrl: string,
+	reload: () => void,
+	openSource?: (url: string) => LocalComputeSaveSource,
+): {release: () => void} {
+	if (!isLocalComputeModelViewUrl(modelViewUrl)) return {release() {}};
+
+	const origin = new URL(modelViewUrl).origin;
+	const current = saveConnections.get(origin);
+	if (current) current.count += 1;
+	else {
+		const connection = openLocalComputeSaveConnection(
+			modelViewUrl,
+			reload,
+			openSource,
+		);
+		saveConnections.set(origin, {
+			count: 1,
+			close: () => connection.close(),
+		});
+	}
+
+	let released = false;
+	return {
+		release() {
+			if (released) return;
+			released = true;
+			const entry = saveConnections.get(origin);
+			if (!entry) return;
+			entry.count -= 1;
+			if (entry.count > 0) return;
+			entry.close();
+			saveConnections.delete(origin);
 		},
 	};
 }
