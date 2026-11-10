@@ -96,5 +96,6 @@ Only an `export` source can contain other sources, in its `parameterValues`.
 ## Pitfalls
 
 - **Identical sources are resolved once.** Two entries with the same `type` and `props` share one result. Make them differ if each target needs its own upload or model state.
+- **`sdtf` uploads are shared by chunk.** Two `sdtf` sources that read the same output into the same session, and differ only by `chunk`, download and upload that file once. Each value still gets its own chunk. The same output into two sessions is still uploaded once per session.
 - **Wrong target** (a missing parameter, or the wrong type): an action fails for a missing parameter. With the wrong type it writes `""` and fails only if that is not valid. Elsewhere a warning is logged, and the entry is handled like a failed source.
 - **The sdTF chunk** must match the parameter type, otherwise Grasshopper receives no data.

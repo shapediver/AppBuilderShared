@@ -23,11 +23,7 @@ import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/crea
 import {getCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {
-	ResAssetDefinition,
-	ResExport,
-	ResStypeParameter,
-} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	Converter,
 	EXPORT_TYPE,
@@ -36,6 +32,11 @@ import {
 	PARAMETER_TYPE,
 } from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
+import {
+	createSdtfUploadCache,
+	formatSdtfParameterValue,
+	SdtfUploadCache,
+} from "./uploadSdtfAsset";
 
 export type ResolveParameterValueSourcesContext = {
 	namespace: string;
@@ -356,7 +357,8 @@ async function resolveSdtf(
 	source: IAppBuilderParameterValueSourcePropsSdtf,
 	namespace: string,
 	uploadNamespace: string,
-	index: number,
+	uploadCache: SdtfUploadCache,
+	ensureProcessManager: () => string,
 ): Promise<string | undefined> {
 	const output = getOutput(source.sessionId || namespace, source.name);
 	if (!output) {
@@ -380,38 +382,21 @@ async function resolveSdtf(
 		return undefined;
 	}
 
-	const assetDefinition = fetch(output.content[0].href)
-		.then((response) => response.arrayBuffer())
-		.then(async (arrayBuffer) => {
-			const uploaded: ResAssetDefinition[] = await session.uploadSDTF([
-				arrayBuffer,
-			]);
-			const sdtfResponse: ResStypeParameter = {
-				asset: {id: uploaded[0].id},
-			};
-			if (source.chunk !== undefined) {
-				sdtfResponse.asset!.chunk = source.chunk;
-			}
-			return JSON.stringify(sdtfResponse, null, 2);
-		})
-		.catch((error) => {
-			Logger.warn(
-				"Could not resolve sdTF parameter value source.",
-				error,
-			);
-			return undefined;
-		});
-
-	const {createProcessManager, addProcess} =
-		useShapeDiverStoreProcessManager.getState();
-	const processManagerId = createProcessManager(namespace);
-	addProcess(processManagerId, {
-		id: `sdtf-${source.name}-${index}`,
-		name: `sdTF: ${source.name}`,
-		promise: assetDefinition,
+	const {addProcess} = useShapeDiverStoreProcessManager.getState();
+	const assetId = await uploadCache.uploadAsset({
+		uploadNamespace,
+		url: output.content[0].href,
+		session,
+		onUploadStart: (upload) => {
+			addProcess(ensureProcessManager(), {
+				id: `sdtf-${source.name}-${uploadNamespace}`,
+				name: `sdTF: ${source.name}`,
+				promise: upload,
+			});
+		},
 	});
-
-	return assetDefinition;
+	if (!assetId) return undefined;
+	return formatSdtfParameterValue(assetId, source.chunk);
 }
 
 async function resolveExport(
@@ -476,7 +461,8 @@ async function resolveOne(
 	id: string,
 	namespace: string,
 	context: ResolveParameterValueSourcesContext,
-	index: number,
+	uploadCache: SdtfUploadCache,
+	ensureProcessManager: () => string,
 ): Promise<unknown> {
 	const parameter = findSessionParameter(namespace, id);
 	if (!parameter) {
@@ -535,7 +521,13 @@ async function resolveOne(
 			);
 			return undefined;
 		}
-		return resolveSdtf(source.props, context.namespace, namespace, index);
+		return resolveSdtf(
+			source.props,
+			context.namespace,
+			namespace,
+			uploadCache,
+			ensureProcessManager,
+		);
 	}
 	if (isExportSource(source)) {
 		if (type !== PARAMETER_TYPE.FILE) {
@@ -605,6 +597,15 @@ export async function resolveParameterValueSources(
 
 	const flat = flattenSources(parameterValues);
 	const resolvedMap = new Map<string, unknown>();
+	const uploadCache = createSdtfUploadCache();
+	const {createProcessManager} = useShapeDiverStoreProcessManager.getState();
+	let processManagerId: string | undefined;
+	const ensureProcessManager = () => {
+		if (processManagerId === undefined) {
+			processManagerId = createProcessManager(context.namespace);
+		}
+		return processManagerId;
+	};
 	let pending = Array.from(flat.values());
 
 	while (pending.length > 0) {
@@ -638,13 +639,14 @@ export async function resolveParameterValueSources(
 		}
 
 		const values = await Promise.all(
-			ready.map((entry, index) =>
+			ready.map((entry) =>
 				resolveOne(
 					sourceWithResolvedNestedValues(entry, resolvedMap),
 					entry.id,
 					entry.namespace || context.namespace,
 					context,
-					index,
+					uploadCache,
+					ensureProcessManager,
 				),
 			),
 		);
