@@ -725,6 +725,19 @@ export function selectionSlotNameFilterKey(
 }
 
 /**
+ * Cache key for one root's selection. {@link selectionSlotGroupKey} ignores
+ * the namespace, and two App Builders can share a viewport and the same
+ * selection config.
+ */
+export function selectionSlotCacheKey(
+	namespace: string,
+	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
+	viewportId: string,
+): string {
+	return `${namespace}\0${selectionSlotGroupKey(eventProps, viewportId)}`;
+}
+
+/**
  * Full effective `useSelection` config. Slots that share this key share one
  * interaction manager; different colors/max/hover become separate groups.
  * Color keys preserve omitted vs explicit `null` (`JSON.stringify` drops

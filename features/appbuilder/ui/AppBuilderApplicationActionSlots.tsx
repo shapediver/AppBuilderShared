@@ -121,7 +121,9 @@ function itemsNamed(
 }
 
 function runSlot(
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
+	handlersRef: MutableRefObject<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>,
 	item: ResolvedActionSlot,
 ): void {
 	handlersRef.current[actionSlotHandlerKey(item.eventName, item.index)]?.();
@@ -147,7 +149,9 @@ const COMPUTATION_LISTENERS = [
  */
 export function useComputationSlotListeners(
 	resolved: ResolvedActionSlot[],
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
+	handlersRef: MutableRefObject<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>,
 	namespace: string,
 	taskFilter?: ComputationTaskFilter,
 ): void {
@@ -206,7 +210,9 @@ function ActionSlotRunners({
 	registerCustomGlobally,
 }: {
 	resolved: ResolvedActionSlot[];
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
+	handlersRef: MutableRefObject<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>;
 	namespace: string;
 	viewportId: string;
 	fullscreenId?: string;
@@ -226,9 +232,7 @@ function ActionSlotRunners({
 					registerTrigger={(trigger) => {
 						handlersRef.current[
 							actionSlotHandlerKey(eventName, index)
-						] = () => {
-							void trigger();
-						};
+						] = () => trigger();
 					}}
 				/>
 			))}
@@ -259,7 +263,9 @@ function ApplicationSlotListeners({
 	namespace: string;
 	viewportId: string;
 	hasViewport: boolean;
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
+	handlersRef: MutableRefObject<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>;
 }) {
 	const appreadyFiredForNamespace = useRef<string | undefined>(undefined);
 
@@ -348,7 +354,9 @@ export default function AppBuilderApplicationActionSlots({
 	const {viewportComponent, interactionSlotListeners} =
 		useContext(ComponentContext);
 	const InteractionSlotListeners = interactionSlotListeners?.component;
-	const handlersRef = useRef<Record<string, (() => void) | undefined>>({});
+	const handlersRef = useRef<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>({});
 	const resolved = useMemo(
 		() =>
 			pickAllowedActionSlots(
@@ -427,7 +435,9 @@ export function AppBuilderParameterComputationSlots({
 	parameterId: string;
 }) {
 	const {viewportId} = useViewportId();
-	const handlersRef = useRef<Record<string, (() => void) | undefined>>({});
+	const handlersRef = useRef<
+		Record<string, (() => void | Promise<void>) | undefined>
+	>({});
 	const resolved = useMemo(
 		() =>
 			pickAllowedActionSlots(
