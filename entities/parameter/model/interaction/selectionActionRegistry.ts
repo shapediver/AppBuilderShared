@@ -54,15 +54,32 @@ export type SelectionActionContext = {
 const targets = new Map<string, SelectionActionTarget>();
 
 /**
- * How many selection actions are on the stack. The action that is applying
- * runs `selecton` / `selectoff`. A selection action started by those slots
- * still changes the selection, and does not run the slots again.
+ * How many selection actions are on the stack. The outermost action runs
+ * `selecton` / `selectoff`. One started while those slots are being
+ * delivered still changes the selection, and does not run the slots again.
  */
 let selectionActionDepth = 0;
 
-/** Whether the selection change of the action that is applying should run slots. */
+/** How many `selecton` / `selectoff` deliveries are on the stack. */
+let selectionSlotDispatchDepth = 0;
+
+/** Whether this selection change should run `selecton` / `selectoff`. */
 export function shouldEmitSelectionActionSlots(): boolean {
-	return selectionActionDepth <= 1;
+	return selectionActionDepth <= 1 && selectionSlotDispatchDepth === 0;
+}
+
+/**
+ * Deliver selection slots. An action they start does not deliver them
+ * again. The guard ends when this call returns, so a later action does run
+ * the slots.
+ */
+export function runSelectionSlotDispatch(run: () => void): void {
+	selectionSlotDispatchDepth++;
+	try {
+		run();
+	} finally {
+		selectionSlotDispatchDepth--;
+	}
 }
 
 type NameFinder = (nameFilter: readonly string[]) => readonly string[];
@@ -96,6 +113,7 @@ export const registerSelectionActionTarget = (
 export const resetSelectionActionTargets = () => {
 	targets.clear();
 	selectionActionDepth = 0;
+	selectionSlotDispatchDepth = 0;
 };
 
 const uniqueNames = (names: readonly string[]): string[] => {

@@ -6,6 +6,7 @@ import {
 	applySelectionAction,
 	registerSelectionActionTarget,
 	resetSelectionActionTargets,
+	runSelectionSlotDispatch,
 	setSelectionActionNameFinder,
 	shouldEmitSelectionActionSlots,
 } from "../selectionActionRegistry";
@@ -178,6 +179,25 @@ describe("applySelectionAction", () => {
 
 		expect(slotRuns).toEqual([true, false]);
 		expect(boxes.setSelectedNames).toHaveBeenLastCalledWith(["Boxes.2"]);
+	});
+
+	it("does not run slots for a selection action started by those slots", () => {
+		const boxes = createTarget("Boxes", ["Boxes.1", "Boxes.2"], {
+			root: true,
+			ownerKey: "boxes",
+		});
+		const slotRuns: boolean[] = [];
+		boxes.setSelectedNames.mockImplementation(() => {
+			slotRuns.push(shouldEmitSelectionActionSlots());
+		});
+		registerSelectionActionTarget(boxes.target);
+
+		runSelectionSlotDispatch(() => {
+			run({select: ["Boxes.1"]});
+		});
+
+		expect(slotRuns).toEqual([false]);
+		expect(boxes.setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
 	});
 
 	it("runs slots again for a later selection action", () => {

@@ -1,5 +1,8 @@
 import {findNamedNodesByNameFilter} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
-import {shouldEmitSelectionActionSlots} from "@AppBuilderLib/entities/parameter/model/interaction/selectionActionRegistry";
+import {
+	runSelectionSlotDispatch,
+	shouldEmitSelectionActionSlots,
+} from "@AppBuilderLib/entities/parameter/model/interaction/selectionActionRegistry";
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useSelectionActionTarget} from "@AppBuilderLib/entities/parameter/model/interaction/useSelectionActionTarget";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
@@ -227,9 +230,14 @@ function InteractionSlotGroup({
 
 	const fireNamed = useCallback(
 		(eventName: string) => {
-			for (const item of itemsRef.current) {
-				if (item.eventName === eventName) runSlot(handlersRef, item);
-			}
+			// Held only while the handlers run. An action they start does not
+			// deliver selecton / selectoff again. A later action does.
+			runSelectionSlotDispatch(() => {
+				for (const item of itemsRef.current) {
+					if (item.eventName === eventName)
+						runSlot(handlersRef, item);
+				}
+			});
 		},
 		[handlersRef],
 	);
