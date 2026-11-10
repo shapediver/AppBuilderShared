@@ -387,9 +387,9 @@ async function resolveSdtf(
 		uploadNamespace,
 		url: output.content[0].href,
 		session,
-		onUploadStart: (upload) => {
+		onUploadStart: (upload, uploadKey) => {
 			addProcess(ensureProcessManager(), {
-				id: `sdtf-${source.name}-${uploadNamespace}`,
+				id: `sdtf-${uploadKey}`,
 				name: `sdTF: ${source.name}`,
 				promise: upload,
 			});

@@ -54,6 +54,9 @@ describe("uploadSdtfAsset", () => {
 		expect(globalThis.fetch).toHaveBeenCalledTimes(1);
 		expect(uploadSDTF).toHaveBeenCalledTimes(1);
 		expect(onUploadStart).toHaveBeenCalledTimes(1);
+		expect(onUploadStart.mock.calls[0][1]).toBe(
+			"session-a|https://example.test/out.sdtf",
+		);
 	});
 
 	it("uploads once per target session for the same url", async () => {

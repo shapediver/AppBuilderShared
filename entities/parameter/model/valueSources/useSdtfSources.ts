@@ -139,12 +139,12 @@ export function useSdtfSources(props: {
 						uploadNamespace: targetNamespace,
 						url,
 						session,
-						onUploadStart: (upload) => {
+						onUploadStart: (upload, uploadKey) => {
 							if (processManagerId === undefined)
 								processManagerId =
 									createProcessManager(namespace);
 							addProcess(processManagerId, {
-								id: `sdtf-${name}-${targetNamespace}`,
+								id: `sdtf-${uploadKey}`,
 								name: `sdTF: ${name}`,
 								promise: upload,
 							});

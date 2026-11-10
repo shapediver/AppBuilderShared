@@ -21,8 +21,12 @@ export type SdtfUploadCache = {
 		/**
 		 * Called only when this request starts a new upload.
 		 * Use it to register a single process-manager entry for the shared upload.
+		 * `uploadKey` is unique per target session and content URL.
 		 */
-		onUploadStart?: (upload: Promise<string | undefined>) => void;
+		onUploadStart?: (
+			upload: Promise<string | undefined>,
+			uploadKey: string,
+		) => void;
 	}) => Promise<string | undefined>;
 };
 
@@ -72,7 +76,7 @@ export function createSdtfUploadCache(): SdtfUploadCache {
 				});
 
 			uploads.set(key, upload);
-			onUploadStart?.(upload);
+			onUploadStart?.(upload, key);
 			return upload;
 		},
 	};
