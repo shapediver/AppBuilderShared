@@ -5,6 +5,7 @@ import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
+import {useLocalComputeSaveReload} from "./useLocalComputeSaveReload";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 
 interface Props {
@@ -190,6 +191,9 @@ export function useAppBuilderSessions(props: Props) {
 		error: platformError,
 		resolveErrors,
 	} = useResolveAppBuilderSessions(sessionsForResolve, false, true);
+	useLocalComputeSaveReload(
+		(sessionData ?? []).map((session) => session.modelViewUrl),
+	);
 
 	// Close sessions that left the output, or whose slug changed. Sessions
 	// that are still listed stay open while the next list is resolving.

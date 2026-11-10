@@ -300,7 +300,7 @@ export function useAppBuilderInstances(props: Props) {
 		return sessionData;
 	}, [sessionData]);
 
-	// create the sessions
+	// create the sessions. useSessions subscribes to a localhost model view.
 	const {errors: sessionErrors} = useSessions(resolvedSessions ?? []);
 
 	useEffect(() => {
