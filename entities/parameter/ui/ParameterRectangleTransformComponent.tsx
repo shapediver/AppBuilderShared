@@ -231,21 +231,6 @@ export default function ParameterRectangleTransformComponent(
 		// editing is paused during a computation, like the other parameters
 		busy,
 	);
-	// Used only when a selection action names this parameter.
-	useSelectionActionTarget({
-		ownerKey: interactionOwnerKey,
-		candidateNodes,
-		selectedNodeNames,
-		// the same default as the selection of the rectangle transform
-		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
-		keptMinimumSelection,
-		setSelectedNames: setSelectedNodeNames,
-		parameter: {
-			namespace,
-			id: definition.id,
-			name: definition.name,
-		},
-	});
 
 	const rtLabel =
 		rectangleTransformProps.prompt?.inactiveTitle ??
@@ -278,6 +263,24 @@ export default function ParameterRectangleTransformComponent(
 		automaticallyActivated,
 		candidateNodes,
 		active: rectangleTransformActive,
+	});
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: interactionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		// the same default as the selection of the rectangle transform
+		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
+		keptMinimumSelection,
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
+		// a user cannot select either: an exclusive selection would clear the
+		// rectangle of the owner without showing one
+		enabled: !ownershipBlocked,
 	});
 	const rectangleTransformRegistered =
 		rectangleTransformActive && !ownershipBlocked;

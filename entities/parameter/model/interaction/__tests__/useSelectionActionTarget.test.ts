@@ -72,6 +72,24 @@ describe("useSelectionActionTarget", () => {
 		expect(runOnParameter({select: ["Boxes.2"]})).toEqual([]);
 	});
 
+	it("is not used while disabled", () => {
+		const props = createProps({enabled: false});
+		const {rerender} = renderHook(
+			(current: UseSelectionActionTargetProps) =>
+				useSelectionActionTarget(current),
+			{initialProps: props},
+		);
+
+		expect(runOnParameter({select: ["Boxes.1"]})).toEqual([]);
+		expect(props.setSelectedNames).not.toHaveBeenCalled();
+
+		const enabled = createProps();
+		rerender(enabled);
+
+		expect(runOnParameter({select: ["Boxes.1"]})).toEqual(["boxes"]);
+		expect(enabled.setSelectedNames).toHaveBeenCalledWith(["Boxes.1"]);
+	});
+
 	it("is not used when the action does not name the parameter", () => {
 		const props = createProps();
 		renderHook(() => useSelectionActionTarget(props));
