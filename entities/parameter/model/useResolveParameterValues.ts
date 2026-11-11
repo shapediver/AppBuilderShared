@@ -24,13 +24,51 @@ type SourceEntry = {
 };
 
 /**
- * Create a unique key for a parameter value source
+ * Create a unique key for a parameter value source in a target session.
+ * The same source object used for two sessions must resolve once per session.
  *
  * @param source The parameter value source
+ * @param namespace Target session of this use
  * @returns
  */
-const createSourceKey = (source: IAppBuilderParameterValueSourceDefinition) => {
-	return `${source.type + ""}|${JSON.stringify(source.props)}`;
+const createSourceKey = (
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => `${namespace ?? ""}|${source.type + ""}|${JSON.stringify(source.props)}`;
+
+/** Namespaces for which a source object is on the stack or already flattened. */
+type SourceVisits = WeakMap<
+	IAppBuilderParameterValueSourceDefinition,
+	Set<string>
+>;
+
+const visitNamespace = (namespace?: string) => namespace ?? "";
+
+const hasSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => visits.get(source)?.has(visitNamespace(namespace)) ?? false;
+
+const addSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => {
+	let namespaces = visits.get(source);
+	if (!namespaces) {
+		namespaces = new Set();
+		visits.set(source, namespaces);
+	}
+	namespaces.add(visitNamespace(namespace));
+};
+
+const removeSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => {
+	visits.get(source)?.delete(visitNamespace(namespace));
 };
 
 /**
@@ -39,15 +77,15 @@ const createSourceKey = (source: IAppBuilderParameterValueSourceDefinition) => {
  *
  * @param parameterInfo The parameter value definition possibly containing the source
  * @param map The flat map to add to
- * @param resolving The set of currently resolving sources (for cycle detection)
- * @param resolved The set of already resolved sources
+ * @param resolving Sources currently on the stack, keyed by target namespace
+ * @param resolved Sources already flattened for a target namespace
  * @returns
  */
 const addSourceToFlatMap = (
 	parameterInfo: ParameterValueDefinition,
 	map: Map<string, SourceEntry>,
-	resolving: WeakSet<IAppBuilderParameterValueSourceDefinition>,
-	resolved: WeakSet<IAppBuilderParameterValueSourceDefinition>,
+	resolving: SourceVisits,
+	resolved: SourceVisits,
 ) => {
 	const {id, value, namespace} = parameterInfo;
 
@@ -60,16 +98,16 @@ const addSourceToFlatMap = (
 
 	// cycle detection
 	// The source is already being resolved higher up in the call stack
-	if (resolving.has(value)) {
+	if (hasSourceVisit(resolving, value, namespace)) {
 		Logger.warn(
 			`Cycle detected while flattening Parameter Value Sources. Source with id '${id}' is already being resolved higher up in the call stack.`,
 		);
 		return;
 	}
-	// already resolved
-	if (resolved.has(value)) return;
+	// already resolved for this target session
+	if (hasSourceVisit(resolved, value, namespace)) return;
 
-	resolving.add(value);
+	addSourceVisit(resolving, value, namespace);
 
 	// check for nested sources, currently only Export sources can have nested sources
 	const nested = isExportSource(value) && value.props.parameterValues;
@@ -93,8 +131,10 @@ const addSourceToFlatMap = (
 				isParameterSource(child)
 			) {
 				// track this nested source
-				const childSourceKey = createSourceKey(child);
-				nestedSourceKeys.set(childKey, childSourceKey);
+				nestedSourceKeys.set(
+					childKey,
+					createSourceKey(child, nestedNamespace),
+				);
 			}
 
 			addSourceToFlatMap(
@@ -106,8 +146,8 @@ const addSourceToFlatMap = (
 		}
 	}
 
-	// add to map if not already present
-	const key = createSourceKey(value);
+	// add to map if not already present for this target session
+	const key = createSourceKey(value, namespace);
 	if (!map.has(key)) {
 		map.set(key, {
 			index: map.size,
@@ -119,9 +159,9 @@ const addSourceToFlatMap = (
 		});
 	}
 
-	// mark as resolved
-	resolving.delete(value);
-	resolved.add(value);
+	// mark as resolved for this target session
+	removeSourceVisit(resolving, value, namespace);
+	addSourceVisit(resolved, value, namespace);
 };
 
 /**
@@ -135,9 +175,9 @@ const flattenSources = (
 ): Map<string, SourceEntry> => {
 	const map: Map<string, SourceEntry> = new Map();
 
-	// sets for cycle detection
-	const resolving = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
-	const resolved = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
+	// visits for cycle detection, once per target session
+	const resolving: SourceVisits = new WeakMap();
+	const resolved: SourceVisits = new WeakMap();
 
 	if (parameterValues) {
 		for (const param of parameterValues) {
@@ -166,9 +206,9 @@ export function useResolveParameterValues(props?: {
 	/**
 	 * Flatten all parameter value sources into a map
 	 * This allows us to:
-	 * - only load each unique source once
+	 * - resolve each unique source once per target session
 	 * - not get into issues with nested sources
-	 * - allows us to maintain the order of sources for the returned values
+	 * - maintain the order of sources for the returned values
 	 */
 	const sourceData = useMemo(() => {
 		if (!parameterValues || !namespace) return undefined;
@@ -202,7 +242,7 @@ export function useResolveParameterValues(props?: {
 		// two sessions use the same name for different sources.
 		const sourceIndexByParameter: (number | undefined)[] =
 			parameterValues.map((param) => {
-				const {id, value} = param;
+				const {id, value, namespace: paramNamespace} = param;
 				if (
 					typeof value !== "object" ||
 					value === null ||
@@ -210,7 +250,7 @@ export function useResolveParameterValues(props?: {
 				)
 					return undefined;
 
-				const entry = flat.get(createSourceKey(value));
+				const entry = flat.get(createSourceKey(value, paramNamespace));
 				if (!entry) {
 					Logger.warn(
 						`Top-level parameter value source not found in flattened map for parameter ${id}.`,
@@ -419,7 +459,7 @@ export function useResolveParameterValues(props?: {
 
 		for (const pending of resolutionState.pendingSources) {
 			const entry = flatArray[pending.entryIndex];
-			const key = createSourceKey(entry.source);
+			const key = createSourceKey(entry.source, entry.namespace);
 			newResolvedMap.set(key, undefined);
 		}
 
@@ -449,7 +489,7 @@ export function useResolveParameterValues(props?: {
 		for (let i = 0; i < currentPassSources.length; i++) {
 			const source = currentPassSources[i];
 			const entry = flatArray[source.entryIndex];
-			const key = createSourceKey(entry.source);
+			const key = createSourceKey(entry.source, entry.namespace);
 			newResolvedMap.set(key, currentPassResolved[i]);
 
 			// Remove from pending
@@ -488,7 +528,7 @@ export function useResolveParameterValues(props?: {
 		const result: unknown[] = [];
 
 		for (const entry of flatArray) {
-			const key = createSourceKey(entry.source);
+			const key = createSourceKey(entry.source, entry.namespace);
 			const resolved = resolutionState.resolvedMap.get(key);
 			result.push(resolved);
 		}
