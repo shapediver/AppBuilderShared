@@ -6,6 +6,10 @@ import {
 	IShapeDiverOutput,
 	IShapeDiverOutputDefinition,
 } from "@AppBuilderLib/entities/output/config/output";
+import {
+	beginComputationSpan,
+	failComputationSpan,
+} from "@AppBuilderLib/features/appbuilder/model/computationSpan";
 import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {
 	EventActionEnum,
@@ -275,6 +279,7 @@ const registerInProcessManager = (session: ISessionApi) => {
 	return {
 		resolve: resolveMainPromise!,
 		reject,
+		processManagerId,
 	};
 };
 
@@ -322,9 +327,21 @@ function createGenericParameterExecutorForSession(
 		let action: EventActionEnum = EventActionEnum.CUSTOMIZE;
 
 		// create a process manager for the session customization
-		const {resolve, reject} = registerInProcessManager(session);
+		const {resolve, reject, processManagerId} =
+			registerInProcessManager(session);
 
 		try {
+			// The same check `customize` uses to return before any task.
+			// Reading it here keeps a missing parameter inside the try, so
+			// the process manager is still rejected.
+			const valuesChange = Object.keys(values).some((id) => {
+				const parameter = session.parameters[id];
+				return (
+					parameter !== undefined &&
+					parameter.sessionValue !== values[id]
+				);
+			});
+
 			// set values and call customize
 			Object.keys(values).forEach(
 				(id) => (session.parameters[id].value = values[id]),
@@ -349,7 +366,23 @@ function createGenericParameterExecutorForSession(
 				const response = await session.requestExports(body, true);
 				exportResponseSetter(response.exports as IExportResponse);
 			} else {
-				await session.customize();
+				// The values are set, and the process manager already exists.
+				// computationstart runs now, before TASK_START. computationend
+				// waits until this manager and every manager it leads to are gone.
+				// An unchanged call returns before any task, so it is not a span.
+				const computationGeneration = valuesChange
+					? beginComputationSpan(session.id, processManagerId)
+					: undefined;
+				try {
+					await session.customize();
+				} catch (e) {
+					// Only this customization. A newer one that joined keeps
+					// its own computationend.
+					if (computationGeneration !== undefined) {
+						failComputationSpan(session.id, computationGeneration);
+					}
+					throw e;
+				}
 			}
 
 			// resolve the promise of the process manager
