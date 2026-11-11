@@ -175,6 +175,59 @@ describe("useResolveParameterValues", () => {
 			"resolved:session-a:sdtf",
 		]);
 	});
+
+	it("does not return empty strings while a new session is still resolving", async () => {
+		const source = sdtfSource("shared_output");
+		const valueSnapshots: (string[] | undefined)[] = [];
+		const {result, rerender} = renderHook(
+			({parameterValues}) => {
+				const resolved = useResolveParameterValues({
+					namespace: "default",
+					parameterValues,
+				});
+				valueSnapshots.push(resolved.values);
+				return resolved;
+			},
+			{
+				initialProps: {
+					parameterValues: [
+						{id: "mesh", namespace: "session-a", value: source},
+					],
+				},
+			},
+		);
+
+		await waitFor(() =>
+			expect(result.current.values).toEqual(["resolved:session-a:sdtf"]),
+		);
+
+		const snapshotCountBeforeRerender = valueSnapshots.length;
+		rerender({
+			parameterValues: [
+				{id: "mesh", namespace: "session-a", value: source},
+				{id: "mesh", namespace: "session-b", value: source},
+			],
+		});
+
+		await waitFor(() =>
+			expect(result.current.values).toEqual([
+				"resolved:session-a:sdtf",
+				"resolved:session-b:sdtf",
+			]),
+		);
+
+		const afterRerender = valueSnapshots.slice(snapshotCountBeforeRerender);
+		expect(afterRerender.length).toBeGreaterThan(0);
+		expect(
+			afterRerender.some(
+				(values) =>
+					Array.isArray(values) &&
+					values.length === 2 &&
+					values[1] === "",
+			),
+		).toBe(false);
+		expect(afterRerender).toContainEqual(undefined);
+	});
 });
 
 function firstResolvedSources() {

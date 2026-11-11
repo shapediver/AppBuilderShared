@@ -263,10 +263,14 @@ export function useResolveParameterValues(props?: {
 		return {sources, sourceIndexByParameter, flat};
 	}, [parameterValues, namespace]);
 
+	type SourceData = NonNullable<typeof sourceData>;
+
 	// Multi-pass resolution: iteratively resolve sources until all are resolved or no progress is made
 	// This handles n-level nested sources
 	const [resolutionState, setResolutionState] = useState<
 		| {
+				/** Generation of sourceData this state belongs to; stale until the effect resets. */
+				sourceData: SourceData;
 				currentPass: number;
 				resolvedMap: Map<string, unknown>;
 				pendingSources: {
@@ -278,6 +282,11 @@ export function useResolveParameterValues(props?: {
 		  }
 		| undefined
 	>(undefined);
+
+	const resolutionMatchesSourceData =
+		!!sourceData &&
+		!!resolutionState &&
+		resolutionState.sourceData === sourceData;
 
 	// Initialize resolution state when sourceData changes
 	useEffect(() => {
@@ -295,6 +304,7 @@ export function useResolveParameterValues(props?: {
 		}));
 
 		setResolutionState({
+			sourceData,
 			currentPass: 0,
 			resolvedMap: new Map(),
 			pendingSources,
@@ -303,7 +313,8 @@ export function useResolveParameterValues(props?: {
 
 	// Determine which sources can be resolved in the current pass
 	const currentPassSources = useMemo(() => {
-		if (!sourceData || !resolutionState) return undefined;
+		if (!sourceData || !resolutionState || !resolutionMatchesSourceData)
+			return undefined;
 
 		const flatArray = Array.from(sourceData.flat.values());
 		const sources: {
@@ -433,7 +444,7 @@ export function useResolveParameterValues(props?: {
 		}
 
 		return sources;
-	}, [sourceData, resolutionState]);
+	}, [sourceData, resolutionState, resolutionMatchesSourceData]);
 
 	// Resolve sources for current pass
 	const currentPassResolved = useParameterValueSources(
@@ -450,7 +461,8 @@ export function useResolveParameterValues(props?: {
 	// resolution pending forever. This keeps bridge process managers from
 	// staying alive forever on terminal source-resolution failures.
 	useEffect(() => {
-		if (!sourceData || !resolutionState) return;
+		if (!sourceData || !resolutionState || !resolutionMatchesSourceData)
+			return;
 		if (resolutionState.pendingSources.length === 0) return;
 		if (currentPassSources !== undefined) return;
 
@@ -464,17 +476,24 @@ export function useResolveParameterValues(props?: {
 		}
 
 		setResolutionState({
+			sourceData: resolutionState.sourceData,
 			currentPass: resolutionState.currentPass + 1,
 			resolvedMap: newResolvedMap,
 			pendingSources: [],
 		});
-	}, [sourceData, resolutionState, currentPassSources]);
+	}, [
+		sourceData,
+		resolutionState,
+		resolutionMatchesSourceData,
+		currentPassSources,
+	]);
 
 	// Update resolution state with newly resolved values
 	useEffect(() => {
 		if (
 			!sourceData ||
 			!resolutionState ||
+			!resolutionMatchesSourceData ||
 			!currentPassSources ||
 			!currentPassResolved
 		) {
@@ -505,6 +524,7 @@ export function useResolveParameterValues(props?: {
 		if (newPending.length === 0) {
 			// All sources resolved
 			setResolutionState({
+				sourceData: resolutionState.sourceData,
 				currentPass: resolutionState.currentPass + 1,
 				resolvedMap: newResolvedMap,
 				pendingSources: [],
@@ -512,16 +532,24 @@ export function useResolveParameterValues(props?: {
 		} else {
 			// More sources to resolve, trigger next pass
 			setResolutionState({
+				sourceData: resolutionState.sourceData,
 				currentPass: resolutionState.currentPass + 1,
 				resolvedMap: newResolvedMap,
 				pendingSources: newPending,
 			});
 		}
-	}, [sourceData, currentPassSources, currentPassResolved]);
+	}, [
+		sourceData,
+		resolutionState,
+		resolutionMatchesSourceData,
+		currentPassSources,
+		currentPassResolved,
+	]);
 
 	// Extract final resolved sources in correct order
 	const resolvedSources = useMemo(() => {
-		if (!sourceData || !resolutionState) return undefined;
+		if (!sourceData || !resolutionState || !resolutionMatchesSourceData)
+			return undefined;
 		if (resolutionState.pendingSources.length > 0) return undefined;
 
 		const flatArray = Array.from(sourceData.flat.values());
@@ -534,7 +562,7 @@ export function useResolveParameterValues(props?: {
 		}
 
 		return result;
-	}, [sourceData, resolutionState]);
+	}, [sourceData, resolutionState, resolutionMatchesSourceData]);
 
 	// Once the sources are resolved, map them back to the original parameter values
 	// Return exact same structure as before, the indexes match the original parameterValues array
@@ -589,11 +617,16 @@ export function useResolveParameterValues(props?: {
 	// 2. There are pending sources, OR the resolved parameters are not ready yet
 	const isResolving = useMemo(() => {
 		if (!sourceData) return false;
-		if (!resolutionState) return true; // Still initializing
+		if (!resolutionState || !resolutionMatchesSourceData) return true; // Still initializing or stale
 		if (resolutionState.pendingSources.length > 0) return true; // Still resolving
 		if (sourceData.flat.size > 0 && !resolvedParameters) return true; // Sources exist but not resolved yet
 		return false;
-	}, [sourceData, resolutionState, resolvedParameters]);
+	}, [
+		sourceData,
+		resolutionState,
+		resolutionMatchesSourceData,
+		resolvedParameters,
+	]);
 
 	return {
 		values: resolvedParameters,
