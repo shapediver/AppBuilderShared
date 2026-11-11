@@ -7,6 +7,7 @@ import {ITreeNode} from "@shapediver/viewer.session";
 import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
+import {resolveSelectionInteractionFlags} from "./resolveSelectionInteractionFlags";
 import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
 import {useHoverManager} from "./useHoverManager";
 import {
@@ -203,6 +204,11 @@ export function useSelection(
 		const nodesInteractionInput: {
 			[key: string]: IUseNodeInteractionDataProps;
 		} = {};
+		const interactionSettings = resolveSelectionInteractionFlags({
+			maximumSelection: selectionProps.maximumSelection,
+			hover: selectionProps.hover,
+			singleCandidateSuppressed,
+		});
 
 		if (patterns.outputPatterns) {
 			Object.entries(patterns.outputPatterns).forEach(
@@ -215,12 +221,7 @@ export function useSelection(
 							componentId,
 							outputId,
 							patterns: pattern,
-							interactionSettings: {
-								select: !singleCandidateSuppressed,
-								hover:
-									!singleCandidateSuppressed &&
-									selectionProps.hover,
-							},
+							interactionSettings,
 							selectManagerRef,
 							removeAvailableEffectsRef,
 							applyEffectsRef,
@@ -237,12 +238,7 @@ export function useSelection(
 					nodesInteractionInput[instanceId] = {
 						componentId,
 						patterns: pattern,
-						interactionSettings: {
-							select: !singleCandidateSuppressed,
-							hover:
-								!singleCandidateSuppressed &&
-								selectionProps.hover,
-						},
+						interactionSettings,
 						selectManagerRef,
 						removeAvailableEffectsRef,
 						strictNaming,
