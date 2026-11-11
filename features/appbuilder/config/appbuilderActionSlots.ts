@@ -35,7 +35,8 @@ export interface IAppBuilderActionSlotEventPropsExport extends IAppBuilderAction
  * to replace `selectionProperties`.
  *
  * `deselectOnEmpty` is always true. `minimumSelection` defaults to 0 and
- * `maximumSelection` to 1 (same as anchors). Viewer multi-select still
+ * `maximumSelection` to 1 (same as anchors). A `maximumSelection` below 1
+ * selects nothing; hover still follows `hover`. Viewer multi-select still
  * runs `selecton` / `selectoff` (there is no separate multiSelect slot).
  */
 export type IAppBuilderActionSlotEventPropsSelection = Omit<
