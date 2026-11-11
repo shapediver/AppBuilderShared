@@ -54,8 +54,14 @@ const syncManagers = (processManagers: ProcessManagers) => {
 	for (const span of [...spans.values()]) {
 		for (const id of added) {
 			const manager = processManagers[id];
-			if (manager?.controllerSessionId === span.sessionId)
-				span.members.add(id);
+			if (manager?.controllerSessionId !== span.sessionId) continue;
+			span.members.add(id);
+			// A later same-session manager (instance rebuild, default export)
+			// joins without beginComputationSpan. An older failure must not
+			// swallow computationend for that later work. Do not bump
+			// generation: failComputationSpan for the open customize must
+			// still apply if that customize throws after an instance PM joins.
+			span.failed = false;
 		}
 		for (const id of removed) span.members.delete(id);
 		if (span.members.size === 0) {
