@@ -314,6 +314,56 @@ describe("useComputationSlotListeners", () => {
 		expect(ran()).toEqual(["start"]);
 	});
 
+	it("keeps computationend when a later process manager joins a failed span", async () => {
+		const actionSlots: IAppBuilderRootActionSlots = {
+			computationstart: {action: action("start")},
+			computationend: {action: action("end")},
+		};
+		render(
+			<AppBuilderApplicationActionSlots
+				actionSlots={actionSlots}
+				namespace="s1"
+			/>,
+		);
+		const store = useShapeDiverStoreProcessManager.getState();
+		const older = store.createProcessManager("s1");
+		let resolveOlder: () => void;
+		const olderPromise = new Promise<void>((resolve) => {
+			resolveOlder = resolve;
+		});
+		store.addProcess(older, {
+			name: "Session Process",
+			promise: olderPromise,
+		});
+		const olderGeneration = beginComputationSpan("s1", older);
+		emit("task.end", "t1");
+		failComputationSpan("s1", olderGeneration);
+
+		// Default export (and instance rebuild) create a manager without
+		// beginComputationSpan; syncManagers still folds it into the span.
+		const exportManager = useShapeDiverStoreProcessManager
+			.getState()
+			.createProcessManager("s1");
+		let resolveExport: () => void;
+		const exportPromise = new Promise<void>((resolve) => {
+			resolveExport = resolve;
+		});
+		useShapeDiverStoreProcessManager.getState().addProcess(exportManager, {
+			name: "Session Process",
+			promise: exportPromise,
+		});
+		emit("task.end", "t2");
+		expect(ran()).toEqual(["start"]);
+
+		resolveOlder!();
+		await olderPromise;
+		expect(ran()).toEqual(["start"]);
+
+		resolveExport!();
+		await exportPromise;
+		expect(ran()).toEqual(["start", "end"]);
+	});
+
 	it("keeps computationend when a failed task no longer owns the span", async () => {
 		const actionSlots: IAppBuilderRootActionSlots = {
 			computationstart: {action: action("start")},
