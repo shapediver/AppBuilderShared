@@ -1,4 +1,4 @@
-import type {NamedNode} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
+import type {NamedNode} from "@AppBuilderLib/entities/parameter/config/namedNode";
 import {resolveSelectionActionChange} from "@AppBuilderLib/entities/parameter/lib/selectionAction";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreParameters} from "../useShapeDiverStoreParameters";
