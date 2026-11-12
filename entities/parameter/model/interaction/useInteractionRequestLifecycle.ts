@@ -69,9 +69,14 @@ export const useInteractionRequestLifecycle = ({
 					? {
 							type: "passive",
 							viewportId,
-							disable: () =>
-								callbacksRef.current.onSuspend?.() ??
-								callbacksRef.current.onDisable(),
+							// suspend when supported, disable otherwise (not both:
+							// onSuspend returns nothing, `??` would always disable)
+							disable: () => {
+								const {onSuspend, onDisable} =
+									callbacksRef.current;
+								if (onSuspend) onSuspend();
+								else onDisable();
+							},
 							enable: () => callbacksRef.current.onResume?.(),
 						}
 					: {
