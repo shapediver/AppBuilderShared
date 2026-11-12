@@ -29,12 +29,16 @@ jest.mock("@shapediver/viewer.session", () => {
 	};
 });
 
-jest.mock("@shapediver/viewer.features.interaction", () => ({
-	SelectManager: class {},
-	MultiSelectManager: class {},
-	matchNodesWithPatterns: (_pattern: unknown, nodes: {name: string}[]) =>
-		nodes.map((node) => node.name),
-}));
+jest.mock(
+	"@shapediver/viewer.features.interaction",
+	() => ({
+		SelectManager: class {},
+		MultiSelectManager: class {},
+		matchNodesWithPatterns: (_pattern: unknown, nodes: {name: string}[]) =>
+			nodes.map((node) => node.name),
+	}),
+	{virtual: true},
+);
 
 const emit = (type: string, event: unknown) =>
 	mockListeners.get(type)?.forEach((cb) => cb(event));

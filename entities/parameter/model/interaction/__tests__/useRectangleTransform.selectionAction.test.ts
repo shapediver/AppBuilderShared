@@ -39,18 +39,28 @@ jest.mock(
 		) => selector({viewports: {viewport: mockViewportApi}}),
 	}),
 );
-jest.mock("@shapediver/viewer.features.interaction", () => ({
-	getNodesByName: () => [],
-	matchNodesWithPatterns: () => [],
-	RESTRICTION_TYPE: {PLANE: "plane"},
-}));
-jest.mock("@shapediver/viewer.features.transformation-tools", () => ({
-	RectangleTransform: jest.fn().mockImplementation((...args: unknown[]) => {
-		mockRectangleTransform(...args);
-		return {closed: false, close: jest.fn(), pause: jest.fn()};
+jest.mock(
+	"@shapediver/viewer.features.interaction",
+	() => ({
+		getNodesByName: () => [],
+		matchNodesWithPatterns: () => [],
+		RESTRICTION_TYPE: {PLANE: "plane"},
 	}),
-	updateTransformation: jest.fn(),
-}));
+	{virtual: true},
+);
+jest.mock(
+	"@shapediver/viewer.features.transformation-tools",
+	() => ({
+		RectangleTransform: jest
+			.fn()
+			.mockImplementation((...args: unknown[]) => {
+				mockRectangleTransform(...args);
+				return {closed: false, close: jest.fn(), pause: jest.fn()};
+			}),
+		updateTransformation: jest.fn(),
+	}),
+	{virtual: true},
+);
 jest.mock("@shapediver/viewer.session", () => ({
 	addListener: jest.fn(),
 	removeListener: jest.fn(),

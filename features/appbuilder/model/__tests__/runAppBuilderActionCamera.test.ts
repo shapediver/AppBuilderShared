@@ -25,19 +25,23 @@ jest.mock("@AppBuilderLib/shared/lib/logger", () => ({
 
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 
-jest.mock("@shapediver/viewer.viewport", () => ({
-	Box: jest.fn(),
-	CAMERA_TYPE: {PERSPECTIVE: "perspective", ORTHOGRAPHIC: "orthographic"},
-	ORTHOGRAPHIC_CAMERA_DIRECTION: {
-		TOP: "top",
-		BOTTOM: "bottom",
-		LEFT: "left",
-		RIGHT: "right",
-		FRONT: "front",
-		BACK: "back",
-		CUSTOM: "custom",
-	},
-}));
+jest.mock(
+	"@shapediver/viewer.viewport",
+	() => ({
+		Box: jest.fn(),
+		CAMERA_TYPE: {PERSPECTIVE: "perspective", ORTHOGRAPHIC: "orthographic"},
+		ORTHOGRAPHIC_CAMERA_DIRECTION: {
+			TOP: "top",
+			BOTTOM: "bottom",
+			LEFT: "left",
+			RIGHT: "right",
+			FRONT: "front",
+			BACK: "back",
+			CUSTOM: "custom",
+		},
+	}),
+	{virtual: true},
+);
 
 const createCamera = (
 	id: string,
