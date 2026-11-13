@@ -5,7 +5,7 @@ import {
 } from "./localComputeSave";
 
 /**
- * One model view per localhost server. Path variants of the same host and port
+ * One model view per local Grasshopper server. Path variants of the same host and port
  * share the stream that `retainLocalComputeSaveConnection` keeps open.
  */
 function serversIn(modelViewUrls: readonly (string | undefined)[]): string[] {
