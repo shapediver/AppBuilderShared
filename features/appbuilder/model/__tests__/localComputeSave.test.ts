@@ -55,6 +55,103 @@ describe("local Grasshopper save reload", () => {
 		expect(reloaded).toBe(0);
 	});
 
+	it("reloads a Cloudflare quick tunnel when the poll returns a save", async () => {
+		let reloaded = 0;
+		let requested = "";
+		const connection = openLocalComputeSaveConnection(
+			"https://example.trycloudflare.com",
+			() => {
+				reloaded += 1;
+			},
+			() => {
+				throw new Error(
+					"A quick tunnel does not use the event stream.",
+				);
+			},
+			async (url, signal) => {
+				requested = url;
+				if (reloaded > 0) {
+					await new Promise((_, reject) => {
+						signal.addEventListener("abort", () =>
+							reject(new Error("aborted")),
+						);
+					});
+				}
+				return {event: "save"};
+			},
+		);
+
+		for (let attempt = 0; attempt < 20 && reloaded === 0; attempt++)
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(reloaded).toBe(1);
+		expect(requested).toBe(
+			"https://example.trycloudflare.com/api/v2/events/poll",
+		);
+		connection.close();
+	});
+
+	it("passes the generation of the last answer, so a save between two polls is not missed", async () => {
+		let reloaded = 0;
+		const requested: string[] = [];
+		const answers = [
+			{event: "timeout", generation: 4},
+			{event: "timeout", generation: 4},
+			{event: "save", generation: 5},
+		];
+		const connection = openLocalComputeSaveConnection(
+			"https://example.trycloudflare.com",
+			() => {
+				reloaded += 1;
+			},
+			undefined,
+			async (url) => {
+				requested.push(url);
+				const answer = answers.shift();
+				if (!answer) throw new Error("polled after the reload");
+				return answer;
+			},
+		);
+
+		for (let attempt = 0; attempt < 20 && reloaded === 0; attempt++)
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(reloaded).toBe(1);
+		expect(requested).toEqual([
+			"https://example.trycloudflare.com/api/v2/events/poll",
+			"https://example.trycloudflare.com/api/v2/events/poll?since=4",
+			"https://example.trycloudflare.com/api/v2/events/poll?since=4",
+		]);
+		connection.close();
+	});
+
+	it("does not reload a quick tunnel on a poll that timed out", async () => {
+		let reloaded = 0;
+		let polls = 0;
+		const connection = openLocalComputeSaveConnection(
+			"https://example.trycloudflare.com",
+			() => {
+				reloaded += 1;
+			},
+			undefined,
+			async (_url, signal) => {
+				polls += 1;
+				if (polls > 2)
+					await new Promise((_, reject) => {
+						signal.addEventListener("abort", () =>
+							reject(new Error("aborted")),
+						);
+					});
+				return {event: "timeout", generation: 1};
+			},
+		);
+
+		for (let attempt = 0; attempt < 20 && polls < 3; attempt++)
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(polls).toBe(3);
+		expect(reloaded).toBe(0);
+		connection.close();
+	});
+
 	it("never connects for a ShapeDiver host", () => {
 		let opened = 0;
 		const connection = openLocalComputeSaveConnection(
