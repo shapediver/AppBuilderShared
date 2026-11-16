@@ -11,6 +11,7 @@ import {ToolsApiConnector} from "../api/toolsApiConnector";
 import {
 	ASK_USER_QUESTION_ALREADY_OPEN,
 	ASK_USER_QUESTION_DISMISSED,
+	askUserQuestionAnswer,
 	askUserQuestionInputSchema,
 } from "../config/askUserQuestion";
 import {resolveToolset} from "../config/resolveToolset";
@@ -114,6 +115,38 @@ describe("askUserQuestionInputSchema", () => {
 		["a blank option", {questions: [{question: "Q?", options: ["a", ""]}]}],
 	])("rejects %s", (_label, input) => {
 		expect(askUserQuestionInputSchema.safeParse(input).success).toBe(false);
+	});
+
+	it("accepts multiSelect and rejects a non-boolean", () => {
+		const item = {question: "Q?", options: ["a", "b"]};
+		expect(
+			askUserQuestionInputSchema.safeParse({
+				questions: [{...item, multiSelect: true}],
+			}).success,
+		).toBe(true);
+		expect(
+			askUserQuestionInputSchema.safeParse({
+				questions: [{...item, multiSelect: "yes"}],
+			}).success,
+		).toBe(false);
+	});
+});
+
+describe("askUserQuestionAnswer", () => {
+	const single = {question: "Q?", options: ["a", "b", "c"]};
+	const multi = {...single, multiSelect: true};
+
+	it("single select keeps the typed text, else the picked option", () => {
+		expect(askUserQuestionAnswer(single, ["b"], "")).toBe("b");
+		expect(askUserQuestionAnswer(single, ["b"], "  own ")).toBe("own");
+		expect(askUserQuestionAnswer(single, [], " ")).toBe("");
+	});
+
+	it("multiSelect joins picked options in option order, then the text", () => {
+		expect(askUserQuestionAnswer(multi, ["c", "a"], "")).toBe("a, c");
+		expect(askUserQuestionAnswer(multi, ["b"], " own ")).toBe("b, own");
+		expect(askUserQuestionAnswer(multi, [], "own")).toBe("own");
+		expect(askUserQuestionAnswer(multi, [], "")).toBe("");
 	});
 });
 

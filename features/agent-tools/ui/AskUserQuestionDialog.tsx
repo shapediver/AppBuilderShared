@@ -1,5 +1,6 @@
 import {
 	Button,
+	Checkbox,
 	Group,
 	Modal,
 	Radio,
@@ -8,14 +9,13 @@ import {
 	TextInput,
 } from "@mantine/core";
 import {useState} from "react";
-import type {AskUserQuestionItem} from "../config/askUserQuestion";
+import {
+	askUserQuestionAnswer,
+	type AskUserQuestionItem,
+} from "../config/askUserQuestion";
 import {useAskUserQuestionStore} from "../model/useAskUserQuestionStore";
 
-type Draft = {option: string | null; text: string};
-
-function answerOf(draft: Draft): string {
-	return draft.text.trim() || draft.option || "";
-}
+type Draft = {picked: string[]; text: string};
 
 /**
  * Page dialog for `ask_user_question` called through WebMCP or ToolsApi
@@ -44,9 +44,11 @@ function AskUserQuestionModal(props: {
 }) {
 	const {id, questions} = props;
 	const [drafts, setDrafts] = useState<Draft[]>(() =>
-		questions.map(() => ({option: null, text: ""})),
+		questions.map(() => ({picked: [], text: ""})),
 	);
-	const answers = drafts.map(answerOf);
+	const answers = questions.map((item, index) =>
+		askUserQuestionAnswer(item, drafts[index].picked, drafts[index].text),
+	);
 	const complete = answers.every((answer) => answer !== "");
 
 	const update = (index: number, draft: Draft) =>
@@ -72,30 +74,59 @@ function AskUserQuestionModal(props: {
 				<Stack gap="lg">
 					{questions.map((item, index) => (
 						<Stack gap="xs" key={index}>
-							<Radio.Group
-								label={item.question}
-								value={drafts[index].option}
-								onChange={(option) =>
-									update(index, {option, text: ""})
-								}
-							>
-								<Stack gap="xs" pt="xs">
-									{item.options.map((option) => (
-										<Radio
-											key={option}
-											value={option}
-											label={option}
-										/>
-									))}
-								</Stack>
-							</Radio.Group>
+							{item.multiSelect ? (
+								<Checkbox.Group
+									label={item.question}
+									value={drafts[index].picked}
+									onChange={(picked) =>
+										update(index, {
+											...drafts[index],
+											picked,
+										})
+									}
+								>
+									<Stack gap="xs" pt="xs">
+										{item.options.map((option) => (
+											<Checkbox
+												key={option}
+												value={option}
+												label={option}
+											/>
+										))}
+									</Stack>
+								</Checkbox.Group>
+							) : (
+								<Radio.Group
+									label={item.question}
+									value={drafts[index].picked[0] ?? null}
+									onChange={(option) =>
+										update(index, {
+											picked: [option],
+											text: "",
+										})
+									}
+								>
+									<Stack gap="xs" pt="xs">
+										{item.options.map((option) => (
+											<Radio
+												key={option}
+												value={option}
+												label={option}
+											/>
+										))}
+									</Stack>
+								</Radio.Group>
+							)}
 							<TextInput
 								aria-label={`Other answer: ${item.question}`}
 								placeholder="Other answer"
 								value={drafts[index].text}
 								onChange={(event) =>
 									update(index, {
-										option: null,
+										// Single select: typing replaces the option.
+										picked: item.multiSelect
+											? drafts[index].picked
+											: [],
 										text: event.currentTarget.value,
 									})
 								}
@@ -116,7 +147,11 @@ function AskUserQuestionModal(props: {
 						>
 							Dismiss
 						</Button>
-						<Button type="submit" disabled={!complete}>
+						<Button
+							type="submit"
+							variant="filled"
+							disabled={!complete}
+						>
 							Submit
 						</Button>
 					</Group>

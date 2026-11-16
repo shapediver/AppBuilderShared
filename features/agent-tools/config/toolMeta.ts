@@ -102,8 +102,9 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	[GenericToolName.AskUserQuestion]: {
 		description:
 			"Interview the user: ask one or more questions, each with options, and wait for the answers. " +
-			"Input: { questions: [{ question, options: string[] }] } with at least one question and at least two distinct, non-empty options per question. " +
-			"The user picks one option or types a different answer. " +
+			"Use it whenever the user should choose between known options, for example when they ask to choose, pick or select something, or when you would otherwise list options and ask them to reply. Do not list the options in a message instead. " +
+			"Input: { questions: [{ question, options: string[], multiSelect?: boolean }] } with at least one question and at least two distinct, non-empty options per question. " +
+			'The user picks one option or types a different answer. Set multiSelect: true when several options may apply ("one or more", "which ones", "it can be multiple"); the answer then lists the picked options separated by ", ". ' +
 			"Success: { success: true, answers: [{ question, answer }] } in question order. " +
 			'Failure: { success: false, message }. message "dismissed" means the user closed the question; continue without the answer. ' +
 			"Only one question is open at a time. Does not change parameters or the model.",
