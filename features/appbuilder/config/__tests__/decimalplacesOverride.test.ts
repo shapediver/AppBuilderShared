@@ -177,5 +177,33 @@ describe("overrides.decimalplaces", () => {
 		);
 		expect(slider.project(0)).toBe(1);
 		expect(slider.project(10)).toBe(9);
+		// the bound marks show the values the slider can commit
+		expect(slider.marks).toEqual([
+			{value: 1, label: "1"},
+			{value: 9, label: "9"},
+		]);
+	});
+
+	it("puts marks at values the slider can commit", () => {
+		const slider = numericSliderControls(
+			applyParameterOverrides(
+				{
+					...definition,
+					settings: {
+						restrictToMarks: true,
+						marks: [
+							{value: 0.25, label: "a"},
+							{value: 0.26, label: "b"},
+							{value: 0.75},
+						],
+					},
+				},
+				{decimalplaces: 1},
+			),
+		);
+		// 0.25 and 0.26 both round to 0.3: the first one is kept
+		expect(slider.marks).toEqual([{value: 0.3, label: "a"}, {value: 0.8}]);
+		expect(slider.project(0.2)).toBe(0.3);
+		expect(slider.project(0.7)).toBe(0.8);
 	});
 });
