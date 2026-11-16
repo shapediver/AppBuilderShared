@@ -95,15 +95,28 @@ export function roundAndClampParameterValue(
 					: prev,
 			validMarks[0].value,
 		);
-		return +closest.toFixed(decimalplaces);
+		return toFixedInRange(closest, min, max, decimalplaces);
 	}
 	// round the number to the nearest step
 	n = Math.round((n - min) / step) * step + min;
 	// rounding to the nearest step can result in a number larger than max, so we clamp again
 	n = n > max ? n - step : n;
-	// Converting to a fixed point number can leave the range if the decimal
-	// places cannot represent min or max (e.g. overridden decimal places):
-	// use the closest representable value inside the range instead.
+	return toFixedInRange(n, min, max, decimalplaces);
+}
+
+/**
+ * Convert to a fixed point number with the given decimal places, staying
+ * inside min and max. Rounding can leave the range if the decimal places
+ * cannot represent min or max (e.g. overridden decimal places): the closest
+ * representable value inside the range is used instead. If there is none,
+ * the value is returned unrounded.
+ */
+function toFixedInRange(
+	n: number,
+	min: number,
+	max: number,
+	decimalplaces: number,
+): number {
 	const rounded = +n.toFixed(decimalplaces);
 	if (rounded >= min && rounded <= max) return rounded;
 	const factor = Math.pow(10, decimalplaces);
@@ -111,6 +124,5 @@ export function roundAndClampParameterValue(
 		rounded < min
 			? Math.ceil(+(min * factor).toFixed(8)) / factor
 			: Math.floor(+(max * factor).toFixed(8)) / factor;
-	// no representable value inside the range: keep the clamped value
 	return inside >= min && inside <= max ? +inside.toFixed(decimalplaces) : n;
 }

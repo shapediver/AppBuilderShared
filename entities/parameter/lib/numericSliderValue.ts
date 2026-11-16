@@ -130,8 +130,8 @@ export function numericSliderControls(
 		restrictToMarks,
 		project: (value) =>
 			roundAndClampParameterValue(
-				defMin,
-				defMax,
+				bounds.min,
+				bounds.max,
 				places,
 				step,
 				value,
