@@ -62,5 +62,15 @@ describe("parameterSliderMarks", () => {
 				),
 			).toBe(1.5);
 		});
+
+		it("keeps a mark inside the range when rounding would leave it", () => {
+			// 0.4 rounds to 0, below min; 1 is the closest whole number inside
+			expect(
+				roundAndClampParameterValue(0.4, 9.6, 0, 1, 0.5, true, [
+					{value: 0.4},
+					{value: 9.6},
+				]),
+			).toBe(1);
+		});
 	});
 });

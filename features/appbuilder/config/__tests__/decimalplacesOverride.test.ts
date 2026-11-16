@@ -167,4 +167,15 @@ describe("overrides.decimalplaces", () => {
 		expect(narrow.project(0.1)).toBeGreaterThanOrEqual(0.25);
 		expect(narrow.project(0.9)).toBeLessThanOrEqual(0.75);
 	});
+
+	it("stays inside the range narrowed by settings", () => {
+		const slider = numericSliderControls(
+			applyParameterOverrides(
+				{...definition, settings: {min: 0.4, max: 9.6}},
+				{decimalplaces: 0},
+			),
+		);
+		expect(slider.project(0)).toBe(1);
+		expect(slider.project(10)).toBe(9);
+	});
 });
