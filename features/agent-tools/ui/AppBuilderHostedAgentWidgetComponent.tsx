@@ -16,7 +16,7 @@ export default function AppBuilderHostedAgentWidgetComponent(
 		<Suspense
 			name="AppBuilderHostedAgentWidgetComponent"
 			fallback={
-				<Paper px={0} py={0} shadow="md">
+				<Paper px={0} py={0}>
 					<Loader />
 				</Paper>
 			}

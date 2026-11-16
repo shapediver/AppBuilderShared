@@ -853,7 +853,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			AppBuilderIframeWidgetComponent: AppBuilderIframeWidgetThemeProps({
 				// px: 0,
 				// py: 0,
-				// shadow: "md",
+				// shadow: "none",
 			}),
 			AppBuilderAgentWidgetComponent: AppBuilderAgentWidgetThemeProps({
 				// systemPrompt: "Hi there",

@@ -28,7 +28,8 @@ export function frameHeight(
 /**
  * Theme defaults for the iframe / hosted-agent frame chrome.
  *
- * Matches other widgets: rounded `Paper` with the standard shadow.
+ * Matches other widgets: rounded `Paper` with the theme's border and no
+ * shadow of its own.
  *
  * @docAttached
  * @category widget
@@ -41,7 +42,6 @@ const defaultStyleProps: Partial<AppBuilderIframeWidgetComponentStyleProps> = {
 	// Prefer px/py over `p`: Paper's theme defaults set px/py, which win over `p`.
 	px: 0,
 	py: 0,
-	shadow: "md",
 };
 
 type AppBuilderIframeWidgetThemePropsType =
