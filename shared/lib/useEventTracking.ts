@@ -60,10 +60,11 @@ export const useEventTracking = () => {
 					const title = status ? `${_title} (${status})` : _title;
 					Logger.warn(title, e);
 
-					const message =
-						e.message +
-							"\n" +
-							messages.filter((m) => m).join("\n") || e.message;
+					// the geometry backend sets the same message on every
+					// failed output and export, show each message only once
+					const message = [
+						...new Set([e.message, ...messages].filter((m) => m)),
+					].join("\n");
 
 					notifications.error({title, message});
 					tracker.trackEvent(`${action}_error`, {
