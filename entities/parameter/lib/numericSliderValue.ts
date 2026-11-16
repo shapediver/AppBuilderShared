@@ -3,6 +3,7 @@ import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilde
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	roundAndClampParameterValue,
+	toFixedInRange,
 	type ParameterSliderMark,
 } from "./parameterSliderMarks";
 
@@ -111,13 +112,20 @@ export function numericSliderControls(
 	const settingsMarks = validated.success ? validated.data.marks : undefined;
 	const provided =
 		settingsMarks && settingsMarks.length > 0 ? settingsMarks : undefined;
-	const fallback: ParameterSliderMark[] = [
-		{value: bounds.min, label: String(bounds.min)},
-		{value: bounds.max, label: String(bounds.max)},
-	];
-	const marks = (provided ?? fallback).filter(
-		(mark) => mark.value >= bounds.min && mark.value <= bounds.max,
-	);
+	// Marks sit at values the slider can commit: rounded to the decimal places
+	// inside the range, marks which collapse to the same value are dropped.
+	const marks: ParameterSliderMark[] = [];
+	for (const mark of provided ?? [{value: bounds.min}, {value: bounds.max}]) {
+		if (mark.value < bounds.min || mark.value > bounds.max) continue;
+		const value = toFixedInRange(
+			mark.value,
+			bounds.min,
+			bounds.max,
+			places,
+		);
+		if (marks.some((m) => m.value === value)) continue;
+		marks.push(provided ? {...mark, value} : {value, label: String(value)});
+	}
 	const restrictToMarks = !!(
 		validated.success &&
 		validated.data.restrictToMarks &&

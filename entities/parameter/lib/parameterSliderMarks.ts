@@ -111,7 +111,7 @@ export function roundAndClampParameterValue(
  * representable value inside the range is used instead. If there is none,
  * the value is returned unrounded.
  */
-function toFixedInRange(
+export function toFixedInRange(
 	n: number,
 	min: number,
 	max: number,
