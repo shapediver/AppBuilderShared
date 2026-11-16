@@ -436,6 +436,12 @@ export interface INumberParameterSettings {
 	restrictToMarks?: boolean;
 	/** Step increment for the slider. */
 	step?: number;
+	/**
+	 * Number of decimal places of the slider of a "Float" parameter (can only
+	 * reduce the parameter's decimal places). Values are sent with the decimal
+	 * places of the parameter, so a value which does not reduce them is ignored.
+	 */
+	decimalplaces?: number;
 	/** Override the minimum value of the slider (can only increase the parameter's min). */
 	min?: number;
 	/** Override the maximum value of the slider (can only decrease the parameter's max). */
@@ -448,12 +454,7 @@ export interface IAppBuilderParameterRef {
 	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
 	sessionId?: string;
-	/**
-	 * Properties of the parameter to be overridden.
-	 * `decimalplaces` (non-negative integer) reduces the number of decimal
-	 * places of the slider of a "Float" parameter. A value which does not
-	 * reduce them is ignored.
-	 */
+	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
 		| "displayname"
@@ -463,7 +464,6 @@ export interface IAppBuilderParameterRef {
 		| "hidden"
 		| "settings"
 		| "step"
-		| "decimalplaces"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
@@ -559,20 +559,10 @@ export interface IAppBuilderControlParameterRef extends IAppBuilderControlPresen
 	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
 	sessionId?: string;
-	/**
-	 * Properties of the parameter to be overridden.
-	 * `decimalplaces` (non-negative integer) reduces the number of decimal
-	 * places of the slider of a "Float" parameter. A value which does not
-	 * reduce them is ignored.
-	 */
+	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		| "displayname"
-		| "tooltip"
-		| "hidden"
-		| "settings"
-		| "step"
-		| "decimalplaces"
+		"displayname" | "tooltip" | "hidden" | "settings" | "step"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;

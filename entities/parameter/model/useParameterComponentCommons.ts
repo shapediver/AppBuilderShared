@@ -12,7 +12,7 @@ import {parameterChangeScheduler} from "./parameterChangeScheduler";
 import {useParameter} from "./useParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
-import {applyParameterOverrides} from "@AppBuilderLib/entities/parameter/lib/applyParameterOverrides";
+import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
 
 /**
  * Hook providing functionality common to all parameter components like
@@ -438,7 +438,7 @@ export function useParameterComponentCommons<T>(
 	const busy = executing || delegatesExecuting || processesInSession;
 
 	const memoizedDefinition = useMemo(() => {
-		return applyParameterOverrides(definition, props.overrides);
+		return applyOverrides(definition, props.overrides);
 	}, [definition, props.overrides]);
 
 	const showReset = memoizedDefinition.settings?.resettable === true;
