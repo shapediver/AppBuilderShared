@@ -25,13 +25,7 @@ export default function AppBuilderIframeWidgetComponent(
 		<Suspense
 			name="AppBuilderIframeWidgetComponent"
 			fallback={
-				<Paper
-					px={0}
-					py={0}
-					shadow="md"
-					aria-label="Loading"
-					role="status"
-				>
+				<Paper px={0} py={0} aria-label="Loading" role="status">
 					<Loader size="md" type="oval" />
 				</Paper>
 			}
