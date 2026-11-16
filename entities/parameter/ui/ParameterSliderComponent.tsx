@@ -93,7 +93,7 @@ export default function ParameterSliderComponent(
 		() => numericSliderControls(definition),
 		[definition],
 	);
-	const {step, marks: sliderMarks, restrictToMarks} = slider;
+	const {step, decimalplaces, marks: sliderMarks, restrictToMarks} = slider;
 	const roundAndClamp = useCallback(
 		(n: number) => slider.project(n),
 		[slider],
@@ -136,7 +136,7 @@ export default function ParameterSliderComponent(
 						direction,
 						+definition.min!,
 						+definition.max!,
-						+definition.decimalplaces!,
+						decimalplaces,
 					);
 					return {
 						...s,
@@ -309,7 +309,7 @@ export default function ParameterSliderComponent(
 									min={+definition.min!}
 									max={+definition.max!}
 									step={step}
-									decimalScale={definition.decimalplaces}
+									decimalScale={decimalplaces}
 									fixedDecimalScale={true}
 									clampBehavior="none"
 									onValueChange={onNumberInputValueChange}

@@ -3,6 +3,7 @@ import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilde
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	roundAndClampParameterValue,
+	toFixedInRange,
 	type ParameterSliderMark,
 } from "./parameterSliderMarks";
 
@@ -17,9 +18,27 @@ export function isNumericSliderParameter(type: string | undefined): boolean {
 	return type != null && NUMERIC_TYPES.has(type);
 }
 
-function decimalPlaces(definition: {decimalplaces?: number | null}): number {
+/**
+ * Decimal places the slider uses: the parameter's, reduced by
+ * `settings.decimalplaces` for a "Float" parameter. Values are sent with the
+ * parameter's decimal places, so further places would never reach the
+ * computation: a setting which does not reduce them is ignored.
+ */
+export function sliderDecimalPlaces(
+	definition: Pick<
+		IShapeDiverParameterDefinition,
+		"type" | "decimalplaces" | "settings"
+	>,
+): number {
 	const places = definition.decimalplaces;
-	return typeof places === "number" && Number.isFinite(places) ? places : 0;
+	const model =
+		typeof places === "number" && Number.isFinite(places) ? places : 0;
+	if (definition.type !== ResParameterType.FLOAT) return model;
+	const validated = validateNumberParameterSettings(definition.settings);
+	const requested = validated.success
+		? validated.data.decimalplaces
+		: undefined;
+	return requested !== undefined && requested < model ? requested : model;
 }
 
 /**
@@ -36,7 +55,7 @@ export function numericSliderStep(
 	const raw = validated.success
 		? (validated.data.step ?? definition.step)
 		: definition.step;
-	const places = decimalPlaces(definition);
+	const places = sliderDecimalPlaces(definition);
 	if (definition.type === ResParameterType.INT) {
 		return raw !== undefined && raw % 1 === 0 ? raw : 1;
 	}
@@ -46,7 +65,9 @@ export function numericSliderStep(
 	) {
 		return raw !== undefined && raw % 2 === 0 ? raw : 2;
 	}
-	return raw !== undefined ? +raw.toFixed(places) : 1 / Math.pow(10, places);
+	// a step finer than the decimal places rounds to 0, which is no step at all
+	const rounded = raw !== undefined ? +raw.toFixed(places) : 0;
+	return rounded > 0 ? rounded : 1 / Math.pow(10, places);
 }
 
 /** Settings may only narrow the parameter range. Inverted overrides are swapped. */
@@ -72,6 +93,7 @@ export function narrowSliderBounds(
 
 export type NumericSliderControls = {
 	step: number;
+	decimalplaces: number;
 	marks: ParameterSliderMark[];
 	restrictToMarks: boolean;
 	project: (value: number) => number;
@@ -85,7 +107,7 @@ export function numericSliderControls(
 	definition: IShapeDiverParameterDefinition,
 ): NumericSliderControls {
 	const step = numericSliderStep(definition);
-	const places = decimalPlaces(definition);
+	const places = sliderDecimalPlaces(definition);
 	const defMin =
 		typeof definition.min === "number" ? definition.min : undefined;
 	const defMax =
@@ -93,6 +115,7 @@ export function numericSliderControls(
 	if (defMin === undefined || defMax === undefined) {
 		return {
 			step,
+			decimalplaces: places,
 			marks: [],
 			restrictToMarks: false,
 			project: (value) => value,
@@ -109,13 +132,20 @@ export function numericSliderControls(
 	const settingsMarks = validated.success ? validated.data.marks : undefined;
 	const provided =
 		settingsMarks && settingsMarks.length > 0 ? settingsMarks : undefined;
-	const fallback: ParameterSliderMark[] = [
-		{value: bounds.min, label: String(bounds.min)},
-		{value: bounds.max, label: String(bounds.max)},
-	];
-	const marks = (provided ?? fallback).filter(
-		(mark) => mark.value >= bounds.min && mark.value <= bounds.max,
-	);
+	// Marks sit at values the slider can commit: rounded to the decimal places
+	// inside the range, marks which collapse to the same value are dropped.
+	const marks: ParameterSliderMark[] = [];
+	for (const mark of provided ?? [{value: bounds.min}, {value: bounds.max}]) {
+		if (mark.value < bounds.min || mark.value > bounds.max) continue;
+		const value = toFixedInRange(
+			mark.value,
+			bounds.min,
+			bounds.max,
+			places,
+		);
+		if (marks.some((m) => m.value === value)) continue;
+		marks.push(provided ? {...mark, value} : {value, label: String(value)});
+	}
 	const restrictToMarks = !!(
 		validated.success &&
 		validated.data.restrictToMarks &&
@@ -124,12 +154,13 @@ export function numericSliderControls(
 
 	return {
 		step,
+		decimalplaces: places,
 		marks,
 		restrictToMarks,
 		project: (value) =>
 			roundAndClampParameterValue(
-				defMin,
-				defMax,
+				bounds.min,
+				bounds.max,
 				places,
 				step,
 				value,

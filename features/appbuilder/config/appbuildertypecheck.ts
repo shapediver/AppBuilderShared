@@ -228,6 +228,9 @@ const INumberParameterSettingsSchema = z.object({
 		)
 		.optional(),
 	restrictToMarks: z.boolean().optional(),
+	// Number.prototype.toFixed accepts 0 to 100. An invalid value is ignored
+	// instead of invalidating the other settings.
+	decimalplaces: z.int().min(0).max(100).optional().catch(undefined),
 	min: z.number().optional(),
 	max: z.number().optional(),
 });
