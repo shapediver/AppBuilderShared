@@ -7,9 +7,20 @@ import {
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
 import {useResolvedThemeStore} from "@AppBuilderLib/shared/model/useResolvedThemeStore";
+import {
+	ASK_USER_QUESTION_ALREADY_OPEN,
+	ASK_USER_QUESTION_DISMISSED,
+	askUserQuestionInputSchema,
+	type AskUserQuestionClaimResult,
+	type AskUserQuestionCompleteData,
+	type AskUserQuestionOutput,
+} from "../config/askUserQuestion";
+import {ASK_USER_QUESTION_TOOL_NAME} from "../config/inScopeGenericTools";
 import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
+	MESSAGE_TYPE_CLAIM_QUESTION,
+	MESSAGE_TYPE_COMPLETE_QUESTION,
 	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
@@ -17,6 +28,7 @@ import {
 	MESSAGE_TYPE_GET_THEME,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
+	MESSAGE_TYPE_QUESTION_CLOSED,
 	MESSAGE_TYPE_REFRESH_JWT_TOKEN,
 	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
@@ -41,8 +53,13 @@ import {
 	executeResolvedTool,
 	unknownToolResult,
 } from "../lib/executeResolvedTool";
+import {formatToolInputError} from "../lib/formatToolInputError";
 import {listToolsFromResolved} from "../lib/listToolsFromResolved";
 import {parseExecuteToolData} from "../lib/parseExecuteToolData";
+import {useAskUserQuestionStore} from "../model/useAskUserQuestionStore";
+
+/** How often a chat-claimed question checks whether the chat window closed. */
+const PEER_CLOSED_POLL_MS = 1000;
 
 function withDefaultTimeout(
 	options?: ICrossWindowApiOptions,
@@ -74,6 +91,10 @@ export class ToolsApiConnector implements IToolsApiConnector {
 	#listenerCancels: ICrossWindowCancelable[] = [];
 	#unsubscribeTheme: () => void = () => undefined;
 	#crossWindowApi: ICrossWindowApi;
+	#peerWindow?: Window;
+	#claimedQuestionId: string | undefined;
+	#peerClosedTimer: ReturnType<typeof setInterval> | undefined;
+	#onPageHide = () => this.#closeClaimedQuestion(true);
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
@@ -88,8 +109,22 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		createThreadOnLoad?: boolean,
 		modelState?: IToolsApiModelStateHandlers,
 		refreshJwtToken?: () => Promise<string>,
+		peerWindow?: Window,
 	) {
 		this.#crossWindowApi = crossWindowApi;
+		this.#peerWindow = peerWindow;
+		this.#listenerCancels.push(
+			crossWindowApi.on(MESSAGE_TYPE_CLAIM_QUESTION, async (input) =>
+				this.#claimQuestion(input, resolvedGenericTools),
+			),
+		);
+		this.#listenerCancels.push(
+			crossWindowApi.on(
+				MESSAGE_TYPE_COMPLETE_QUESTION,
+				async (data: AskUserQuestionCompleteData | undefined) =>
+					this.#completeQuestion(data),
+			),
+		);
 		this.#listenerCancels.push(
 			crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
 				listToolsFromResolved(
@@ -191,8 +226,120 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		);
 	}
 
+	/**
+	 * CLAIM_QUESTION: validate like the tool, then take the page's single
+	 * open-question slot for the chat. Never waits for the user.
+	 */
+	#claimQuestion(
+		input: unknown,
+		resolvedGenericTools: ResolvedGenericTool[],
+	): AskUserQuestionClaimResult {
+		if (
+			!resolvedGenericTools.some(
+				(tool) => tool.name === ASK_USER_QUESTION_TOOL_NAME,
+			)
+		) {
+			return unknownToolResult(ASK_USER_QUESTION_TOOL_NAME);
+		}
+		const parsed = askUserQuestionInputSchema.safeParse(input ?? {});
+		if (!parsed.success) {
+			return {
+				success: false,
+				message: formatToolInputError(parsed.error).errors[0].message,
+			};
+		}
+		const {questions} = parsed.data;
+		const claim = useAskUserQuestionStore
+			.getState()
+			.claim(questions, "chat");
+		if (!claim) {
+			return {success: false, message: ASK_USER_QUESTION_ALREADY_OPEN};
+		}
+		this.#claimedQuestionId = claim.id;
+		this.#watchClaimedQuestion();
+		return {success: true, id: claim.id, questions};
+	}
+
+	/**
+	 * COMPLETE_QUESTION: answer or dismiss the chat's claimed question.
+	 * Always releases the claim: the chat has stopped showing it.
+	 */
+	#completeQuestion(
+		data: AskUserQuestionCompleteData | undefined,
+	): AskUserQuestionOutput {
+		const id = data?.id;
+		if (typeof id !== "string" || id !== this.#claimedQuestionId) {
+			return {success: false, message: "No open question."};
+		}
+		this.#releaseClaimedQuestion();
+		const store = useAskUserQuestionStore.getState();
+		if (data?.answers === undefined) {
+			return (
+				store.dismiss(id) ?? {
+					success: false,
+					message: ASK_USER_QUESTION_DISMISSED,
+				}
+			);
+		}
+		const output = store.answer(id, data.answers);
+		if (output) {
+			return output;
+		}
+		store.dismiss(id);
+		return {
+			success: false,
+			message: "Answer every question with a non-empty answer.",
+		};
+	}
+
+	/** Release the slot when the page hides or the chat window closes. */
+	#watchClaimedQuestion(): void {
+		if (this.#peerClosedTimer !== undefined) {
+			clearInterval(this.#peerClosedTimer);
+			this.#peerClosedTimer = undefined;
+		}
+		if (typeof window !== "undefined") {
+			window.addEventListener("pagehide", this.#onPageHide);
+		}
+		const peer = this.#peerWindow;
+		if (peer) {
+			this.#peerClosedTimer = setInterval(() => {
+				if (peer.closed) {
+					this.#closeClaimedQuestion(false);
+				}
+			}, PEER_CLOSED_POLL_MS);
+		}
+	}
+
+	#releaseClaimedQuestion(): void {
+		this.#claimedQuestionId = undefined;
+		if (typeof window !== "undefined") {
+			window.removeEventListener("pagehide", this.#onPageHide);
+		}
+		if (this.#peerClosedTimer !== undefined) {
+			clearInterval(this.#peerClosedTimer);
+			this.#peerClosedTimer = undefined;
+		}
+	}
+
+	/** Dismiss the chat's open question and, if asked, tell the chat. */
+	#closeClaimedQuestion(notifyPeer: boolean): void {
+		const id = this.#claimedQuestionId;
+		if (id === undefined) {
+			return;
+		}
+		this.#releaseClaimedQuestion();
+		useAskUserQuestionStore.getState().dismiss(id);
+		if (notifyPeer) {
+			void this.#crossWindowApi
+				.send(MESSAGE_TYPE_QUESTION_CLOSED, {id})
+				.catch(() => undefined);
+		}
+	}
+
 	/** Drop tool and model-state listeners and cancel an in-flight handshake. */
 	cancel(): void {
+		this.#closeClaimedQuestion(true);
 		this.#unsubscribeTheme();
 		this.#unsubscribeTheme = () => undefined;
 		for (const token of this.#listenerCancels) {
@@ -258,6 +405,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 			createThreadOnLoad,
 			modelState,
 			refreshJwtToken,
+			window,
 		);
 	}
 }

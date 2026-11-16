@@ -5,19 +5,27 @@ import {
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
+import type {
+	AskUserQuestionClaimResult,
+	AskUserQuestionCompleteData,
+	AskUserQuestionOutput,
+} from "../config/askUserQuestion";
 import {
 	IExecuteToolData,
 	IListToolsReply,
 	IToolsApi,
 	IToolsApiFactory,
+	MESSAGE_TYPE_CLAIM_QUESTION,
+	MESSAGE_TYPE_COMPLETE_QUESTION,
 	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
 	MESSAGE_TYPE_GET_THEME,
-	MESSAGE_TYPE_REFRESH_JWT_TOKEN,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
+	MESSAGE_TYPE_QUESTION_CLOSED,
+	MESSAGE_TYPE_REFRESH_JWT_TOKEN,
 	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -55,6 +63,7 @@ export class ToolsApi implements IToolsApi {
 	#timeout?: number;
 	#themeListeners = new Set<() => void>();
 	#themeUpdatedPending = false;
+	#questionClosedListeners = new Set<(id: string) => void>();
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
@@ -66,6 +75,17 @@ export class ToolsApi implements IToolsApi {
 		this.#crossWindowApi.on(MESSAGE_TYPE_THEME_UPDATED, async () => {
 			this.#notifyThemeUpdated();
 		});
+		this.#crossWindowApi.on(
+			MESSAGE_TYPE_QUESTION_CLOSED,
+			async (data: {id?: unknown} | undefined) => {
+				if (typeof data?.id !== "string") {
+					return;
+				}
+				for (const listener of this.#questionClosedListeners) {
+					listener(data.id);
+				}
+			},
+		);
 		this.peerIsReady = this.#crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			this.#timeout,
@@ -96,6 +116,36 @@ export class ToolsApi implements IToolsApi {
 		for (const listener of this.#themeListeners) {
 			listener();
 		}
+	}
+
+	/** Fires with the claim id when App Builder closed the chat's question. */
+	onQuestionClosed(listener: (id: string) => void): () => void {
+		this.#questionClosedListeners.add(listener);
+		return () => {
+			this.#questionClosedListeners.delete(listener);
+		};
+	}
+
+	/** Claim the page's open-question slot for the chat. Replies at once. */
+	async claimQuestion(input: unknown): Promise<AskUserQuestionClaimResult> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_CLAIM_QUESTION,
+			input as object | undefined,
+			this.#timeout,
+		);
+	}
+
+	/** Answer or dismiss the claimed question. Replies with the tool result. */
+	async completeQuestion(
+		data: AskUserQuestionCompleteData,
+	): Promise<AskUserQuestionOutput> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_COMPLETE_QUESTION,
+			data,
+			this.#timeout,
+		);
 	}
 
 	/** Ask App Builder for the resolved generic tools (name, description, JSON Schema). */

@@ -23,6 +23,7 @@ import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {buildAgentToolsDeps} from "./buildAgentToolsDeps";
+import {handleAskUserQuestion} from "./handlers/askUserQuestion";
 import {handleGetCamera} from "./handlers/getCamera";
 import {handleGetOutput} from "./handlers/getOutput";
 import {handleGetParameterValues} from "./handlers/getParameterValues";
@@ -157,6 +158,8 @@ export function useAgentToolHandlers(args: {
 				handleGetScreenshot(input, depsRef.current),
 			[GenericToolName.GetOutput]: (input) =>
 				handleGetOutput(input, depsRef.current),
+			[GenericToolName.AskUserQuestion]: (input) =>
+				handleAskUserQuestion(input),
 		}),
 		[],
 	);

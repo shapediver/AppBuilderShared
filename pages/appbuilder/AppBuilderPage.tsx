@@ -9,6 +9,7 @@ import {agentSessionInfoForHost} from "@AppBuilderLib/features/agent-tools/lib/a
 import {refreshSessionJwtToken} from "@AppBuilderLib/features/agent-tools/lib/refreshSessionJwtToken";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
+import AskUserQuestionDialog from "@AppBuilderLib/features/agent-tools/ui/AskUserQuestionDialog";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
@@ -317,6 +318,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				actionSlots={appBuilderData?.actionSlots}
 				namespace={namespace}
 			/>
+			<AskUserQuestionDialog />
 			<AppBuilderTemplateSelector
 				top={containers.top}
 				left={containers.left}
