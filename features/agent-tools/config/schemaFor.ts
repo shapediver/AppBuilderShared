@@ -1,5 +1,6 @@
 import {GenericToolName} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {z} from "@AppBuilderLib/shared/lib/zod";
+import {askUserQuestionInputSchema} from "./askUserQuestion";
 import {getCameraInputSchema} from "./getCamera";
 import {getOutputInputSchema} from "./getOutput";
 import {getParameterValuesInputSchema} from "./getParameterValues";
@@ -22,6 +23,7 @@ export const INPUT_SCHEMA_BY_TOOL = {
 	[GenericToolName.GetCamera]: getCameraInputSchema,
 	[GenericToolName.GetScreenshot]: getScreenshotInputSchema,
 	[GenericToolName.GetOutput]: getOutputInputSchema,
+	[GenericToolName.AskUserQuestion]: askUserQuestionInputSchema,
 } satisfies Record<InScopeGenericToolName, ReturnType<typeof z.strictObject>>;
 
 export function schemaFor<N extends InScopeGenericToolName>(

@@ -58,6 +58,7 @@ function stubHandlers(
 		get_camera: unused,
 		get_screenshot: unused,
 		get_output: unused,
+		ask_user_question: unused,
 		...overrides,
 	};
 }

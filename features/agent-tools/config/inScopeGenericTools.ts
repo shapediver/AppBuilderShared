@@ -5,12 +5,12 @@ import {
 
 /**
  * Generic tools the agent can call.
- * Excludes `ask_user_question` and `get_metric`.
+ * Excludes `get_metric`.
  * `get_metric` stays in the agent schema so saved apps still load, and is ignored.
  */
 export type InScopeGenericToolName = Exclude<
 	GenericToolName,
-	GenericToolName.AskUserQuestion | GenericToolName.GetMetric
+	GenericToolName.GetMetric
 >;
 
 export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [
@@ -23,6 +23,7 @@ export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [
 	GenericToolName.GetCamera,
 	GenericToolName.GetScreenshot,
 	GenericToolName.GetOutput,
+	GenericToolName.AskUserQuestion,
 ];
 
 const IN_SCOPE_GENERIC_TOOL_NAME_SET = new Set<string>(
@@ -70,6 +71,9 @@ const DEFAULT_GENERIC_TOOL_SETTINGS: DefaultGenericToolSettings = {
 	[GenericToolName.GetCamera]: {name: GenericToolName.GetCamera},
 	[GenericToolName.GetScreenshot]: {name: GenericToolName.GetScreenshot},
 	[GenericToolName.GetOutput]: {name: GenericToolName.GetOutput},
+	[GenericToolName.AskUserQuestion]: {
+		name: GenericToolName.AskUserQuestion,
+	},
 };
 
 /** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */
