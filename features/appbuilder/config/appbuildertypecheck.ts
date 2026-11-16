@@ -273,17 +273,24 @@ const IAppBuilderParameterDefinitionSchema = z.strictObject({
 	step: z.number().positive().optional(),
 });
 
+// Overridden number of decimal places. Number.prototype.toFixed accepts 0 to 100.
+const decimalplacesOverrideShape = {
+	decimalplaces: z.int().min(0).max(100).optional(),
+};
+
 // Zod type definition for property "overrides" of IAppBuilderParameterRef
 const IAppBuilderParameterOverridesSchema =
-	IAppBuilderParameterDefinitionSchema.partial().pick({
-		displayname: true,
-		group: true,
-		order: true,
-		tooltip: true,
-		hidden: true,
-		settings: true,
-		step: true,
-	});
+	IAppBuilderParameterDefinitionSchema.partial()
+		.pick({
+			displayname: true,
+			group: true,
+			order: true,
+			tooltip: true,
+			hidden: true,
+			settings: true,
+			step: true,
+		})
+		.extend(decimalplacesOverrideShape);
 
 // Zod type definition for IAppBuilderParameterRef
 const IAppBuilderParameterRefSchema = z.strictObject({
@@ -582,13 +589,15 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 
 // Zod type definition for property "overrides" of IAppBuilderControlParameterRef
 const IAppBuilderControlParameterRefOverridesSchema =
-	IAppBuilderParameterDefinitionSchema.partial().pick({
-		displayname: true,
-		tooltip: true,
-		hidden: true,
-		settings: true,
-		step: true,
-	});
+	IAppBuilderParameterDefinitionSchema.partial()
+		.pick({
+			displayname: true,
+			tooltip: true,
+			hidden: true,
+			settings: true,
+			step: true,
+		})
+		.extend(decimalplacesOverrideShape);
 
 // Zod type definition for property "overrides" of IAppBuilderControlExportRef
 const IAppBuilderControlExportRefOverridesSchema =

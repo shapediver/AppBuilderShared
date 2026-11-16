@@ -69,7 +69,14 @@ export interface PropsParameter extends PropsParameterOrExport {
 	 */
 	readonly overrides?: Pick<
 		Partial<IShapeDiverParameterDefinition>,
-		"displayname" | "group" | "order" | "tooltip" | "hidden" | "settings"
+		| "displayname"
+		| "group"
+		| "order"
+		| "tooltip"
+		| "hidden"
+		| "settings"
+		| "step"
+		| "decimalplaces"
 	>;
 
 	/**

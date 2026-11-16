@@ -448,7 +448,12 @@ export interface IAppBuilderParameterRef {
 	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
 	sessionId?: string;
-	/** Properties of the parameter to be overridden. */
+	/**
+	 * Properties of the parameter to be overridden.
+	 * `decimalplaces` (non-negative integer) reduces the number of decimal
+	 * places of the slider of a "Float" parameter. A value which does not
+	 * reduce them is ignored.
+	 */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
 		| "displayname"
@@ -458,6 +463,7 @@ export interface IAppBuilderParameterRef {
 		| "hidden"
 		| "settings"
 		| "step"
+		| "decimalplaces"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
@@ -553,10 +559,20 @@ export interface IAppBuilderControlParameterRef extends IAppBuilderControlPresen
 	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
 	sessionId?: string;
-	/** Properties of the parameter to be overridden. */
+	/**
+	 * Properties of the parameter to be overridden.
+	 * `decimalplaces` (non-negative integer) reduces the number of decimal
+	 * places of the slider of a "Float" parameter. A value which does not
+	 * reduce them is ignored.
+	 */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		"displayname" | "tooltip" | "hidden" | "settings" | "step"
+		| "displayname"
+		| "tooltip"
+		| "hidden"
+		| "settings"
+		| "step"
+		| "decimalplaces"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;

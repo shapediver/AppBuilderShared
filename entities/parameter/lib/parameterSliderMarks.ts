@@ -101,9 +101,16 @@ export function roundAndClampParameterValue(
 	n = Math.round((n - min) / step) * step + min;
 	// rounding to the nearest step can result in a number larger than max, so we clamp again
 	n = n > max ? n - step : n;
-	// CAUTION: this last step converts to a fixed point number with the given decimal places,
-	// which can result in a number lower than min!!!
-	// This can happen if the given number of decimal places is lower than required
-	// to represent the min value correctly.
-	return +n.toFixed(decimalplaces);
+	// Converting to a fixed point number can leave the range if the decimal
+	// places cannot represent min or max (e.g. overridden decimal places):
+	// use the closest representable value inside the range instead.
+	const rounded = +n.toFixed(decimalplaces);
+	if (rounded >= min && rounded <= max) return rounded;
+	const factor = Math.pow(10, decimalplaces);
+	const inside =
+		rounded < min
+			? Math.ceil(+(min * factor).toFixed(8)) / factor
+			: Math.floor(+(max * factor).toFixed(8)) / factor;
+	// no representable value inside the range: keep the clamped value
+	return inside >= min && inside <= max ? +inside.toFixed(decimalplaces) : n;
 }

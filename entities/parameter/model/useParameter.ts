@@ -1,7 +1,7 @@
-import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
 import {useMemo} from "react";
 import {IShapeDiverParameter} from "../config/parameter";
 import {PropsParameter} from "../config/propsParameter";
+import {applyParameterOverrides} from "../lib/applyParameterOverrides";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
@@ -28,7 +28,10 @@ export function useParameter<T>(props: PropsParameter) {
 	const memoizedParameter = useMemo(() => {
 		return {
 			...parameter,
-			definition: applyOverrides(parameter.definition, props.overrides),
+			definition: applyParameterOverrides(
+				parameter.definition,
+				props.overrides,
+			),
 		};
 	}, [parameter, props.overrides]);
 

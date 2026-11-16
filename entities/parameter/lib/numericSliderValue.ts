@@ -46,7 +46,9 @@ export function numericSliderStep(
 	) {
 		return raw !== undefined && raw % 2 === 0 ? raw : 2;
 	}
-	return raw !== undefined ? +raw.toFixed(places) : 1 / Math.pow(10, places);
+	// a step finer than the decimal places rounds to 0, which is no step at all
+	const rounded = raw !== undefined ? +raw.toFixed(places) : 0;
+	return rounded > 0 ? rounded : 1 / Math.pow(10, places);
 }
 
 /** Settings may only narrow the parameter range. Inverted overrides are swapped. */

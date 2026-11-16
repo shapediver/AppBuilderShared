@@ -1,8 +1,8 @@
-import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {IShapeDiverParameter} from "../config/parameter";
 import {PropsParameter} from "../config/propsParameter";
+import {applyParameterOverrides} from "../lib/applyParameterOverrides";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
@@ -34,7 +34,7 @@ export function useParameters<T>(props: PropsParameter[]) {
 			if (!parameter) return;
 			return {
 				...parameter,
-				definition: applyOverrides(
+				definition: applyParameterOverrides(
 					parameter.definition,
 					props[index]?.overrides,
 				),
