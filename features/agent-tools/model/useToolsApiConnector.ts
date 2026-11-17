@@ -63,6 +63,11 @@ export type UseToolsApiConnectorProps = {
 	 */
 	createThreadOnLoad?: boolean;
 	/**
+	 * Resolved `ask_user_question` setting. Included on `getAgentConfig` at
+	 * connect time. `undefined` leaves the reply without the field.
+	 */
+	askUserQuestion?: boolean;
+	/**
 	 * Create and import model state. Omit → those ToolsApi calls reject.
 	 * Not part of the agent tool list.
 	 */
@@ -145,6 +150,7 @@ export function useToolsApiConnector(
 		sessionInfo,
 		showThreadHistory,
 		createThreadOnLoad,
+		askUserQuestion,
 		modelState,
 		refreshJwtToken,
 	} = props;
@@ -163,6 +169,8 @@ export function useToolsApiConnector(
 	showThreadHistoryRef.current = showThreadHistory;
 	const createThreadOnLoadRef = useRef(createThreadOnLoad);
 	createThreadOnLoadRef.current = createThreadOnLoad;
+	const askUserQuestionRef = useRef(askUserQuestion);
+	askUserQuestionRef.current = askUserQuestion;
 	const modelStateRef = useRef(modelState);
 	modelStateRef.current = modelState;
 	const refreshJwtTokenRef = useRef(refreshJwtToken);
@@ -201,6 +209,7 @@ export function useToolsApiConnector(
 						}
 						return refresh();
 					},
+					askUserQuestionRef.current,
 				);
 				if (effectAbandoned) {
 					// cancel() rejects an in-flight handshake. Attach a handler

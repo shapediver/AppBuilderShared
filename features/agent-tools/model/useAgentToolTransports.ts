@@ -92,6 +92,7 @@ export function useAgentToolTransports(
 		refreshJwtToken,
 		showThreadHistory,
 		createThreadOnLoad,
+		askUserQuestion: runtime.askUserQuestion,
 		modelState,
 	});
 

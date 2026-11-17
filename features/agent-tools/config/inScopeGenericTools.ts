@@ -4,13 +4,15 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 
 /**
- * Generic tools the agent can call.
- * Excludes `get_metric`.
+ * Generic tools App Builder runs for the agent.
+ * Excludes `ask_user_question` and `get_metric`.
+ * `ask_user_question` is only an allow/block setting: the Agent chat runs it
+ * (see `isAskUserQuestionAllowed`).
  * `get_metric` stays in the agent schema so saved apps still load, and is ignored.
  */
 export type InScopeGenericToolName = Exclude<
 	GenericToolName,
-	GenericToolName.GetMetric
+	GenericToolName.AskUserQuestion | GenericToolName.GetMetric
 >;
 
 export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [

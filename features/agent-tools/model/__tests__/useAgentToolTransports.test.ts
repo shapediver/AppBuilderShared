@@ -37,6 +37,7 @@ const runtime = {
 	toolHandlers: {},
 	snapshotComplete: true,
 	agentConfig: {id: "a", name: "A", message: "hi"},
+	askUserQuestion: true,
 };
 
 const modelState = {
@@ -83,6 +84,7 @@ describe("useAgentToolTransports", () => {
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
 			createThreadOnLoad: undefined,
+			askUserQuestion: true,
 			modelState,
 		});
 		const getNamespace = toolsApiModelStateHandlers.mock
@@ -103,6 +105,7 @@ describe("useAgentToolTransports", () => {
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
 			createThreadOnLoad: undefined,
+			askUserQuestion: true,
 			modelState,
 		});
 	});
@@ -146,6 +149,7 @@ describe("useAgentToolTransports", () => {
 			sessionInfo,
 			showThreadHistory: undefined,
 			createThreadOnLoad: undefined,
+			askUserQuestion: true,
 			modelState,
 		});
 	});

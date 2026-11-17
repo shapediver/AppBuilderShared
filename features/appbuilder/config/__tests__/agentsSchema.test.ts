@@ -133,6 +133,19 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts the ask_user_question setting", () => {
+		const result = validateAppBuilder(
+			layout([
+				{
+					...validAgent,
+					useGenericToolDefaults: false,
+					genericTools: [{name: "ask_user_question"}],
+				},
+			]),
+		);
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects an unknown generic tool name", () => {
 		const result = validateAppBuilder(
 			layout([

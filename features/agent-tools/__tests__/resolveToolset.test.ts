@@ -1,12 +1,16 @@
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
-import {resolveToolset} from "../config/resolveToolset";
+import {
+	isAskUserQuestionAllowed,
+	resolveToolset,
+} from "../config/resolveToolset";
 
 describe("resolveToolset", () => {
 	it("returns all in-scope generic tools when agent is undefined", () => {
 		const names = resolveToolset(undefined).map((t) => t.name);
 		expect(names).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
 		expect(names).toContain("get_output");
+		expect(names).not.toContain("ask_user_question");
 		expect(names).not.toContain("get_metric");
 	});
 
@@ -61,16 +65,55 @@ describe("resolveToolset", () => {
 		);
 	});
 
-	it("drops get_metric even if listed", () => {
+	it("drops ask_user_question and get_metric even if listed", () => {
 		const agent: IAppBuilderAgent = {
 			id: "a",
 			name: "A",
 			message: "hi",
 			useGenericToolDefaults: false,
-			genericTools: [{name: "get_metric"}, {name: "get_output"}],
+			genericTools: [
+				{name: "ask_user_question"},
+				{name: "get_metric"},
+				{name: "get_output"},
+			],
 		};
 		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
 			"get_output",
 		]);
+	});
+});
+
+describe("isAskUserQuestionAllowed", () => {
+	const base = {id: "a", name: "A", message: "hi"};
+
+	it("is allowed by default", () => {
+		expect(isAskUserQuestionAllowed(undefined)).toBe(true);
+		expect(isAskUserQuestionAllowed(base)).toBe(true);
+		expect(
+			isAskUserQuestionAllowed({
+				...base,
+				genericTools: [{name: "get_output"}],
+			}),
+		).toBe(true);
+	});
+
+	it("is blocked with useGenericToolDefaults false unless listed", () => {
+		expect(
+			isAskUserQuestionAllowed({
+				...base,
+				useGenericToolDefaults: false,
+				genericTools: [{name: "get_output"}],
+			}),
+		).toBe(false);
+		expect(
+			isAskUserQuestionAllowed({...base, useGenericToolDefaults: false}),
+		).toBe(false);
+		expect(
+			isAskUserQuestionAllowed({
+				...base,
+				useGenericToolDefaults: false,
+				genericTools: [{name: "ask_user_question"}],
+			}),
+		).toBe(true);
 	});
 });

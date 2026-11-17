@@ -83,5 +83,6 @@ export interface IToolsApiConnectorFactory {
 		createThreadOnLoad?: boolean,
 		modelState?: IToolsApiModelStateHandlers,
 		refreshJwtToken?: () => Promise<string>,
+		askUserQuestion?: boolean,
 	): Promise<IToolsApiConnector>;
 }

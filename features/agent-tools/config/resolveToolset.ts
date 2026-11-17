@@ -1,6 +1,7 @@
-import type {
-	GenericToolSettings,
-	IAppBuilderAgent,
+import {
+	GenericToolName,
+	type GenericToolSettings,
+	type IAppBuilderAgent,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {
 	defaultSettingsFor,
@@ -30,7 +31,8 @@ function genericToolsByName(
  * In-scope generic tools for one agent (or defaults when `agent` is missing).
  * `useGenericToolDefaults !== false` → every in-scope name, overlay from `genericTools`.
  * `useGenericToolDefaults === false` → listed in-scope tools only (`genericToolsByName` unused).
- * `specificTools` are ignored.
+ * `specificTools` and `ask_user_question` are ignored
+ * (see {@link isAskUserQuestionAllowed}).
  */
 export function resolveToolset(
 	agent:
@@ -57,4 +59,23 @@ export function resolveToolset(
 				: defaultSettingsFor(name);
 		return {name, settings};
 	});
+}
+
+/**
+ * Whether the agent may use `ask_user_question`. App Builder never runs it;
+ * the Agent chat registers it when this is `true` (sent on `getAgentConfig`).
+ * `useGenericToolDefaults !== false` (or no agent) → allowed.
+ * `useGenericToolDefaults === false` → allowed only when `genericTools` lists it.
+ */
+export function isAskUserQuestionAllowed(
+	agent:
+		| Pick<IAppBuilderAgent, "useGenericToolDefaults" | "genericTools">
+		| undefined,
+): boolean {
+	if (agent && agent.useGenericToolDefaults === false) {
+		return (agent.genericTools ?? []).some(
+			(tool) => tool.name === GenericToolName.AskUserQuestion,
+		);
+	}
+	return true;
 }
