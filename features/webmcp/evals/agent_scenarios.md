@@ -13,7 +13,7 @@ Goal: exercise **every in-scope generic tool** and **every parameter type this m
     - First arg is the **RegisteredTool** from `getTools()`, not a string name.
     - Second arg is a **JSON string**.
     - Chrome 154+: `tool.inputSchema` is an **object**. Older Chrome: string. Normalize with `typeof tool.inputSchema === "string" ? JSON.parse(tool.inputSchema) : tool.inputSchema`.
-5. Default toolset (9 names, snake_case): `list_parameter_definitions`, `get_parameter_values`, `set_parameter_values`, `list_action_controls`, `trigger_action_control`, `set_camera`, `get_camera`, `get_screenshot`, `get_output`. No `create_model_state` / `import_model_state` / `ask_user_question` / `get_metric` tools.
+5. Default toolset (9 names, snake_case): `list_parameter_definitions`, `get_parameter_values`, `set_parameter_values`, `list_action_controls`, `trigger_action_control`, `set_camera`, `get_camera`, `get_screenshot`, `get_output`. No `create_model_state` / `import_model_state` / `get_metric` tools.
 
 **Schema reject:** invalid input returns JSON (`errors: [{ name: "*", message }]` or `{ success: false, message }` or `{ found: false, message }`) — does **not** throw.
 

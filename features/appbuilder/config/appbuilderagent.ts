@@ -15,7 +15,6 @@ export enum GenericToolName {
 	SetCamera = "set_camera",
 	GetCamera = "get_camera",
 	GetScreenshot = "get_screenshot",
-	AskUserQuestion = "ask_user_question",
 	/**
 	 * Kept so saved agent JSON that names this tool still validates.
 	 * The tool is not exposed. Read outputs with {@link GenericToolName.GetOutput}.
@@ -171,10 +170,6 @@ export type GetScreenshotToolSettings = {
 	name: GenericToolName.GetScreenshot;
 };
 
-export type AskUserQuestionToolSettings = {
-	name: GenericToolName.AskUserQuestion;
-};
-
 export type GetMetricToolSettings = {
 	name: GenericToolName.GetMetric;
 };
@@ -192,7 +187,6 @@ export type GenericToolSettings =
 	| SetCameraToolSettings
 	| GetCameraToolSettings
 	| GetScreenshotToolSettings
-	| AskUserQuestionToolSettings
 	| GetMetricToolSettings
 	| GetOutputToolSettings;
 

@@ -1738,9 +1738,6 @@ const GenericToolSettingsSchema = z.discriminatedUnion("name", [
 		name: z.literal(GenericToolName.GetScreenshot),
 	}),
 	z.strictObject({
-		name: z.literal(GenericToolName.AskUserQuestion),
-	}),
-	z.strictObject({
 		name: z.literal(GenericToolName.GetMetric),
 	}),
 	z.strictObject({

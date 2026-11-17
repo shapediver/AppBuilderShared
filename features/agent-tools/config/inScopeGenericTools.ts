@@ -23,7 +23,6 @@ export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [
 	GenericToolName.GetCamera,
 	GenericToolName.GetScreenshot,
 	GenericToolName.GetOutput,
-	GenericToolName.AskUserQuestion,
 ];
 
 const IN_SCOPE_GENERIC_TOOL_NAME_SET = new Set<string>(
@@ -42,8 +41,6 @@ export function isGenericToolSettingsFor<N extends InScopeGenericToolName>(
 ): settings is Extract<GenericToolSettings, {name: N}> {
 	return settings.name === name;
 }
-
-export const ASK_USER_QUESTION_TOOL_NAME = GenericToolName.AskUserQuestion;
 
 type DefaultGenericToolSettings = {
 	[K in InScopeGenericToolName]: Extract<GenericToolSettings, {name: K}>;
@@ -71,9 +68,6 @@ const DEFAULT_GENERIC_TOOL_SETTINGS: DefaultGenericToolSettings = {
 	[GenericToolName.GetCamera]: {name: GenericToolName.GetCamera},
 	[GenericToolName.GetScreenshot]: {name: GenericToolName.GetScreenshot},
 	[GenericToolName.GetOutput]: {name: GenericToolName.GetOutput},
-	[GenericToolName.AskUserQuestion]: {
-		name: GenericToolName.AskUserQuestion,
-	},
 };
 
 /** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */

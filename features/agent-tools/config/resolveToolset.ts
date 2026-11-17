@@ -30,7 +30,7 @@ function genericToolsByName(
  * In-scope generic tools for one agent (or defaults when `agent` is missing).
  * `useGenericToolDefaults !== false` → every in-scope name, overlay from `genericTools`.
  * `useGenericToolDefaults === false` → listed in-scope tools only (`genericToolsByName` unused).
- * `specificTools` and `ask_user_question` are ignored.
+ * `specificTools` are ignored.
  */
 export function resolveToolset(
 	agent:

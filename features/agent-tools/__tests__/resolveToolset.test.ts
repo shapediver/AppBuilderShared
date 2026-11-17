@@ -7,7 +7,6 @@ describe("resolveToolset", () => {
 		const names = resolveToolset(undefined).map((t) => t.name);
 		expect(names).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
 		expect(names).toContain("get_output");
-		expect(names).toContain("ask_user_question");
 		expect(names).not.toContain("get_metric");
 	});
 
@@ -62,31 +61,13 @@ describe("resolveToolset", () => {
 		);
 	});
 
-	it("keeps a listed ask_user_question and drops get_metric when defaults are off", () => {
+	it("drops get_metric even if listed", () => {
 		const agent: IAppBuilderAgent = {
 			id: "a",
 			name: "A",
 			message: "hi",
 			useGenericToolDefaults: false,
-			genericTools: [
-				{name: "ask_user_question"},
-				{name: "get_metric"},
-				{name: "get_output"},
-			],
-		};
-		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
-			"ask_user_question",
-			"get_output",
-		]);
-	});
-
-	it("leaves out ask_user_question when defaults are off and it is not listed", () => {
-		const agent: IAppBuilderAgent = {
-			id: "a",
-			name: "A",
-			message: "hi",
-			useGenericToolDefaults: false,
-			genericTools: [{name: "get_output"}],
+			genericTools: [{name: "get_metric"}, {name: "get_output"}],
 		};
 		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
 			"get_output",
