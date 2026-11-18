@@ -10,14 +10,12 @@ import {useCallback, useEffect, useId, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 import type {Mat4Array} from "../../config/common";
 import {useRestrictions} from "../drawing/useRestrictions";
+import {createDraggingNodesInteractionInput} from "./createDraggingNodesInteractionInput";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useDragManager} from "./useDragManager";
 import {useDragManagerEvents} from "./useDragManagerEvents";
 import {useHoverManager} from "./useHoverManager";
-import {
-	IUseNodeInteractionDataProps,
-	useNodesInteractionData,
-} from "./useNodeInteractionData";
+import {useNodesInteractionData} from "./useNodeInteractionData";
 
 /**
  * Hook providing stateful object dragging for a viewport and session.
@@ -119,66 +117,17 @@ export function useDragging(
 	 * Memo to create the nodes interaction input.
 	 * This is used to update the interaction data for the dragged nodes.
 	 */
-	const nodesInteractionInput = useMemo(() => {
-		const nodesInteractionInput: {
-			[key: string]: IUseNodeInteractionDataProps;
-		} = {};
-
-		objects.forEach((object, index) => {
-			const patterns = object.patterns;
-
-			if (patterns.outputPatterns) {
-				Object.entries(patterns.outputPatterns).forEach(
-					([sessionId, pattern]) => {
-						Object.entries(pattern).forEach(
-							([outputId, pattern]) => {
-								nodesInteractionInput[
-									`object${index}_${sessionId}_${outputId}`
-								] = {
-									sessionId,
-									componentId,
-									outputId,
-									patterns: pattern,
-									interactionSettings: {
-										select: false,
-										hover: draggingProps.hover,
-										drag: true,
-										dragOrigin: object.dragOrigin,
-										dragAnchors: object.dragAnchors,
-									},
-									removeAvailableEffectsRef,
-									strictNaming,
-								};
-							},
-						);
-					},
-				);
-			}
-
-			if (patterns.instancePatterns) {
-				Object.entries(patterns.instancePatterns).forEach(
-					([instanceId, pattern]) => {
-						nodesInteractionInput[
-							`object${index}_instance_${instanceId}`
-						] = {
-							componentId,
-							patterns: pattern,
-							interactionSettings: {
-								select: false,
-								hover: draggingProps.hover,
-								drag: true,
-								dragOrigin: object.dragOrigin,
-								dragAnchors: object.dragAnchors,
-							},
-							strictNaming,
-						};
-					},
-				);
-			}
-		});
-
-		return nodesInteractionInput;
-	}, [objects, componentId, draggingProps]);
+	const nodesInteractionInput = useMemo(
+		() =>
+			createDraggingNodesInteractionInput(
+				objects,
+				componentId,
+				draggingProps.hover,
+				removeAvailableEffectsRef,
+				strictNaming,
+			),
+		[objects, componentId, draggingProps.hover, strictNaming],
+	);
 
 	// call the node interaction data hook
 	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
