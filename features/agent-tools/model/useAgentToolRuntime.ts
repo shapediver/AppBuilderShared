@@ -92,10 +92,7 @@ export function useAgentToolRuntime(
 		namespace: namespace ?? "",
 		appBuilderData,
 		resolvedGenericTools,
-		resolvedSpecificTools: resolveSpecificTools(
-			agentConfig,
-			resolvedGenericTools.map((tool) => tool.name),
-		),
+		resolvedSpecificTools: resolveSpecificTools(agentConfig),
 	});
 
 	return {

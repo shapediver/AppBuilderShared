@@ -1,6 +1,7 @@
-import type {
-	IAppBuilderAgent,
-	SpecificToolSettings,
+import {
+	GenericToolName,
+	type IAppBuilderAgent,
+	type SpecificToolSettings,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import type {JsonValue} from "@AppBuilderLib/features/appbuilder/config/jsonValue";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -23,25 +24,30 @@ function isInputSchema(
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** Every generic tool name, including ones App Builder does not run. */
+const RESERVED_TOOL_NAMES: ReadonlySet<string> = new Set(
+	Object.values(GenericToolName),
+);
+
 /**
  * Specific tools from one agent snapshot.
- * `remoteExecution` is ignored. A name that matches a resolved generic tool is skipped.
+ * `remoteExecution` is ignored. A name that matches any {@link GenericToolName}
+ * is skipped, even when that generic tool is disabled or not run by App Builder
+ * (`ask_user_question`, `get_metric`).
  * Duplicate specific names: last entry wins.
  */
 export function resolveSpecificTools(
 	agent: Pick<IAppBuilderAgent, "specificTools"> | undefined,
-	genericNames: readonly string[],
 ): ResolvedSpecificTool[] {
-	const reserved = new Set(genericNames);
 	const byName = new Map<string, ResolvedSpecificTool>();
 	for (const tool of agent?.specificTools ?? []) {
 		if (!tool.name) {
 			Logger.warn("Skipping specific tool with an empty name.");
 			continue;
 		}
-		if (reserved.has(tool.name)) {
+		if (RESERVED_TOOL_NAMES.has(tool.name)) {
 			Logger.warn(
-				`Skipping specific tool "${tool.name}" because a generic tool with that name is registered.`,
+				`Skipping specific tool "${tool.name}" because it is a generic tool name.`,
 			);
 			continue;
 		}

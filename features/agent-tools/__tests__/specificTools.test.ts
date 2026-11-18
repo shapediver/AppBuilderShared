@@ -240,19 +240,16 @@ describe("resolveSpecificTools", () => {
 	};
 
 	it("ignores remoteExecution and still resolves the tool", () => {
-		const tools = resolveSpecificTools(
-			{
-				...agent,
-				specificTools: [
-					{
-						name: "set_length",
-						inputSchema: {type: "object"},
-						remoteExecution: {},
-					},
-				],
-			},
-			[],
-		);
+		const tools = resolveSpecificTools({
+			...agent,
+			specificTools: [
+				{
+					name: "set_length",
+					inputSchema: {type: "object"},
+					remoteExecution: {},
+				},
+			],
+		});
 		expect(tools).toEqual([
 			{
 				name: "set_length",
@@ -263,7 +260,7 @@ describe("resolveSpecificTools", () => {
 	});
 
 	it("keeps the last specific tool and skips a registered generic name", () => {
-		const tools = resolveSpecificTools(agent, ["get_output"]);
+		const tools = resolveSpecificTools(agent);
 		expect(tools).toEqual([
 			{
 				name: "set_length",
@@ -272,6 +269,23 @@ describe("resolveSpecificTools", () => {
 			},
 		]);
 	});
+
+	it.each(["ask_user_question", "get_metric", "set_camera"])(
+		"skips the generic name %s even when App Builder does not run it",
+		(name) => {
+			const tools = resolveSpecificTools({
+				...agent,
+				// set_camera is a generic tool but disabled for this agent
+				useGenericToolDefaults: false,
+				genericTools: [],
+				specificTools: [
+					{name, inputSchema: {type: "object"}},
+					{name: "set_length", inputSchema: {type: "object"}},
+				],
+			});
+			expect(tools.map((tool) => tool.name)).toEqual(["set_length"]);
+		},
+	);
 });
 
 describe("runSpecificTool", () => {
