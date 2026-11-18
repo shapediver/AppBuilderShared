@@ -194,6 +194,21 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][10]).toBe(true);
 	});
 
+	it("passes askUserQuestion as getConnectorApi 14th argument", async () => {
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedGenericTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+				askUserQuestion: false,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		expect(getConnectorApi.mock.calls[0][13]).toBe(false);
+	});
+
 	it("passes sessionInfo as getConnectorApi 8th argument", async () => {
 		const sessionInfo = {
 			jwtToken: "tok",
@@ -249,9 +264,8 @@ describe("useToolsApiConnector", () => {
 			}),
 		);
 		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
-		const refresh = getConnectorApi.mock.calls[0][12] as () => Promise<
-			string
-		>;
+		const refresh = getConnectorApi.mock
+			.calls[0][12] as () => Promise<string>;
 		await expect(refresh()).resolves.toBe("next-token");
 	});
 

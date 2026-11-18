@@ -58,7 +58,6 @@ function stubHandlers(
 		get_camera: unused,
 		get_screenshot: unused,
 		get_output: unused,
-		ask_user_question: unused,
 		...overrides,
 	};
 }
@@ -258,6 +257,57 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			...IN_SCOPE_GENERIC_TOOL_NAMES,
 		]);
 		connector.cancel();
+	});
+
+	it("listTools never includes ask_user_question, even when the agent allows it", async () => {
+		const mock = createMockCrossWindowApi();
+		const agent: IAppBuilderAgent = {
+			...screenshotOnlyAgent(),
+			genericTools: [
+				{name: "ask_user_question"},
+				{name: "get_screenshot"},
+			],
+		};
+		const connector = new ToolsApiConnector(
+			resolveToolset(agent),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const {tools} = await client.listTools();
+		expect(tools.map((t) => t.name)).toEqual(["get_screenshot"]);
+		connector.cancel();
+	});
+
+	it("getAgentConfig includes the resolved askUserQuestion flag", async () => {
+		for (const allowed of [true, false]) {
+			const mock = createMockCrossWindowApi();
+			const agent = screenshotOnlyAgent();
+			const connector = new ToolsApiConnector(
+				resolveToolset(agent),
+				stubHandlers(),
+				mock,
+				undefined,
+				agent,
+				undefined,
+				[],
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				allowed,
+			);
+			const client = new ToolsApi(mock);
+			await Promise.all([connector.peerIsReady, client.peerIsReady]);
+			await expect(client.getAgentConfig()).resolves.toEqual({
+				id: "a",
+				name: "A",
+				message: "hi",
+				askUserQuestion: allowed,
+			});
+			connector.cancel();
+		}
 	});
 
 	it("getAgentConfig returns id, name, and message from the parameterized Agent config", async () => {

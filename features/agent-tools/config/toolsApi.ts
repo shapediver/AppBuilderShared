@@ -10,11 +10,6 @@ import type {
 	IModelStateWireImportResult,
 } from "../../model-state/config/modelStateWire";
 import type {JsonSchema} from "../lib/zodToJsonSchema";
-import type {
-	AskUserQuestionClaimResult,
-	AskUserQuestionCompleteData,
-	AskUserQuestionOutput,
-} from "./askUserQuestion";
 
 /**
  * CrossWindow message type: agent asks App Builder which tools exist.
@@ -78,27 +73,6 @@ export const MESSAGE_TYPE_CREATE_MODEL_STATE = "CREATE_MODEL_STATE";
 export const MESSAGE_TYPE_IMPORT_MODEL_STATE = "IMPORT_MODEL_STATE";
 
 /**
- * CrossWindow message type: the chat claims the page's single open
- * `ask_user_question` slot. Payload is the tool input. Reply is
- * {@link AskUserQuestionClaimResult} right away; the chat shows the questions
- * and does not wait inside a ToolsApi call.
- */
-export const MESSAGE_TYPE_CLAIM_QUESTION = "CLAIM_QUESTION";
-
-/**
- * CrossWindow message type: the chat answers or dismisses its claimed
- * question. Payload is {@link AskUserQuestionCompleteData}. Reply is the
- * `ask_user_question` tool result.
- */
-export const MESSAGE_TYPE_COMPLETE_QUESTION = "COMPLETE_QUESTION";
-
-/**
- * CrossWindow message type: App Builder closed the chat's claimed question
- * (the page closed or the connector stopped). Payload is `{ id }`.
- */
-export const MESSAGE_TYPE_QUESTION_CLOSED = "QUESTION_CLOSED";
-
-/**
  * CrossWindow handshake name for ToolsApi (same role as ECommerce's ready handshake).
  * Listeners for LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO /
  * REFRESH_JWT_TOKEN / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE must be registered **before** this runs,
@@ -156,6 +130,12 @@ export interface IAgentConfigReply {
 	 * the latest thread when one exists.
 	 */
 	createThreadOnLoad?: boolean;
+	/**
+	 * Resolved `ask_user_question` setting: `true` when the agent may ask the
+	 * user questions. App Builder does not run this tool; the agent chat
+	 * registers it. Older hosts omit it; the agent then registers the tool.
+	 */
+	askUserQuestion?: boolean;
 }
 
 /**
@@ -163,12 +143,14 @@ export interface IAgentConfigReply {
  * `null` when `agents[]` is missing/empty. Strips other `IAppBuilderAgent`
  * fields. A missing or empty `profileName` is omitted so the agent uses its
  * default profile. History and load flags are resolved AgentUi values, not
- * fields of the agent.
+ * fields of the agent. `askUserQuestion` is resolved from the agent's generic
+ * tool settings by `isAskUserQuestionAllowed`.
  */
 export function agentConfigReplyFrom(
 	agent: IAgentConfigReply | null | undefined,
 	showThreadHistory?: boolean,
 	createThreadOnLoad?: boolean,
+	askUserQuestion?: boolean,
 ): IAgentConfigReply | null {
 	if (agent == null) {
 		return null;
@@ -186,6 +168,9 @@ export function agentConfigReplyFrom(
 	}
 	if (typeof createThreadOnLoad === "boolean") {
 		reply.createThreadOnLoad = createThreadOnLoad;
+	}
+	if (typeof askUserQuestion === "boolean") {
+		reply.askUserQuestion = askUserQuestion;
 	}
 	return reply;
 }
@@ -281,24 +266,6 @@ export interface IToolsApi {
 	importModelState(
 		data: IToolsApiImportModelStateData,
 	): Promise<IToolsApiImportModelStateResult>;
-	/**
-	 * Claims the page's single open `ask_user_question` for the chat.
-	 * Validates `input` like the tool. Replies at once; the chat then shows
-	 * the questions and calls {@link completeQuestion}.
-	 */
-	claimQuestion(input: unknown): Promise<AskUserQuestionClaimResult>;
-	/**
-	 * Answers (`answers` in question order) or dismisses (no `answers`) the
-	 * claimed question. Replies with the tool result.
-	 */
-	completeQuestion(
-		data: AskUserQuestionCompleteData,
-	): Promise<AskUserQuestionOutput>;
-	/**
-	 * Fires with the claim `id` when App Builder closed the chat's question.
-	 * Returns an unsubscribe function.
-	 */
-	onQuestionClosed(listener: (id: string) => void): () => void;
 }
 
 /**
