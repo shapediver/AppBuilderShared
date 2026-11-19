@@ -1,4 +1,4 @@
-import {mat4, type ReadonlyMat4} from "gl-matrix";
+import {mat4} from "gl-matrix";
 
 export type TransformedNode = {
 	name: string;
@@ -9,11 +9,25 @@ export type TransformedNode = {
 const IDENTITY = mat4.create();
 
 /**
+ * Entries of a local transformation closer to the identity than this
+ * (relative to the entry) are rounding errors, not a move: a tool created on a
+ * slanted plane reports up to 4e-5 (SS-10334).
+ */
+const IDENTITY_TOLERANCE = 1e-4;
+
+const isIdentity = (matrix: readonly number[]): boolean =>
+	matrix.every(
+		(value, i) =>
+			Math.abs(value - IDENTITY[i]) <=
+			IDENTITY_TOLERANCE * Math.max(1, Math.abs(value)),
+	);
+
+/**
  * Whether a handle of the transformation tool was moved.
  *
  * The transformation tools emit a matrix change when they are created, with
- * identity local transformations. Only a non-identity local transformation is
- * a change made by the user.
+ * identity local transformations (up to rounding errors). Only a non-identity
+ * local transformation is a change made by the user.
  */
 export const hasLocalTransformationDelta = (
 	nodes: readonly Pick<TransformedNode, "localTransformations">[],
@@ -22,7 +36,7 @@ export const hasLocalTransformationDelta = (
 		(node) =>
 			node.localTransformations !== undefined &&
 			node.localTransformations.length === 16 &&
-			!mat4.equals(node.localTransformations as ReadonlyMat4, IDENTITY),
+			!isIdentity(node.localTransformations),
 	);
 
 /**
