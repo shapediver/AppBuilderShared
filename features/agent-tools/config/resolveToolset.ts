@@ -16,12 +16,25 @@ export type ResolvedGenericTool = {
 	settings: GenericToolSettings;
 };
 
+/**
+ * Listed generic tools. The agent config is not validated at runtime, so
+ * `genericTools` may arrive as something other than an array (e.g. an object);
+ * that is treated as "nothing listed", as are entries that are not objects.
+ */
+function listedGenericTools(listed: unknown): GenericToolSettings[] {
+	if (!Array.isArray(listed)) return [];
+	return listed.filter(
+		(tool): tool is GenericToolSettings =>
+			typeof tool === "object" && tool !== null,
+	);
+}
+
 /** Last listed settings per tool name. Used only when defaults are on. */
 function genericToolsByName(
 	listed: GenericToolSettings[] | undefined,
 ): Map<string, GenericToolSettings> {
 	const map = new Map<string, GenericToolSettings>();
-	for (const tool of listed ?? []) {
+	for (const tool of listedGenericTools(listed)) {
 		map.set(tool.name, tool);
 	}
 	return map;
@@ -43,7 +56,7 @@ export function resolveToolset(
 
 	if (agent && agent.useGenericToolDefaults === false) {
 		const resolved: ResolvedGenericTool[] = [];
-		for (const tool of agent.genericTools ?? []) {
+		for (const tool of listedGenericTools(agent.genericTools)) {
 			if (!isInScopeGenericToolName(tool.name)) continue;
 			if (!isGenericToolSettingsFor(tool, tool.name)) continue;
 			resolved.push({name: tool.name, settings: tool});
@@ -73,7 +86,7 @@ export function isAskUserQuestionAllowed(
 		| undefined,
 ): boolean {
 	if (agent && agent.useGenericToolDefaults === false) {
-		return (agent.genericTools ?? []).some(
+		return listedGenericTools(agent.genericTools).some(
 			(tool) => tool.name === GenericToolName.AskUserQuestion,
 		);
 	}
