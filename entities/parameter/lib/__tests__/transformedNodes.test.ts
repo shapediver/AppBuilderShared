@@ -156,12 +156,37 @@ describe("hasLocalTransformationDelta", () => {
 		).toBe(false);
 	});
 
+	it("ignores the rounding errors of a gizmo created on a slanted plane", () => {
+		// reported by a rectangle transform at rest (SS-10334)
+		const slanted = [
+			1, 0.0000198, 0.0000419, 0, -0.0000253, 1, 1.11e-8, 0, 0.0000388, 0,
+			1, 0, 0, 0, 0, 1,
+		];
+		expect(
+			hasLocalTransformationDelta([{localTransformations: slanted}]),
+		).toBe(false);
+	});
+
 	it("detects a moved handle", () => {
 		expect(
 			hasLocalTransformationDelta([
 				{localTransformations: identity},
 				{localTransformations: translated},
 			]),
+		).toBe(true);
+	});
+
+	it("detects a small move and a small rotation", () => {
+		const nudged = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.01, 0, 0, 1];
+		// about 0.06 degrees around z
+		const c = Math.cos(0.001);
+		const s = Math.sin(0.001);
+		const rotated = [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+		expect(
+			hasLocalTransformationDelta([{localTransformations: nudged}]),
+		).toBe(true);
+		expect(
+			hasLocalTransformationDelta([{localTransformations: rotated}]),
 		).toBe(true);
 	});
 
