@@ -305,6 +305,8 @@ export function useDragManager(
 		) {
 			const dragManager = new DragManager(componentId, draggingEffect);
 			dragManager.occludeBySceneGeometry = occludeBySceneGeometry;
+			// a click on an object (e.g. to select it) does not move it
+			dragManager.dragThreshold = true;
 			const token = interactionEngine.addInteractionManager(dragManager);
 			dragManagers[viewportId][componentId] = {dragManager, token};
 			setDragManager(dragManagers[viewportId][componentId].dragManager);
