@@ -40,8 +40,12 @@ export function resolveSpecificTools(
 	agent: Pick<IAppBuilderAgent, "specificTools"> | undefined,
 ): ResolvedSpecificTool[] {
 	const byName = new Map<string, ResolvedSpecificTool>();
-	for (const tool of agent?.specificTools ?? []) {
-		if (!tool.name) {
+	// The agent config is not validated at runtime: ignore a non-array value.
+	const listed: unknown = agent?.specificTools;
+	for (const tool of Array.isArray(listed)
+		? (listed as SpecificToolSettings[])
+		: []) {
+		if (!tool?.name) {
 			Logger.warn("Skipping specific tool with an empty name.");
 			continue;
 		}

@@ -1,5 +1,9 @@
+/**
+ * @jest-environment jsdom
+ */
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
+import {resolveSpecificTools} from "../config/resolveSpecificTools";
 import {
 	isAskUserQuestionAllowed,
 	resolveToolset,
@@ -36,6 +40,55 @@ describe("resolveToolset", () => {
 			useGenericToolDefaults: false,
 			genericTools: [{name: "get_screenshot"}],
 		};
+		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
+			"get_screenshot",
+		]);
+	});
+
+	it.each([
+		["an object", {get_output: {name: "get_output"}}],
+		["a string", "get_output"],
+		["null", null],
+	])("treats genericTools as unlisted when it is %s", (_label, value) => {
+		const bad = value as unknown as IAppBuilderAgent["genericTools"];
+		const defaults: IAppBuilderAgent = {
+			id: "a",
+			name: "A",
+			message: "hi",
+			genericTools: bad,
+		};
+		expect(resolveToolset(defaults).map((t) => t.name)).toEqual([
+			...IN_SCOPE_GENERIC_TOOL_NAMES,
+		]);
+		expect(
+			resolveToolset({...defaults, useGenericToolDefaults: false}),
+		).toEqual([]);
+		expect(
+			isAskUserQuestionAllowed({
+				...defaults,
+				useGenericToolDefaults: false,
+			}),
+		).toBe(false);
+	});
+
+	it("resolveSpecificTools ignores a non-array specificTools", () => {
+		const agent = {
+			id: "a",
+			name: "A",
+			message: "hi",
+			specificTools: {custom_tool: {name: "custom_tool"}},
+		} as unknown as IAppBuilderAgent;
+		expect(resolveSpecificTools(agent)).toEqual([]);
+	});
+
+	it("ignores non-object entries in genericTools", () => {
+		const agent = {
+			id: "a",
+			name: "A",
+			message: "hi",
+			useGenericToolDefaults: false,
+			genericTools: [null, "x", {name: "get_screenshot"}],
+		} as unknown as IAppBuilderAgent;
 		expect(resolveToolset(agent).map((t) => t.name)).toEqual([
 			"get_screenshot",
 		]);
