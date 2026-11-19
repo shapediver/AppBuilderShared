@@ -25,6 +25,14 @@ export const selectedNodesKeyOf = (nodes: Candidate[]): string =>
 	nodes.map((entry) => `${entry.node.id}:${entry.name}`).join("|");
 
 /**
+ * Per viewport, hides the preview shown last. Only one preview is shown at a
+ * time: objects of different parameters can lie on top of each other (e.g. a
+ * text on a panel), and the pointer can stay in the area of the preview
+ * behind while the object in front is hovered.
+ */
+const shownPreviewHide = new Map<string, () => void>();
+
+/**
  * Hover preview and first press of an exclusive rectangle transform.
  *
  * Hovering a candidate shows a rectangle on it (one preview gizmo, moved
@@ -99,7 +107,14 @@ export function useRectangleTransformPreview({
 	useEffect(() => {
 		if (!enabled || !viewportApi) return;
 
+		const hidePreview = () => {
+			if (previewRef.current) previewRef.current.rectangle.show = false;
+		};
+
 		const showPreview = (candidate: Candidate) => {
+			const shown = shownPreviewHide.get(viewportApi.id);
+			if (shown && shown !== hidePreview) shown();
+			shownPreviewHide.set(viewportApi.id, hidePreview);
 			const preview = previewRef.current;
 			if (preview && !preview.rectangle.closed) {
 				if (
@@ -232,6 +247,8 @@ export function useRectangleTransformPreview({
 			window.removeEventListener("pointerup", releasePress, true);
 			window.removeEventListener("pointercancel", releasePress, true);
 			window.removeEventListener("blur", endPress);
+			if (shownPreviewHide.get(viewportApi.id) === hidePreview)
+				shownPreviewHide.delete(viewportApi.id);
 			if (cameraFreezeToken) viewportApi.removeFlag(cameraFreezeToken);
 			pendingPressRef.current = undefined;
 			previewRef.current?.rectangle.close();
