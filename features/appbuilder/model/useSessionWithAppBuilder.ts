@@ -13,7 +13,7 @@ import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/u
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 import {useAppBuilderSessions} from "./useAppBuilderSessions";
 
@@ -318,7 +318,11 @@ export function useSessionWithAppBuilder(
 	}, [removeProcessManager]);
 
 	// create sessions declared on the App Builder data output
-	useAppBuilderSessions({namespace, appBuilderData});
+	const controller = useMemo(
+		() => ({modelViewUrl: props?.modelViewUrl, ticket: props?.ticket}),
+		[props?.modelViewUrl, props?.ticket],
+	);
+	useAppBuilderSessions({namespace, appBuilderData, controller});
 
 	// create the instances defined in the AppBuilder data
 	useAppBuilderInstances({
@@ -327,6 +331,7 @@ export function useSessionWithAppBuilder(
 		appBuilderData,
 		processManagerId: appBuilderProcessManagerId,
 		onProcessManagerAttached: handleProcessManagerAttached,
+		controller,
 	});
 
 	return {

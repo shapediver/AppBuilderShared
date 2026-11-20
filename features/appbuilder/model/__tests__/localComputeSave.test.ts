@@ -2,6 +2,7 @@ import {
 	isLocalComputeModelViewUrl,
 	localComputeSaveShouldReload,
 	openLocalComputeSaveConnection,
+	resolveLocalComputeSession,
 	retainLocalComputeSaveConnection,
 	type LocalComputeSaveSource,
 } from "../localComputeSave";
@@ -157,5 +158,93 @@ describe("local Grasshopper save reload", () => {
 				"save",
 			),
 		).toBe(true);
+	});
+});
+
+describe("resolveLocalComputeSession", () => {
+	const controller = {modelViewUrl: "http://127.0.0.1:5001/", ticket: "t1"};
+	const response = (status: number, body: unknown) =>
+		({
+			ok: status >= 200 && status < 300,
+			status,
+			json: async () => body,
+		}) as Response;
+
+	it("asks the local controller with its ticket and returns the other document", async () => {
+		const fetchImpl = jest.fn(async () =>
+			response(200, {
+				slug: "chair",
+				ticket: "t2",
+				modelViewUrl: "http://127.0.0.1:5002",
+			}),
+		);
+		await expect(
+			resolveLocalComputeSession(controller, "chair x", fetchImpl),
+		).resolves.toEqual({
+			ticket: "t2",
+			modelViewUrl: "http://127.0.0.1:5002",
+		});
+		expect(fetchImpl).toHaveBeenCalledWith(
+			"http://127.0.0.1:5001/api/v2/local/resolve?slug=chair+x",
+			expect.objectContaining({headers: {Authorization: "Bearer t1"}}),
+		);
+	});
+
+	it("does not call a controller on another host, or without a ticket", async () => {
+		const fetchImpl = jest.fn();
+		await expect(
+			resolveLocalComputeSession(
+				{
+					modelViewUrl:
+						"https://sdr8euc1.eu-central-1.shapediver.com",
+					ticket: "t1",
+				},
+				"chair",
+				fetchImpl,
+			),
+		).resolves.toBeUndefined();
+		await expect(
+			resolveLocalComputeSession(
+				{modelViewUrl: controller.modelViewUrl},
+				"chair",
+				fetchImpl,
+			),
+		).resolves.toBeUndefined();
+		expect(fetchImpl).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		["404", async () => response(404, {error: "SdNotFoundError"})],
+		["401", async () => response(401, {error: "SdErrorUnauthorized"})],
+		["a body without a ticket", async () => response(200, {slug: "chair"})],
+		[
+			"a network error",
+			async () => {
+				throw new TypeError("Failed to fetch");
+			},
+		],
+	])("returns undefined on %s", async (_, impl) => {
+		await expect(
+			resolveLocalComputeSession(controller, "chair", jest.fn(impl)),
+		).resolves.toBeUndefined();
+	});
+
+	it("gives up after the timeout", async () => {
+		const fetchImpl = jest.fn(
+			(_url: string, init?: RequestInit) =>
+				new Promise<Response>((_resolve, reject) => {
+					init?.signal?.addEventListener("abort", () =>
+						reject(new Error("aborted")),
+					);
+				}),
+		);
+		await expect(
+			resolveLocalComputeSession(
+				controller,
+				"chair",
+				fetchImpl as unknown as typeof fetch,
+				10,
+			),
+		).resolves.toBeUndefined();
 	});
 });
