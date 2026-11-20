@@ -20,6 +20,7 @@ import {
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state/model/useShapeDiverStorePlatformSavedStates";
 import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config/queryparams";
 import {MODELS} from "@modelstorage";
+import {resolveLocalComputeSession} from "./localComputeSave";
 
 // Type assertion for MODELS
 const ModelStorage = MODELS as unknown as Record<
@@ -44,7 +45,15 @@ export default function useResolveAppBuilderSessions(
 	 * in `resolveErrors`. The sessions that resolved are still returned.
 	 */
 	isolateFailures = false,
+	/**
+	 * The session that declares these sessions. When it runs on a local
+	 * Grasshopper server, each slug is first looked up among the other
+	 * local documents, and only then on the platform.
+	 */
+	controller?: {modelViewUrl?: string; ticket?: string},
 ) {
+	const controllerModelViewUrl = controller?.modelViewUrl;
+	const controllerTicket = controller?.ticket;
 	const [resolveErrors, setResolveErrors] = useState<
 		{id: string; error: unknown}[]
 	>([]);
@@ -116,7 +125,20 @@ export default function useResolveAppBuilderSessions(
 		) {
 			const platformUrl = session.platformUrl ?? getDefaultPlatformUrl();
 
-			if (!session.slug) {
+			// A local controller may find the slug among the other local
+			// documents. That session then opens like one without a slug.
+			const local = session.slug
+				? await resolveLocalComputeSession(
+						{
+							modelViewUrl: controllerModelViewUrl,
+							ticket: controllerTicket,
+						},
+						session.slug,
+					)
+				: undefined;
+			if (local) session = {...session, ...local};
+
+			if (!session.slug || local) {
 				if (!session.ticket || !session.modelViewUrl)
 					throw new Error(
 						"Session definition must either contain slug, or ticket and modelViewUrl.",
@@ -255,7 +277,14 @@ export default function useResolveAppBuilderSessions(
 				} as IAppBuilderSettingsSession;
 			}
 		}
-	}, [sessions, sdkRef, updateCurrentModel, isolateFailures]);
+	}, [
+		sessions,
+		sdkRef,
+		updateCurrentModel,
+		isolateFailures,
+		controllerModelViewUrl,
+		controllerTicket,
+	]);
 
 	return {
 		sessions: resolvedSessions,

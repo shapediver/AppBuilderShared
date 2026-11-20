@@ -25,6 +25,62 @@ export function localComputeEventsUrl(modelViewUrl: string): string {
 	return url.toString();
 }
 
+/** How long App Builder waits for a local server to resolve a slug. */
+export const LOCAL_COMPUTE_RESOLVE_TIMEOUT_MS = 3000;
+
+export interface LocalComputeResolvedSession {
+	ticket: string;
+	modelViewUrl: string;
+}
+
+/**
+ * Asks a local controller server which other local document serves `slug`.
+ * Returns undefined when the controller is not local, or on any failure
+ * (404, 401, network error, timeout, unexpected body), so the caller falls
+ * back to resolving the slug on the platform.
+ */
+export async function resolveLocalComputeSession(
+	controller: {modelViewUrl?: string; ticket?: string},
+	slug: string,
+	fetchImpl: typeof fetch = (...args) => fetch(...args),
+	timeoutMs = LOCAL_COMPUTE_RESOLVE_TIMEOUT_MS,
+): Promise<LocalComputeResolvedSession | undefined> {
+	const {modelViewUrl, ticket} = controller;
+	if (!slug || !ticket || !isLocalComputeModelViewUrl(modelViewUrl))
+		return undefined;
+
+	const url = new URL(modelViewUrl!);
+	url.pathname = "/api/v2/local/resolve";
+	url.search = "";
+	url.hash = "";
+	url.searchParams.set("slug", slug);
+
+	const abort = new AbortController();
+	const timer = setTimeout(() => abort.abort(), timeoutMs);
+	try {
+		const response = await fetchImpl(url.toString(), {
+			headers: {Authorization: `Bearer ${ticket}`},
+			signal: abort.signal,
+		});
+		if (!response.ok) return undefined;
+		const body = (await response.json()) as Partial<
+			Record<keyof LocalComputeResolvedSession, unknown>
+		>;
+		if (
+			typeof body?.ticket !== "string" ||
+			!body.ticket ||
+			typeof body.modelViewUrl !== "string"
+		)
+			return undefined;
+		new URL(body.modelViewUrl);
+		return {ticket: body.ticket, modelViewUrl: body.modelViewUrl};
+	} catch {
+		return undefined;
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
 export function localComputeSaveShouldReload(
 	sessionModelViewUrl: string,
 	eventUrl: string,
