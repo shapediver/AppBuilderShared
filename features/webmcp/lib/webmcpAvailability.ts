@@ -28,14 +28,31 @@ export interface ModelContextRegisterToolParams {
 /** Chrome <154 may still stringify; 154+ returns a deep-copied object. */
 export type WebMcpToolInputSchema = object | string;
 
-export interface WebMcpRegisteredTool {
+/**
+ * A tool returned by `getTools()`.
+ * Chrome 160+ returns `Tool` interface objects (WebMCP spec PR #348); older
+ * versions return plain `RegisteredTool` dictionaries.
+ * Read attributes explicitly: on a `Tool`, `JSON.stringify` returns "{}",
+ * spreading copies nothing and `structuredClone` throws.
+ */
+export interface WebMcpTool {
 	name: string;
 	title?: string;
 	description?: string;
-	inputSchema: WebMcpToolInputSchema;
+	/** `null` on Chrome 160+ when not provided. */
+	inputSchema: WebMcpToolInputSchema | null;
+	/** Chrome 160+; `null` when not provided. */
+	outputSchema?: object | null;
 	origin?: string;
+	/** Window of the document that registered the tool (Chrome 160+). */
+	source?: Window | null;
+	/**
+	 * @deprecated Chrome <160 name of `source`. Read `tool.source ?? tool.window`;
+	 * remove once Chrome 160 is stable (2027-01-05).
+	 */
 	window?: Window;
-	annotations?: ModelContextToolAnnotations;
+	/** `null` on Chrome 160+ when not provided. */
+	annotations?: ModelContextToolAnnotations | null;
 }
 
 export interface ModelContextGetToolOptions {
@@ -55,15 +72,15 @@ export interface ModelContext extends EventTarget {
 		params: ModelContextRegisterToolParams,
 		options?: ModelContextRegisterToolOptions,
 	): Promise<void>;
-	getTools(
-		options?: ModelContextGetToolOptions,
-	): Promise<WebMcpRegisteredTool[]>;
+	getTools(options?: ModelContextGetToolOptions): Promise<WebMcpTool[]>;
 	/**
 	 * Chrome 155+: optional JSON-serializable object.
 	 * JSON strings are deprecated from Chrome 155.
+	 * Chrome 160+ runs exactly the `Tool` object `getTools()` returned, so pass
+	 * that object, not a copy.
 	 */
 	executeTool(
-		tool: WebMcpRegisteredTool,
+		tool: WebMcpTool,
 		input?: object,
 		options?: ModelContextExecuteToolOptions,
 	): Promise<unknown>;
