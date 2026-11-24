@@ -612,6 +612,9 @@ export default function ParameterDraggingComponent(
 		presentation: draggingPresentation,
 		sectionId: "dragging",
 		order: definition.order,
+		// no menu for a single parameter, nor while nothing can be toggled
+		// (e.g. always-active parameters only)
+		menuVisibility: "multipleToggleable",
 		menu: {
 			id: "runtime-interaction-dragging-menu",
 			label: "Dragging",
@@ -631,22 +634,30 @@ export default function ParameterDraggingComponent(
 				},
 			}),
 		],
+		// Commands of all dragging parameters in a viewport are merged by
+		// aggregationId. Confirm and Cancel are only offered while a drag is
+		// pending; with automatic scene updates there is nothing to confirm.
 		commands: [
-			...(!automaticSceneUpdate
+			...(dirty && !automaticSceneUpdate
 				? [
 						createToolbarCommand({
 							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+							aggregationId: "dragging-confirm",
 							label: confirmButton.label,
 							tooltip: confirmButton.tooltip,
 							icon: confirmButton.icon,
+							order: 10,
 							disabled: !dirty,
 							execute: () => changeValue(0),
 						}),
 						createToolbarCommand({
 							id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+							aggregationId: "dragging-cancel",
 							label: cancelButton.label,
 							tooltip: cancelButton.tooltip,
 							icon: cancelButton.icon,
+							order: 20,
+							disabled: !dirty,
 							execute: cancel,
 						}),
 					]
@@ -655,6 +666,8 @@ export default function ParameterDraggingComponent(
 				? [
 						createToolbarCommand({
 							id: `${namespace}-${definition.id}-${viewportId}-clear`,
+							aggregationId: "dragging-clear",
+							order: 30,
 							label: clearButton.label,
 							tooltip: clearButton.tooltip,
 							icon: clearButton.icon,
