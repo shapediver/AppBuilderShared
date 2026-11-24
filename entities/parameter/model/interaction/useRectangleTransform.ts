@@ -197,8 +197,10 @@ export function useRectangleTransform(
 		false,
 		undefined,
 		keptMinimumSelection,
-		// selection is off while the maximum is filled; still drop deleted nodes
-		maxReached,
+		// selection is off while the maximum is filled or while suspended by
+		// another interaction; still drop deleted nodes (they would keep the
+		// exclusive selection)
+		true,
 	);
 
 	const hasSelection = selectedNodeNames.length > 0;
