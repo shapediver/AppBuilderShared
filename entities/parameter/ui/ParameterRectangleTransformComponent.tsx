@@ -195,6 +195,10 @@ export default function ParameterRectangleTransformComponent(
 	);
 	const [rectangleTransformActive, setRectangleTransformActive] =
 		useState(false);
+	// suspended while another interaction runs in the viewport: no hover, no
+	// preview, no selection and no gizmo until it ends (the selection is kept)
+	const [rectangleTransformSuspended, setRectangleTransformSuspended] =
+		useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -225,7 +229,7 @@ export default function ParameterRectangleTransformComponent(
 		sessionDependencies,
 		viewportId,
 		rectangleTransformProps,
-		rectangleTransformActive,
+		rectangleTransformActive && !rectangleTransformSuspended,
 		parseTransformation(value),
 		true,
 		executing,
@@ -251,8 +255,6 @@ export default function ParameterRectangleTransformComponent(
 
 	const automaticallyActivated =
 		alwaysActive || rectangleTransformProps.activeMode === "activeOnStart";
-	const [rectangleTransformSuspended, setRectangleTransformSuspended] =
-		useState(false);
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: interactionOwnerKey,
