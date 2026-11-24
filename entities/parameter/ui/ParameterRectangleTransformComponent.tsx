@@ -564,7 +564,19 @@ export default function ParameterRectangleTransformComponent(
 		persistent: alwaysActive,
 		allowToolbarPopoverDismissal: rectanglePresentation === "toolbar",
 		onDisable: resetTransformation,
-		onSuspend: () => setRectangleTransformSuspended(true),
+		onSuspend: () => {
+			// another interaction cancels an unconfirmed move, like Cancel (a
+			// scheduled automatic update is still sent); the gizmo created on
+			// resume would not offer Confirm / Cancel for it
+			if (!automaticSceneUpdate && hasLocalTransformation) {
+				closeTransform();
+				restoreTransformedNodeNames(
+					structuredClone(lastConfirmedValue),
+					structuredClone(transformedNodeNames),
+				);
+			}
+			setRectangleTransformSuspended(true);
+		},
 		onResume: () => setRectangleTransformSuspended(false),
 		setDisableOtherParameters: actions.setDisableOtherParameters,
 	});
