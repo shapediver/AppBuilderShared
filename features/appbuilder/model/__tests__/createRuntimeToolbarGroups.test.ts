@@ -259,6 +259,49 @@ describe("resolveRuntimeToolbarGroups", () => {
 		]);
 	});
 
+	it("shows no dragging menu for always-active dragging and merges its Clear", () => {
+		const clearFirst = jest.fn();
+		const clearSecond = jest.fn();
+		const alwaysActiveDragging = (id: string, clear: jest.Mock) =>
+			contribution(id, "dragging", {
+				menu: {
+					id: "runtime-interaction-dragging-menu",
+					label: "Dragging",
+					icon: "tabler:drag-drop",
+				},
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCheckboxItem({
+						id: `${id}-toggle`,
+						label: id,
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+					}),
+				],
+				commands: [
+					createToolbarCommand({
+						id: `${id}-clear`,
+						aggregationId: "dragging-clear",
+						order: 30,
+						label: "Clear",
+						execute: clear,
+					}),
+				],
+			});
+		const groups = resolveRuntimeToolbarGroups([
+			alwaysActiveDragging("first", clearFirst),
+			alwaysActiveDragging("second", clearSecond),
+		]);
+
+		expect(groups[0].map((item) => item.type)).toEqual(["command"]);
+		const clear = groups[0][0];
+		if (clear.type !== "command") throw new Error("Expected command");
+		clear.props.execute();
+		expect(clearFirst).toHaveBeenCalledTimes(1);
+		expect(clearSecond).toHaveBeenCalledTimes(1);
+	});
+
 	it("keeps different interaction types in separate sections", () => {
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("selection", "selection"),
