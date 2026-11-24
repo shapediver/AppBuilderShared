@@ -162,6 +162,11 @@ export function useGumball(
 		undefined,
 		strictNaming,
 		false,
+		undefined,
+		0,
+		// a node deleted while the gumball is suspended by another interaction
+		// is still dropped from the kept selection
+		true,
 	);
 
 	// convert the dragging data

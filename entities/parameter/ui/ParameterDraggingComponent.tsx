@@ -520,7 +520,12 @@ export default function ParameterDraggingComponent(
 		persistent: alwaysActive,
 		allowToolbarPopoverDismissal: draggingPresentation === "toolbar",
 		onDisable: cancel,
-		onSuspend: () => setDraggingSuspended(true),
+		onSuspend: () => {
+			// another interaction cancels an unconfirmed drag, like Cancel (a
+			// scheduled automatic update is still sent)
+			if (!automaticSceneUpdate && dirty) cancel();
+			setDraggingSuspended(true);
+		},
 		onResume: () => setDraggingSuspended(false),
 		setDisableOtherParameters: actions.setDisableOtherParameters,
 	});

@@ -13,6 +13,9 @@ import {useRectangleTransform} from "../useRectangleTransform";
 import {useSelectionActionTarget} from "../useSelectionActionTarget";
 
 const mockRectangleTransform = jest.fn();
+const mockGizmos: {close: jest.Mock}[] = [];
+// the activate argument the last useSelection call received
+let mockSelectionActive: boolean | undefined;
 
 jest.mock("@AppBuilderLib/shared/lib/logger", () => ({
 	Logger: {warn: jest.fn()},
@@ -55,7 +58,13 @@ jest.mock(
 			.fn()
 			.mockImplementation((...args: unknown[]) => {
 				mockRectangleTransform(...args);
-				return {closed: false, close: jest.fn(), pause: jest.fn()};
+				const gizmo = {
+					closed: false,
+					close: jest.fn(),
+					pause: jest.fn(),
+				};
+				mockGizmos.push(gizmo);
+				return gizmo;
 			}),
 		updateTransformation: jest.fn(),
 	}),
@@ -94,8 +103,14 @@ jest.mock("../useRectangleTransformEvents", () => {
 });
 // one candidate node per name filter entry; a user click is not simulated
 jest.mock("../useSelection", () => ({
-	useSelection: (_viewportId: string, settings: {nameFilter: string[]}) =>
-		mockUseSelection(settings.nameFilter),
+	useSelection: (
+		_viewportId: string,
+		settings: {nameFilter: string[]},
+		activate: boolean,
+	) => {
+		mockSelectionActive = activate;
+		return mockUseSelection(settings.nameFilter);
+	},
 }));
 jest.mock(
 	"@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter",
@@ -269,5 +284,65 @@ describe("selection action on an exclusive rectangle transform", () => {
 
 		expect(result.current.Optional).toEqual([]);
 		expect(exclusiveSelection.getHolder("viewport")).toBeUndefined();
+	});
+});
+
+// SS-10593: ParameterRectangleTransformComponent deactivates the hook while an
+// always-active rectangle transform is suspended by another interaction.
+describe("suspended rectangle transform", () => {
+	beforeEach(() => {
+		resetSelectionActionTargets();
+		exclusiveSelection.reset();
+		mockRectangleTransform.mockClear();
+		mockGizmos.length = 0;
+	});
+
+	const renderSuspendable = () =>
+		renderHook(
+			({active}: {active: boolean}) => {
+				const props = PROPS.First;
+				const state = useRectangleTransform(
+					["session"],
+					"viewport",
+					props,
+					active,
+				);
+				useSelectionActionTarget({
+					ownerKey: "First",
+					candidateNodes: state.candidateNodes,
+					selectedNodeNames: state.selectedNodeNames,
+					maximumSelection: 1,
+					minimumSelection: state.keptMinimumSelection,
+					setSelectedNames: state.setSelectedNodeNames,
+					parameter: {
+						namespace: "session",
+						id: "First",
+						name: "First",
+					},
+				});
+				return state.selectedNodeNames;
+			},
+			{initialProps: {active: true}},
+		);
+
+	it("hides the gizmo and stops selecting, then restores both on resume", () => {
+		const {result, rerender} = renderSuspendable();
+		run("First", {select: ["Boxes.box_1"]});
+		const holder = exclusiveSelection.getHolder("viewport");
+		expect(mockGizmos).toHaveLength(1);
+
+		rerender({active: false});
+
+		expect(mockSelectionActive).toBe(false);
+		expect(mockGizmos[0].close).toHaveBeenCalled();
+		expect(result.current).toEqual(["Boxes.box_1"]);
+		expect(exclusiveSelection.getHolder("viewport")).toBe(holder);
+
+		rerender({active: true});
+
+		expect(mockSelectionActive).toBe(true);
+		expect(mockGizmos).toHaveLength(2);
+		expect(lastGizmoNodes()).toEqual([sceneNode("Boxes.box_1")]);
+		expect(result.current).toEqual(["Boxes.box_1"]);
 	});
 });

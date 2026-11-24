@@ -189,6 +189,9 @@ export default function ParameterGumballComponent(
 		alwaysActive,
 	);
 	const [gumballActive, setGumballActive] = useState(false);
+	// suspended while another interaction runs in the viewport: no hover, no
+	// selection and no gizmo until it ends (the selection is kept)
+	const [gumballSuspended, setGumballSuspended] = useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -218,7 +221,7 @@ export default function ParameterGumballComponent(
 		sessionDependencies,
 		viewportId,
 		gumballProps,
-		gumballActive,
+		gumballActive && !gumballSuspended,
 		parseTransformation(value),
 		true,
 		executing,
@@ -259,7 +262,6 @@ export default function ParameterGumballComponent(
 
 	const automaticallyActivated =
 		alwaysActive || gumballProps.activeMode === "activeOnStart";
-	const [gumballSuspended, setGumballSuspended] = useState(false);
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: interactionOwnerKey,
@@ -544,7 +546,19 @@ export default function ParameterGumballComponent(
 		persistent: alwaysActive,
 		allowToolbarPopoverDismissal: gumballPresentation === "toolbar",
 		onDisable: resetTransformation,
-		onSuspend: () => setGumballSuspended(true),
+		onSuspend: () => {
+			// another interaction cancels an unconfirmed move, like Cancel (a
+			// scheduled automatic update is still sent); the gizmo created on
+			// resume would not offer Confirm / Cancel for it
+			if (!automaticSceneUpdate && hasLocalTransformation) {
+				closeTransform();
+				restoreTransformedNodeNames(
+					structuredClone(lastConfirmedValue),
+					structuredClone(transformedNodeNames),
+				);
+			}
+			setGumballSuspended(true);
+		},
 		onResume: () => setGumballSuspended(false),
 		setDisableOtherParameters: actions.setDisableOtherParameters,
 	});
