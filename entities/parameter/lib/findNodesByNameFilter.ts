@@ -6,9 +6,9 @@ import {
 	NodeNameFilterPattern,
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
+import type {NamedNode} from "../config/namedNode";
 
-/** A scene node matching a name filter, with the name used by interaction parameters. */
-export type NamedNode = {node: ITreeNode; name: string};
+export type {NamedNode};
 
 /**
  * Collect nodes (and their interaction names) under `root` that match the

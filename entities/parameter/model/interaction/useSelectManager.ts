@@ -13,6 +13,7 @@ import {
 import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {IPulseEffectDefinition} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {selectionAllowsSelect} from "./selectionAllowsSelect";
 import {useInteractionEngine} from "./useInteractionEngine";
 
 // #region Functions (1)
@@ -404,73 +405,92 @@ export function useSelectManager(
 		);
 	}, [settings?.minimumSelection, settings?.maximumSelection]);
 
+	// A maximum below 1 is hover-only: no select manager. Omitted means 1.
+	const allowsSelect = selectionAllowsSelect(settings?.maximumSelection);
+
 	const settingsDefined = settings !== undefined;
 	const deselectOnEmpty = settings?.deselectOnEmpty ?? false;
 	const occludeBySceneGeometry = settings?.occludeBySceneGeometry;
 
 	useEffect(() => {
 		if (settings) {
-			if (
-				selectManagers[viewportId][componentId] &&
-				selectManagers[viewportId][componentId].selectMultiple !==
-					selectMultiple
-			) {
-				cleanUpSelectManager(
-					viewportId,
-					componentId,
-					appliedAvailableEffectsRef.current,
-					interactionEngine,
-				);
-			}
-
-			if (
-				!selectManagers[viewportId][componentId] &&
-				interactionEngine &&
-				interactionEngine.closed === false
-			) {
-				if (selectMultiple) {
-					const selectManager = new MultiSelectManager(
+			if (!allowsSelect) {
+				if (selectManagers[viewportId][componentId]) {
+					cleanUpSelectManager(
+						viewportId,
 						componentId,
-						selectionEffect,
-						settings.minimumSelection!,
-						settings.maximumSelection!,
+						appliedAvailableEffectsRef.current,
+						interactionEngine,
 					);
-					selectManager.deselectOnEmpty = deselectOnEmpty;
-					if (occludeBySceneGeometry !== undefined)
-						selectManager.occludeBySceneGeometry =
-							occludeBySceneGeometry;
-
-					const token =
-						interactionEngine.addInteractionManager(selectManager);
-					selectManagers[viewportId][componentId] = {
-						selectManager,
-						token,
-						selectMultiple,
-					};
-					setSelectManager(selectManager);
-				} else {
-					const selectManager = new SelectManager(
-						componentId,
-						selectionEffect,
-					);
-					selectManager.deselectOnEmpty = deselectOnEmpty;
-					if (occludeBySceneGeometry !== undefined)
-						selectManager.occludeBySceneGeometry =
-							occludeBySceneGeometry;
-
-					const token =
-						interactionEngine.addInteractionManager(selectManager);
-					selectManagers[viewportId][componentId] = {
-						selectManager,
-						token,
-						selectMultiple,
-					};
-					setSelectManager(selectManager);
 				}
-			}
-
-			if (!selectManagers[viewportId][componentId]) {
 				setSelectManager(undefined);
+			} else {
+				if (
+					selectManagers[viewportId][componentId] &&
+					selectManagers[viewportId][componentId].selectMultiple !==
+						selectMultiple
+				) {
+					cleanUpSelectManager(
+						viewportId,
+						componentId,
+						appliedAvailableEffectsRef.current,
+						interactionEngine,
+					);
+				}
+
+				if (
+					!selectManagers[viewportId][componentId] &&
+					interactionEngine &&
+					interactionEngine.closed === false
+				) {
+					if (selectMultiple) {
+						const selectManager = new MultiSelectManager(
+							componentId,
+							selectionEffect,
+							settings.minimumSelection!,
+							settings.maximumSelection!,
+						);
+						selectManager.deselectOnEmpty = deselectOnEmpty;
+						if (occludeBySceneGeometry !== undefined)
+							selectManager.occludeBySceneGeometry =
+								occludeBySceneGeometry;
+
+						const token =
+							interactionEngine.addInteractionManager(
+								selectManager,
+							);
+						selectManagers[viewportId][componentId] = {
+							selectManager,
+							token,
+							selectMultiple,
+						};
+						setSelectManager(selectManager);
+					} else {
+						const selectManager = new SelectManager(
+							componentId,
+							selectionEffect,
+						);
+						selectManager.deselectOnEmpty = deselectOnEmpty;
+						if (occludeBySceneGeometry !== undefined)
+							selectManager.occludeBySceneGeometry =
+								occludeBySceneGeometry;
+
+						const token =
+							interactionEngine.addInteractionManager(
+								selectManager,
+							);
+						selectManagers[viewportId][componentId] = {
+							selectManager,
+							token,
+							selectMultiple,
+						};
+						setSelectManager(selectManager);
+					}
+				}
+
+				if (!selectManagers[viewportId][componentId]) {
+					setSelectManager(undefined);
+				}
 			}
 		}
 
@@ -491,6 +511,7 @@ export function useSelectManager(
 	}, [
 		interactionEngine,
 		settingsDefined,
+		allowsSelect,
 		selectMultiple,
 		deselectOnEmpty,
 		selectionEffect,

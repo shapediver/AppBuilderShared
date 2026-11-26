@@ -14,20 +14,24 @@ const mockEngines: {
 	closed: boolean;
 }[] = [];
 
-jest.mock("@shapediver/viewer.features.interaction", () => ({
-	InteractionEngine: jest.fn().mockImplementation((_viewport, props) => {
-		const engine = {
-			props,
-			paused: false,
-			closed: false,
-			pause: () => (engine.paused = true),
-			continue: () => (engine.paused = false),
-			close: () => (engine.closed = true),
-		};
-		mockEngines.push(engine);
-		return engine;
+jest.mock(
+	"@shapediver/viewer.features.interaction",
+	() => ({
+		InteractionEngine: jest.fn().mockImplementation((_viewport, props) => {
+			const engine = {
+				props,
+				paused: false,
+				closed: false,
+				pause: () => (engine.paused = true),
+				continue: () => (engine.paused = false),
+				close: () => (engine.closed = true),
+			};
+			mockEngines.push(engine);
+			return engine;
+		}),
 	}),
-}));
+	{virtual: true},
+);
 
 const mockViewportId = "viewport-pause";
 // a stable store state, the hook creates the engine once per viewport object

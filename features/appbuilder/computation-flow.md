@@ -87,15 +87,16 @@ The `task.*` events have type `session_customization`, category `customize`, and
 
 ### How it ends
 
-| Outcome                | Last task event                                                            | Action slot        |
-| ---------------------- | -------------------------------------------------------------------------- | ------------------ |
-| Success                | `task.end`                                                                 | `computationend`   |
-| No value changed       | None                                                                       | None               |
-| A newer change started | `task.cancel`: `The request was exceeded by another customization request` | None               |
-| Error                  | `task.cancel`: `Session customization failed`                              | `computationerror` |
+| Outcome                | Last task event                                                            | Action slot                                                                  |
+| ---------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Success                | `task.end`                                                                 | `computationend`, after the last process manager of that computation is gone |
+| No value changed       | None                                                                       | None                                                                         |
+| A newer change started | `task.cancel`: `The request was exceeded by another customization request` | None                                                                         |
+| Error                  | `task.cancel`: `Session customization failed`                              | `computationerror`                                                           |
 
 - **A newer change** cancels the older one. The older one never gets `task.end`. The newer one starts with its own `task.start`.
 - **Errors:** an expired session, or an invalid token when a token refresh is configured, is retried up to 3 times. Other errors end the customization right away. Every error also emits `session.error`.
+- **When `computationend` runs.** A customization that opens a process manager runs `computationstart` when that manager is created, before `task.start`. `computationend` runs when the last process manager of that computation is gone, after `task.end`. Further managers of the same session that appear while it is open, such as the instance rebuild, belong to it, so the new instances are in the scene when `computationend` runs. A customization that never opens a process manager, including one that uses default exports, still uses the task events.
 
 ## With default exports
 
@@ -152,11 +153,11 @@ Compared to a normal customization, an instance computation:
 
 `computationstart`, `computationend`, and `computationerror` are root action slots. See [Action slots](action-slots.md).
 
-| Slot               | Runs on                                                    |
-| ------------------ | ---------------------------------------------------------- |
-| `computationstart` | Every `task.start` of a customization                      |
-| `computationend`   | Every `task.end` of a customization                        |
-| `computationerror` | A `task.cancel` with status `Session customization failed` |
+| Slot               | Runs on                                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `computationstart` | The process manager for that customization is created, before `task.start`. With no process manager, on `task.start`. |
+| `computationend`   | The last process manager of that customization is gone, after `task.end`. With no process manager, on `task.end`.     |
+| `computationerror` | A `task.cancel` with status `Session customization failed`                                                            |
 
 Filter by session with `eventProps`. `type` must be `"session"`, and `props` is required. Any other `type` is a validation error. The slots go into the root `actionSlots` object:
 
@@ -174,3 +175,22 @@ A slot has one `action`. For several, use an `executeActions` action. To react t
 - **Without a filter,** only the controller counts. An instance computation only runs the slots when the filter names the instance's session.
 - **Default exports and instance computations** count too.
 - **A cancelled customization** runs `computationstart`, but neither `computationend` nor `computationerror`. Exception: default exports still run `computationend`.
+- **Selection.** A `selection` action in `computationend` can select an instance that computation registered. The interaction pause stops pointer selection, hover, and drag. A selection action still runs during a computation. A result that fills the maximum, a fixed selection, or an optional single selection is sent immediately and starts the next customization. Any other change stays pending until Confirm. A root `selection` action changes the scene selection and sends no customization.
+
+## Slots of parameter controls
+
+A parameter control can use the same three slots (see [Parameter controls](action-slots.md#parameter-controls)). They use the same listener as the root slots, with a filter for the control's parameter.
+
+The task events carry only the session id. The parameter executor sets `session.parameters[id].value` before it calls `session.customize` or `session.requestExports`, and the viewer emits `task.start` before its first `await`. So at `task.start` the filter compares the parameter's `value` with the value of its last finished computation (initially the value when the control mounts). `sessionValue` is not used: `requestExports` (the path with default exports) does not update it.
+
+| Event of the customization                    | Slots of a parameter control whose value changed                                                                                                                                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| span opens, before `task.start`               | `computationstart`, when the customization opens a process manager. `task.start` remembers the task and the value. With no process manager, the slot runs on `task.start`.                                                |
+| `task.end`, then the span closes              | `computationend`, once the last process manager is gone and the scene from that computation exists. The task's value becomes the last computed value at `task.end`. With no process manager, the slot runs on `task.end`. |
+| `task.cancel`: `Session customization failed` | `computationerror`. The task is forgotten.                                                                                                                                                                                |
+| `task.cancel`: `The request was exceeded by…` | None. The task is forgotten. The newer customization still sees the changed value, so it includes the parameter.                                                                                                          |
+
+- **Accept mode:** the executor runs only when the accepted change is computed. A queued change runs nothing.
+- **Instances** (`customize_parallel`) change neither the values nor the scene node of the session. They run no parameter control slots.
+- **Value at `task.end`:** the value of the task at `task.start`, not the live one: with default exports the executor may already have set the next value while it uploads files. A task that ends after a newer one has ended changes nothing. A `File` is read again at the end, because `customize` replaces it by its upload id.
+- **Overlapping customizations:** a customization that starts while an earlier one with the changed value is still running includes the parameter too, so both run `computationend` (unless one is superseded).

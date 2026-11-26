@@ -209,3 +209,179 @@ describe("action slot schema", () => {
 		expect(result.success).toBe(false);
 	});
 });
+
+const controlsContainer = (control: unknown) => [
+	{
+		name: "left",
+		widgets: [{type: "controls", props: {controls: [control]}}],
+	},
+];
+
+const parameterControl = (control: Record<string, unknown> = {}) => ({
+	type: "parameter",
+	props: {name: "elements_select", sessionId: "default_appbuilder"},
+	...control,
+});
+
+describe("parameter control computation slots", () => {
+	it("accepts computation slots on a parameter control without eventProps", () => {
+		const result = validateAppBuilder(
+			layout(
+				undefined,
+				controlsContainer(
+					parameterControl({
+						actionSlots: {
+							computationstart: {action: undo},
+							computationend: [{action: undo}, {action: undo}],
+							computationerror: {action: undo},
+							click: {action: undo},
+							"custom:item-selected": {action: undo},
+						},
+					}),
+				),
+			),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts the example of the ticket", () => {
+		const result = validateAppBuilder(
+			layout(
+				undefined,
+				controlsContainer(
+					parameterControl({
+						actionSlots: {
+							computationend: {
+								action: {
+									type: "setContainerVisibility",
+									props: {
+										container: {
+											name: "anchor2d",
+											props: {id: "Artwork"},
+										},
+										mode: "close",
+									},
+								},
+							},
+						},
+					}),
+				),
+			),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects eventProps on a computation slot of a parameter control", () => {
+		for (const eventProps of [
+			{type: "session", props: {}},
+			{type: "session", props: {sessionId: "s1"}},
+			{type: "export", props: {}},
+		]) {
+			const result = validateAppBuilder(
+				layout(
+					undefined,
+					controlsContainer(
+						parameterControl({
+							actionSlots: {
+								computationend: {action: undo, eventProps},
+							},
+						}),
+					),
+				),
+			);
+			expect(result.success).toBe(false);
+		}
+	});
+
+	it("rejects computation slots inside props.overrides", () => {
+		const result = validateAppBuilder(
+			layout(
+				undefined,
+				controlsContainer({
+					type: "parameter",
+					props: {
+						name: "elements_select",
+						overrides: {
+							actionSlots: {computationend: {action: undo}},
+						},
+					},
+				}),
+			),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects other application events on a parameter control", () => {
+		for (const eventName of ["appready", "exportend", "selecton"]) {
+			const result = validateAppBuilder(
+				layout(
+					undefined,
+					controlsContainer(
+						parameterControl({
+							actionSlots: {[eventName]: {action: undo}},
+						}),
+					),
+				),
+			);
+			expect(result.success).toBe(false);
+		}
+	});
+
+	it("rejects computation slots on export, output, and action controls", () => {
+		const controls = [
+			{type: "export", props: {name: "Obj Export"}},
+			{type: "output", props: {name: "Output"}},
+			{type: "action", props: {definition: undo}},
+		];
+		for (const control of controls) {
+			for (const eventName of [
+				"computationstart",
+				"computationend",
+				"computationerror",
+			]) {
+				const result = validateAppBuilder(
+					layout(
+						undefined,
+						controlsContainer({
+							...control,
+							actionSlots: {[eventName]: {action: undo}},
+						}),
+					),
+				);
+				expect(result.success).toBe(false);
+			}
+		}
+	});
+
+	it("still accepts UI slots on export, output, and action controls", () => {
+		const controls = [
+			{type: "export", props: {name: "Obj Export"}},
+			{type: "output", props: {name: "Output"}},
+			{type: "action", props: {definition: undo}},
+		];
+		for (const control of controls) {
+			const result = validateAppBuilder(
+				layout(
+					undefined,
+					controlsContainer({
+						...control,
+						actionSlots: {click: {action: undo}},
+					}),
+				),
+			);
+			expect(result.success).toBe(true);
+		}
+	});
+
+	it("keeps the root computation slots with eventProps", () => {
+		const result = validateAppBuilder(
+			layout({
+				computationend: {
+					action: undo,
+					eventProps: {type: "session", props: {sessionId: "s1"}},
+				},
+			}),
+		);
+		expect(result.success).toBe(true);
+	});
+});

@@ -23,6 +23,7 @@ import {
 	readStringField,
 	registerAppBuilderCustomActionSlot,
 	runResolvedCustomSlots,
+	selectionSlotCacheKey,
 	selectionSlotGroupKey,
 	selectionSlotNameFilterKey,
 	SESSION_CUSTOMIZATION_FAILED_STATUS,
@@ -411,6 +412,16 @@ describe("appBuilderActionSlots helpers", () => {
 			expect.stringContaining("nameFilter"),
 		);
 		warn.mockRestore();
+	});
+
+	it("keeps each App Builder's selection cache separate", () => {
+		const nameFilter = ["Cabinet"];
+		expect(selectionSlotCacheKey("a", {nameFilter}, "vp")).not.toBe(
+			selectionSlotCacheKey("b", {nameFilter}, "vp"),
+		);
+		expect(selectionSlotCacheKey("a", {nameFilter}, "vp")).toBe(
+			selectionSlotCacheKey("a", {nameFilter}, "vp"),
+		);
 	});
 
 	it("groups selection slots by full effective config", () => {

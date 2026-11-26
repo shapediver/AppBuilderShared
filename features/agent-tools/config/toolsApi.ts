@@ -130,6 +130,12 @@ export interface IAgentConfigReply {
 	 * the latest thread when one exists.
 	 */
 	createThreadOnLoad?: boolean;
+	/**
+	 * Resolved `ask_user_question` setting: `true` when the agent may ask the
+	 * user questions. App Builder does not run this tool; the agent chat
+	 * registers it. Older hosts omit it; the agent then registers the tool.
+	 */
+	askUserQuestion?: boolean;
 }
 
 /**
@@ -137,12 +143,14 @@ export interface IAgentConfigReply {
  * `null` when `agents[]` is missing/empty. Strips other `IAppBuilderAgent`
  * fields. A missing or empty `profileName` is omitted so the agent uses its
  * default profile. History and load flags are resolved AgentUi values, not
- * fields of the agent.
+ * fields of the agent. `askUserQuestion` is resolved from the agent's generic
+ * tool settings by `isAskUserQuestionAllowed`.
  */
 export function agentConfigReplyFrom(
 	agent: IAgentConfigReply | null | undefined,
 	showThreadHistory?: boolean,
 	createThreadOnLoad?: boolean,
+	askUserQuestion?: boolean,
 ): IAgentConfigReply | null {
 	if (agent == null) {
 		return null;
@@ -160,6 +168,9 @@ export function agentConfigReplyFrom(
 	}
 	if (typeof createThreadOnLoad === "boolean") {
 		reply.createThreadOnLoad = createThreadOnLoad;
+	}
+	if (typeof askUserQuestion === "boolean") {
+		reply.askUserQuestion = askUserQuestion;
 	}
 	return reply;
 }

@@ -20,6 +20,7 @@ import type {
 } from "./appbuilderActions";
 import type {
 	IAppBuilderNodeActionSlots,
+	IAppBuilderParameterControlActionSlots,
 	IAppBuilderRootActionSlots,
 } from "./appbuilderActionSlots";
 import type {IAppBuilderAgent} from "./appbuilderagent";
@@ -48,6 +49,7 @@ export {
 	isRedoAction,
 	isResetCameraAction,
 	isResetParameterValuesAction,
+	isSelectionAction,
 	isSetBrowserLocationAction,
 	isSetCameraAction,
 	isSetContainerVisibilityAction,
@@ -73,6 +75,7 @@ export type {
 	IAppBuilderActionPropsMessageToParent,
 	IAppBuilderActionPropsRedo,
 	IAppBuilderActionPropsResetParameterValues,
+	IAppBuilderActionPropsSelection,
 	IAppBuilderActionPropsSetBrowserLocation,
 	IAppBuilderActionPropsSetContainerVisibility,
 	IAppBuilderActionPropsSetParameterValue,
@@ -93,6 +96,7 @@ export type {
 	IAppBuilderLegacyActionPropsMessageToParent,
 	IAppBuilderLegacyActionPropsRedo,
 	IAppBuilderLegacyActionPropsResetParameterValues,
+	IAppBuilderLegacyActionPropsSelection,
 	IAppBuilderLegacyActionPropsSetBrowserLocation,
 	IAppBuilderLegacyActionPropsSetContainerVisibility,
 	IAppBuilderLegacyActionPropsSetParameterValue,
@@ -101,6 +105,7 @@ export type {
 	IAppBuilderLegacyActionPropsUndo,
 	IAppBuilderPropsAnimateCamera,
 	IAppBuilderPropsAssignCamera,
+	IAppBuilderPropsCameraValues,
 	IAppBuilderPropsResetCamera,
 	IAppBuilderPropsSetCamera,
 	IAppBuilderPropsZoomToCamera,
@@ -111,6 +116,7 @@ export type {
 	AppBuilderCustomEventName,
 	AppBuilderInteractionEvent,
 	AppBuilderKnownEvent,
+	AppBuilderParameterComputationEvent,
 	AppBuilderUiEvent,
 	IAppBuilderActionSlot,
 	IAppBuilderActionSlotEventProps,
@@ -121,6 +127,7 @@ export type {
 	IAppBuilderActionSlots,
 	IAppBuilderExportActionSlot,
 	IAppBuilderNodeActionSlots,
+	IAppBuilderParameterControlActionSlots,
 	IAppBuilderPlainActionSlot,
 	IAppBuilderRootActionSlots,
 	IAppBuilderSelectionActionSlot,
@@ -429,6 +436,12 @@ export interface INumberParameterSettings {
 	restrictToMarks?: boolean;
 	/** Step increment for the slider. */
 	step?: number;
+	/**
+	 * Number of decimal places of the slider of a "Float" parameter (can only
+	 * reduce the parameter's decimal places). Values are sent with the decimal
+	 * places of the parameter, so a value which does not reduce them is ignored.
+	 */
+	decimalplaces?: number;
 	/** Override the minimum value of the slider (can only increase the parameter's min). */
 	min?: number;
 	/** Override the maximum value of the slider (can only decrease the parameter's max). */
@@ -502,6 +515,15 @@ export interface IAppBuilderNode {
 
 /** An App Builder control. */
 export interface IAppBuilderControl extends IAppBuilderNode {
+	/**
+	 * Actions assigned to events emitted by this control. A control of
+	 * `type: "parameter"` may also use `computationstart`, `computationend`,
+	 * and `computationerror` (without `eventProps`). Zod rejects them on
+	 * export, output, and action controls.
+	 *
+	 * @see [Action slots](../action-slots.md)
+	 */
+	actionSlots?: IAppBuilderParameterControlActionSlots;
 	/** Type of the control. */
 	type: AppBuilderControlType;
 	/** Properties of the control. */

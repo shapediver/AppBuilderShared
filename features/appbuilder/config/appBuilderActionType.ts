@@ -18,5 +18,6 @@ export enum AppBuilderActionType {
 	Sound = "sound",
 	MessageToParent = "messageToParent",
 	SetContainerVisibility = "setContainerVisibility",
+	Selection = "selection",
 	ExecuteActions = "executeActions",
 }

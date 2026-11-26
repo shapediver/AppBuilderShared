@@ -12,7 +12,7 @@ function renderFrame(ui: ReactNode) {
 }
 
 describe("AppBuilderIframeWidgetComponent", () => {
-	it("embeds an http url", async () => {
+	it("embeds an http url in Paper chrome", async () => {
 		renderFrame(
 			<AppBuilderIframeWidgetComponent
 				url="https://example.com/docs"
@@ -22,7 +22,9 @@ describe("AppBuilderIframeWidgetComponent", () => {
 		);
 		const frame = await screen.findByTitle("Docs");
 		expect(frame).toHaveAttribute("src", "https://example.com/docs");
-		expect(frame.parentElement).toHaveStyle({height: "40rem"});
+		const paper = frame.parentElement;
+		expect(paper).toHaveClass("mantine-Paper-root");
+		expect(paper).toHaveStyle({height: "40rem", overflow: "hidden"});
 		expect(
 			screen.getByRole("status", {name: "Loading"}),
 		).toBeInTheDocument();

@@ -7,6 +7,7 @@ import {ITreeNode} from "@shapediver/viewer.session";
 import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
+import {resolveSelectionInteractionFlags} from "./resolveSelectionInteractionFlags";
 import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
 import {useHoverManager} from "./useHoverManager";
 import {
@@ -44,6 +45,17 @@ export function useSelection(
 	 * removed by an output update are pruned from the selection.
 	 */
 	onPrune?: (names: string[]) => void,
+	/**
+	 * A deselection by the user which would drop a non-empty selection below
+	 * this number is refused (see useSelectManagerEvents).
+	 */
+	keptMinimumSelection = 0,
+	/**
+	 * Prune removed nodes while `activate` is false. A rectangle transform
+	 * turns selection off at its maximum, and an output update must still
+	 * drop a deleted node so the maximum can be filled again.
+	 */
+	pruneWhenInactive = false,
 ): ISelectionState & {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
@@ -79,6 +91,8 @@ export function useSelection(
 	const componentId = useId();
 	const onPruneRef = React.useRef(onPrune);
 	onPruneRef.current = onPrune;
+	const pruneWhenInactiveRef = React.useRef(pruneWhenInactive);
+	pruneWhenInactiveRef.current = pruneWhenInactive;
 	const [singleCandidateSuppressed, setSingleCandidateSuppressed] =
 		React.useState(false);
 
@@ -134,15 +148,20 @@ export function useSelection(
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
 	const {patterns} = useCreateNameFilterPattern(createNameFilterInput);
 
-	const {selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames} =
-		useSelectManagerEvents(
-			patterns,
-			componentId,
-			initialSelectedNodeNames,
-			strictNaming,
-			activate,
-			selectManager,
-		);
+	const {
+		selectedNodeNames,
+		setSelectedNodeNames,
+		getSelectedNodeNames,
+		resetSelectedNodeNames,
+	} = useSelectManagerEvents(
+		patterns,
+		componentId,
+		initialSelectedNodeNames,
+		strictNaming,
+		activate,
+		selectManager,
+		keptMinimumSelection,
+	);
 	const [restoreRevision, requestSelectionRestore] = React.useReducer(
 		(revision: number) => revision + 1,
 		0,
@@ -185,6 +204,11 @@ export function useSelection(
 		const nodesInteractionInput: {
 			[key: string]: IUseNodeInteractionDataProps;
 		} = {};
+		const interactionSettings = resolveSelectionInteractionFlags({
+			maximumSelection: selectionProps.maximumSelection,
+			hover: selectionProps.hover,
+			singleCandidateSuppressed,
+		});
 
 		if (patterns.outputPatterns) {
 			Object.entries(patterns.outputPatterns).forEach(
@@ -197,12 +221,7 @@ export function useSelection(
 							componentId,
 							outputId,
 							patterns: pattern,
-							interactionSettings: {
-								select: !singleCandidateSuppressed,
-								hover:
-									!singleCandidateSuppressed &&
-									selectionProps.hover,
-							},
+							interactionSettings,
 							selectManagerRef,
 							removeAvailableEffectsRef,
 							applyEffectsRef,
@@ -219,12 +238,7 @@ export function useSelection(
 					nodesInteractionInput[instanceId] = {
 						componentId,
 						patterns: pattern,
-						interactionSettings: {
-							select: !singleCandidateSuppressed,
-							hover:
-								!singleCandidateSuppressed &&
-								selectionProps.hover,
-						},
+						interactionSettings,
 						selectManagerRef,
 						removeAvailableEffectsRef,
 						strictNaming,
@@ -252,7 +266,7 @@ export function useSelection(
 	// to ensure that the selected nodes are still available
 	useEffect(() => {
 		// intentionally stale to only re-render when availableNodeNames changes
-		if (!activate) return;
+		if (!activate && !pruneWhenInactiveRef.current) return;
 		const previousAvailableNodeNames = prunedAvailableNodeNamesRef.current;
 		prunedAvailableNodeNamesRef.current = availableNodeNames;
 
@@ -448,6 +462,7 @@ export function useSelection(
 		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
+		getSelectedNodeNames,
 		resetSelectedNodeNames,
 		availableNodeNames: availableNodeNamesReturn,
 		setSelectedNodeNamesAndRestoreSelection,

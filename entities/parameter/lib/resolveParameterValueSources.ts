@@ -23,11 +23,7 @@ import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/crea
 import {getCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {
-	ResAssetDefinition,
-	ResExport,
-	ResStypeParameter,
-} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	Converter,
 	EXPORT_TYPE,
@@ -36,6 +32,11 @@ import {
 	PARAMETER_TYPE,
 } from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
+import {
+	createSdtfUploadCache,
+	formatSdtfParameterValue,
+	SdtfUploadCache,
+} from "./uploadSdtfAsset";
 
 export type ResolveParameterValueSourcesContext = {
 	namespace: string;
@@ -55,14 +56,51 @@ type SourceEntry = {
 	nestedSourceKeys?: Map<string, string>;
 };
 
-const createSourceKey = (source: IAppBuilderParameterValueSourceDefinition) =>
-	`${source.type + ""}|${JSON.stringify(source.props)}`;
+const createSourceKey = (
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => `${namespace ?? ""}|${source.type + ""}|${JSON.stringify(source.props)}`;
+
+/** Namespaces for which a source object is on the stack or already flattened. */
+type SourceVisits = WeakMap<
+	IAppBuilderParameterValueSourceDefinition,
+	Set<string>
+>;
+
+const visitNamespace = (namespace?: string) => namespace ?? "";
+
+const hasSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => visits.get(source)?.has(visitNamespace(namespace)) ?? false;
+
+const addSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => {
+	let namespaces = visits.get(source);
+	if (!namespaces) {
+		namespaces = new Set();
+		visits.set(source, namespaces);
+	}
+	namespaces.add(visitNamespace(namespace));
+};
+
+const removeSourceVisit = (
+	visits: SourceVisits,
+	source: IAppBuilderParameterValueSourceDefinition,
+	namespace?: string,
+) => {
+	visits.get(source)?.delete(visitNamespace(namespace));
+};
 
 function addSourceToFlatMap(
 	parameterInfo: ParameterValueDefinition,
 	map: Map<string, SourceEntry>,
-	resolving: WeakSet<IAppBuilderParameterValueSourceDefinition>,
-	resolved: WeakSet<IAppBuilderParameterValueSourceDefinition>,
+	resolving: SourceVisits,
+	resolved: SourceVisits,
 ) {
 	const {id, value, namespace} = parameterInfo;
 
@@ -73,15 +111,15 @@ function addSourceToFlatMap(
 	)
 		return;
 
-	if (resolving.has(value)) {
+	if (hasSourceVisit(resolving, value, namespace)) {
 		Logger.warn(
 			`Cycle detected while flattening Parameter Value Sources. Source with id '${id}' is already being resolved higher up in the call stack.`,
 		);
 		return;
 	}
-	if (resolved.has(value)) return;
+	if (hasSourceVisit(resolved, value, namespace)) return;
 
-	resolving.add(value);
+	addSourceVisit(resolving, value, namespace);
 
 	const nested = isExportSource(value) && value.props.parameterValues;
 	const nestedSourceKeys = new Map<string, string>();
@@ -98,7 +136,10 @@ function addSourceToFlatMap(
 				child !== null &&
 				isParameterSource(child)
 			) {
-				nestedSourceKeys.set(childKey, createSourceKey(child));
+				nestedSourceKeys.set(
+					childKey,
+					createSourceKey(child, nestedNamespace),
+				);
 			}
 
 			addSourceToFlatMap(
@@ -110,7 +151,7 @@ function addSourceToFlatMap(
 		}
 	}
 
-	const key = createSourceKey(value);
+	const key = createSourceKey(value, namespace);
 	if (!map.has(key)) {
 		map.set(key, {
 			index: map.size,
@@ -122,16 +163,16 @@ function addSourceToFlatMap(
 		});
 	}
 
-	resolving.delete(value);
-	resolved.add(value);
+	removeSourceVisit(resolving, value, namespace);
+	addSourceVisit(resolved, value, namespace);
 }
 
 function flattenSources(
 	parameterValues?: ParameterValueDefinition[],
 ): Map<string, SourceEntry> {
 	const map: Map<string, SourceEntry> = new Map();
-	const resolving = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
-	const resolved = new WeakSet<IAppBuilderParameterValueSourceDefinition>();
+	const resolving: SourceVisits = new WeakMap();
+	const resolved: SourceVisits = new WeakMap();
 
 	if (parameterValues) {
 		for (const param of parameterValues) {
@@ -316,7 +357,8 @@ async function resolveSdtf(
 	source: IAppBuilderParameterValueSourcePropsSdtf,
 	namespace: string,
 	uploadNamespace: string,
-	index: number,
+	uploadCache: SdtfUploadCache,
+	ensureProcessManager: () => string,
 ): Promise<string | undefined> {
 	const output = getOutput(source.sessionId || namespace, source.name);
 	if (!output) {
@@ -340,38 +382,21 @@ async function resolveSdtf(
 		return undefined;
 	}
 
-	const assetDefinition = fetch(output.content[0].href)
-		.then((response) => response.arrayBuffer())
-		.then(async (arrayBuffer) => {
-			const uploaded: ResAssetDefinition[] = await session.uploadSDTF([
-				arrayBuffer,
-			]);
-			const sdtfResponse: ResStypeParameter = {
-				asset: {id: uploaded[0].id},
-			};
-			if (source.chunk !== undefined) {
-				sdtfResponse.asset!.chunk = source.chunk;
-			}
-			return JSON.stringify(sdtfResponse, null, 2);
-		})
-		.catch((error) => {
-			Logger.warn(
-				"Could not resolve sdTF parameter value source.",
-				error,
-			);
-			return undefined;
-		});
-
-	const {createProcessManager, addProcess} =
-		useShapeDiverStoreProcessManager.getState();
-	const processManagerId = createProcessManager(namespace);
-	addProcess(processManagerId, {
-		id: `sdtf-${source.name}-${index}`,
-		name: `sdTF: ${source.name}`,
-		promise: assetDefinition,
+	const {addProcess} = useShapeDiverStoreProcessManager.getState();
+	const assetId = await uploadCache.uploadAsset({
+		uploadNamespace,
+		url: output.content[0].href,
+		session,
+		onUploadStart: (upload, uploadKey) => {
+			addProcess(ensureProcessManager(), {
+				id: `sdtf-${uploadKey}`,
+				name: `sdTF: ${source.name}`,
+				promise: upload,
+			});
+		},
 	});
-
-	return assetDefinition;
+	if (!assetId) return undefined;
+	return formatSdtfParameterValue(assetId, source.chunk);
 }
 
 async function resolveExport(
@@ -436,7 +461,8 @@ async function resolveOne(
 	id: string,
 	namespace: string,
 	context: ResolveParameterValueSourcesContext,
-	index: number,
+	uploadCache: SdtfUploadCache,
+	ensureProcessManager: () => string,
 ): Promise<unknown> {
 	const parameter = findSessionParameter(namespace, id);
 	if (!parameter) {
@@ -495,7 +521,13 @@ async function resolveOne(
 			);
 			return undefined;
 		}
-		return resolveSdtf(source.props, context.namespace, namespace, index);
+		return resolveSdtf(
+			source.props,
+			context.namespace,
+			namespace,
+			uploadCache,
+			ensureProcessManager,
+		);
 	}
 	if (isExportSource(source)) {
 		if (type !== PARAMETER_TYPE.FILE) {
@@ -565,6 +597,15 @@ export async function resolveParameterValueSources(
 
 	const flat = flattenSources(parameterValues);
 	const resolvedMap = new Map<string, unknown>();
+	const uploadCache = createSdtfUploadCache();
+	const {createProcessManager} = useShapeDiverStoreProcessManager.getState();
+	let processManagerId: string | undefined;
+	const ensureProcessManager = () => {
+		if (processManagerId === undefined) {
+			processManagerId = createProcessManager(context.namespace);
+		}
+		return processManagerId;
+	};
 	let pending = Array.from(flat.values());
 
 	while (pending.length > 0) {
@@ -589,56 +630,50 @@ export async function resolveParameterValueSources(
 				`Cannot resolve ${pending.length} sources. Possible circular dependency or missing nested sources.`,
 			);
 			for (const entry of pending) {
-				resolvedMap.set(createSourceKey(entry.source), undefined);
+				resolvedMap.set(
+					createSourceKey(entry.source, entry.namespace),
+					undefined,
+				);
 			}
 			break;
 		}
 
 		const values = await Promise.all(
-			ready.map((entry, index) =>
+			ready.map((entry) =>
 				resolveOne(
 					sourceWithResolvedNestedValues(entry, resolvedMap),
 					entry.id,
 					entry.namespace || context.namespace,
 					context,
-					index,
+					uploadCache,
+					ensureProcessManager,
 				),
 			),
 		);
 
 		const readyIndexes = new Set(ready.map((entry) => entry.index));
 		for (let i = 0; i < ready.length; i++) {
-			resolvedMap.set(createSourceKey(ready[i].source), values[i]);
+			resolvedMap.set(
+				createSourceKey(ready[i].source, ready[i].namespace),
+				values[i],
+			);
 		}
 		pending = pending.filter((entry) => !readyIndexes.has(entry.index));
 	}
 
-	const topLevelParameterToIndex: Record<string, number> = {};
-	for (const param of parameterValues) {
-		const {id, value} = param;
-		if (
-			typeof value === "object" &&
-			value !== null &&
-			isParameterSource(value)
-		) {
-			const entry = flat.get(createSourceKey(value));
-			if (entry) topLevelParameterToIndex[id] = entry.index;
-		}
-	}
-
-	const flatArray = Array.from(flat.values());
 	return parameterValues.map((param) => {
-		const {id, value} = param;
+		const {value} = param;
 		if (
 			typeof value === "object" &&
 			value !== null &&
 			isParameterSource(value)
 		) {
-			const index = topLevelParameterToIndex[id];
-			const resolvedValue =
-				index !== undefined
-					? resolvedMap.get(createSourceKey(flatArray[index].source))
-					: undefined;
+			const entry = flat.get(createSourceKey(value, param.namespace));
+			const resolvedValue = entry
+				? resolvedMap.get(
+						createSourceKey(entry.source, entry.namespace),
+					)
+				: undefined;
 			return resolvedValue !== undefined ? resolvedValue + "" : "";
 		}
 		return value + "";

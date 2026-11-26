@@ -5,6 +5,7 @@ import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
+import {useLocalComputeSaveReload} from "./useLocalComputeSaveReload";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 
 interface Props {
@@ -14,6 +15,11 @@ interface Props {
 	 * id is already loaded from the theme or settings, or used by an instance.
 	 */
 	appBuilderData: IAppBuilder | undefined;
+	/**
+	 * Model view URL and ticket of the controller session. A local controller
+	 * looks slugs up among the other local Grasshopper documents first.
+	 */
+	controller?: {modelViewUrl?: string; ticket?: string};
 }
 
 type EmbeddedSession = IUseSessionDto & IAppBuilderSettingsSession;
@@ -59,7 +65,7 @@ async function closeTrackedSession(sessionId: string): Promise<boolean> {
  * output lists it. Adding or removing one session does not recreate the others.
  */
 export function useAppBuilderSessions(props: Props) {
-	const {namespace, appBuilderData} = props;
+	const {namespace, appBuilderData, controller} = props;
 	const eventTracking = useEventTracking();
 	/** Ids this hook has accepted, so a later parse does not treat them as theme sessions. */
 	const createdSessionIdsRef = useRef<{namespace: string; ids: string[]}>({
@@ -189,7 +195,15 @@ export function useAppBuilderSessions(props: Props) {
 		sessions: sessionData,
 		error: platformError,
 		resolveErrors,
-	} = useResolveAppBuilderSessions(sessionsForResolve, false, true);
+	} = useResolveAppBuilderSessions(
+		sessionsForResolve,
+		false,
+		true,
+		controller,
+	);
+	useLocalComputeSaveReload(
+		(sessionData ?? []).map((session) => session.modelViewUrl),
+	);
 
 	// Close sessions that left the output, or whose slug changed. Sessions
 	// that are still listed stay open while the next list is resolving.

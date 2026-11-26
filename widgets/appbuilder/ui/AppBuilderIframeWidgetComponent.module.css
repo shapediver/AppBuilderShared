@@ -2,7 +2,6 @@
 	position: relative;
 	width: 100%;
 	min-height: 12rem;
-	background: var(--mantine-color-body);
 }
 
 .pending {

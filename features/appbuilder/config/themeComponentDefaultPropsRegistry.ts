@@ -13,7 +13,6 @@ import {SelectGridComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entitie
 import {
 	ParameterDrawingComponentThemeDefaultPropsSchema,
 	parameterInteractionConfirmCancelClearThemeSchema,
-	parameterInteractionConfirmCancelThemeSchema,
 } from "@AppBuilderLib/entities/parameter/config/theme/parameterInteractionButtonTheme";
 import {ParameterSliderComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent.types";
 import {DefaultSessionThemeDefaultPropsSchema} from "@AppBuilderLib/entities/session/config/DefaultSession.theme.types";
@@ -58,6 +57,7 @@ import {AppBuilderAttributeVisualizationWidgetComponentThemeDefaultPropsSchema} 
 import {AppBuilderBarChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderBarChartWidgetComponent.theme.types";
 import {AppBuilderControlsWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderControlsWidgetComponent.theme.types";
 import {AppBuilderFormWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderFormWidgetComponent.theme.types";
+import {AppBuilderIframeWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderIframeWidgetComponent.theme.types";
 import {AppBuilderImageThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderImage.theme.types";
 import {AppBuilderLineChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderLineChartWidgetComponent.theme.types";
 import {AppBuilderPdfEmbedThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderPdfEmbed.theme.types";
@@ -117,6 +117,8 @@ export const themeComponentDefaultPropsRegistry = {
 	AppBuilderGridTemplatePage:
 		AppBuilderGridTemplatePageThemeDefaultPropsSchema,
 	AppBuilderHorizontalContainer: mantineGroupPropsSchema,
+	AppBuilderIframeWidgetComponent:
+		AppBuilderIframeWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderImage: AppBuilderImageThemeDefaultPropsSchema,
 	AppBuilderPdfEmbed: AppBuilderPdfEmbedThemeDefaultPropsSchema,
 	AppBuilderLineChartWidgetComponent:
@@ -159,7 +161,7 @@ export const themeComponentDefaultPropsRegistry = {
 	OutputStargateComponent: OutputStargateComponentThemeDefaultPropsSchema,
 	ParameterColorComponent: ParameterColorComponentThemeDefaultPropsSchema,
 	ParameterDraggingComponent: IDraggingParameterPropsJsonSchema.and(
-		parameterInteractionConfirmCancelThemeSchema,
+		parameterInteractionConfirmCancelClearThemeSchema,
 	),
 	ParameterDrawingComponent: ParameterDrawingComponentThemeDefaultPropsSchema,
 	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema.and(

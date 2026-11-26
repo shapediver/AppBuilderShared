@@ -4,8 +4,12 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {resolveAutomaticSceneUpdate} from "@AppBuilderLib/entities/parameter/lib/automaticSceneUpdate";
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
-import {hasLocalTransformationDelta} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
+import {
+	hasLocalTransformationDelta,
+	hasSelectedLocalTransformationDelta,
+} from "@AppBuilderLib/entities/parameter/lib/transformedNodes";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
@@ -45,6 +49,7 @@ import {useInteractionEnginePause} from "../model/interaction/useInteractionEngi
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterResetRow from "./ParameterResetRow";
 
@@ -190,6 +195,10 @@ export default function ParameterRectangleTransformComponent(
 	);
 	const [rectangleTransformActive, setRectangleTransformActive] =
 		useState(false);
+	// suspended while another interaction runs in the viewport: no hover, no
+	// preview, no selection and no gizmo until it ends (the selection is kept)
+	const [rectangleTransformSuspended, setRectangleTransformSuspended] =
+		useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -211,14 +220,16 @@ export default function ParameterRectangleTransformComponent(
 		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
+		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
+		keptMinimumSelection,
 	} = useRectangleTransform(
 		sessionDependencies,
 		viewportId,
 		rectangleTransformProps,
-		rectangleTransformActive,
+		rectangleTransformActive && !rectangleTransformSuspended,
 		parseTransformation(value),
 		true,
 		executing,
@@ -244,8 +255,6 @@ export default function ParameterRectangleTransformComponent(
 
 	const automaticallyActivated =
 		alwaysActive || rectangleTransformProps.activeMode === "activeOnStart";
-	const [rectangleTransformSuspended, setRectangleTransformSuspended] =
-		useState(false);
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: interactionOwnerKey,
@@ -257,6 +266,29 @@ export default function ParameterRectangleTransformComponent(
 		automaticallyActivated,
 		candidateNodes,
 		active: rectangleTransformActive,
+	});
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: interactionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		// the same default as the selection of the rectangle transform
+		maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
+		// a click refuses a deselect below this (0 unless the parameter is exclusive)
+		minimumSelection: keptMinimumSelection,
+		nameFilter: combinedSelectionNameFilter(
+			rectangleTransformProps.nameFilter,
+			rectangleTransformProps.objects,
+		),
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
+		// a user cannot select either: an exclusive selection would clear the
+		// rectangle of the owner without showing one
+		enabled: !ownershipBlocked,
 	});
 	const rectangleTransformRegistered =
 		rectangleTransformActive && !ownershipBlocked;
@@ -461,11 +493,18 @@ export default function ParameterRectangleTransformComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	// Automatic scene update (always active tools only): a moved handle sends
-	// the transformation like Confirm would, debounced by the timeout. The
-	// identity transformations emitted on creation of the gizmo are not sent.
+	// Automatic scene update (always active tools only): a moved handle of the
+	// selected object sends the transformation like Confirm would, debounced
+	// by the timeout. The identity matrix emitted when its gizmo is created
+	// is not sent. A local matrix left on an object that is no longer
+	// selected is a move already made, and must not be sent again when the
+	// selected gizmo is created on the updated nodes.
 	const hasLocalTransformation =
 		hasLocalTransformationDelta(transformedNodeNames);
+	const hasSelectedLocalTransformation = hasSelectedLocalTransformationDelta(
+		transformedNodeNames,
+		selectedNodeNames,
+	);
 	// A move while a request is in flight is not sent: after our own request
 	// the gizmo is recreated on the new nodes and the move is dropped; after
 	// another parameter's execution the move is sent once it ends.
@@ -476,7 +515,7 @@ export default function ParameterRectangleTransformComponent(
 			seenTransformedNodeNamesRef.current !== transformedNodeNames;
 		seenTransformedNodeNamesRef.current = transformedNodeNames;
 		if (!automaticSceneUpdate || !effectiveRectangleActive) return;
-		if (!hasLocalTransformation) {
+		if (!hasSelectedLocalTransformation) {
 			movedWhileExecutingRef.current = false;
 			return;
 		}
@@ -489,7 +528,7 @@ export default function ParameterRectangleTransformComponent(
 		if (!moved && !movedWhileExecutingRef.current) return;
 		movedWhileExecutingRef.current = false;
 		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
-	}, [transformedNodeNames, executing]);
+	}, [transformedNodeNames, selectedNodeNames, executing]);
 
 	// Clear: the committed transformations are undone (the parameter is reset
 	// to its default value and executed), a pending transformation is dropped.
@@ -525,7 +564,19 @@ export default function ParameterRectangleTransformComponent(
 		persistent: alwaysActive,
 		allowToolbarPopoverDismissal: rectanglePresentation === "toolbar",
 		onDisable: resetTransformation,
-		onSuspend: () => setRectangleTransformSuspended(true),
+		onSuspend: () => {
+			// another interaction cancels an unconfirmed move, like Cancel (a
+			// scheduled automatic update is still sent); the gizmo created on
+			// resume would not offer Confirm / Cancel for it
+			if (!automaticSceneUpdate && hasLocalTransformation) {
+				closeTransform();
+				restoreTransformedNodeNames(
+					structuredClone(lastConfirmedValue),
+					structuredClone(transformedNodeNames),
+				);
+			}
+			setRectangleTransformSuspended(true);
+		},
 		onResume: () => setRectangleTransformSuspended(false),
 		setDisableOtherParameters: actions.setDisableOtherParameters,
 	});
@@ -587,7 +638,7 @@ export default function ParameterRectangleTransformComponent(
 			{!automaticSceneUpdate && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
 					<Button
-						disabled={transformedNodeNames.length === 0}
+						disabled={!hasLocalTransformation}
 						fullWidth={true}
 						variant="filled"
 						onClick={() => changeValue(transformedNodeNames)}
@@ -595,6 +646,7 @@ export default function ParameterRectangleTransformComponent(
 						<Text>{confirmButton.label}</Text>
 					</Button>
 					<Button
+						disabled={!hasLocalTransformation}
 						fullWidth={true}
 						variant={"light"}
 						onClick={resetTransformation}
@@ -631,10 +683,6 @@ export default function ParameterRectangleTransformComponent(
 			</Text>
 		</Button>
 	);
-	const hasPendingTransformation =
-		JSON.stringify(transformedNodeNames) !==
-		JSON.stringify(lastConfirmedValue);
-
 	// Register with interaction toolbar if presentation is "toolbar"
 
 	useInteractionToolbarContribution({
@@ -669,7 +717,7 @@ export default function ParameterRectangleTransformComponent(
 		// with automatic scene updates a moved handle is sent after the idle
 		// timeout: there is nothing to confirm or cancel, only Clear remains
 		commands: [
-			...(hasPendingTransformation && !automaticSceneUpdate
+			...(hasLocalTransformation && !automaticSceneUpdate
 				? [
 						createToolbarCommand({
 							id: `${namespace}-${definition.id}-${viewportId}-confirm`,
@@ -678,7 +726,7 @@ export default function ParameterRectangleTransformComponent(
 							tooltip: confirmButton.tooltip,
 							icon: confirmButton.icon,
 							order: 10,
-							disabled: !hasPendingTransformation,
+							disabled: !hasLocalTransformation,
 							execute: () => changeValue(transformedNodeNames),
 						}),
 						createToolbarCommand({
@@ -688,7 +736,7 @@ export default function ParameterRectangleTransformComponent(
 							tooltip: cancelButton.tooltip,
 							icon: cancelButton.icon,
 							order: 20,
-							disabled: !hasPendingTransformation,
+							disabled: !hasLocalTransformation,
 							execute: resetTransformation,
 						}),
 					]

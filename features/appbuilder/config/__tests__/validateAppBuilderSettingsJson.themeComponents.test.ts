@@ -37,6 +37,7 @@ jest.mock("@shapediver/viewer.shared.types", () => {
 			enableRotation: z.boolean().optional(),
 			enableScaling: z.boolean().optional(),
 			enableTranslation: z.boolean().optional(),
+			exclusive: z.boolean().optional(),
 		}),
 		IDraggingParameterPropsJsonSchema: z.object({
 			draggingColor: z.string().optional(),
@@ -153,6 +154,11 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 	{
 		component: "AppBuilderTextWidgetComponent",
 		validDefaultProps: {shadow: "sm", withBorder: true},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "AppBuilderIframeWidgetComponent",
+		validDefaultProps: {shadow: "md", withBorder: true, px: 0, py: 0},
 		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{

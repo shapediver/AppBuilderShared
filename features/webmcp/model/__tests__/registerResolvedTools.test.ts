@@ -1,6 +1,9 @@
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
 import type {ExecutableSpecificTool} from "@AppBuilderLib/features/agent-tools/config/resolveSpecificTools";
-import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
+import {
+	resolveToolset,
+	type ResolvedGenericTool,
+} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
 import {INPUT_SCHEMA_BY_TOOL} from "@AppBuilderLib/features/agent-tools/config/schemaFor";
 import {AGENT_TOOL_META} from "@AppBuilderLib/features/agent-tools/config/toolMeta";
 import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApiConnector";
@@ -100,5 +103,24 @@ describe("registerResolvedTools specific tools", () => {
 			"get_screenshot",
 			"set_length",
 		]);
+	});
+
+	it("never registers ask_user_question, even when the agent allows it", async () => {
+		const registerTool = jest.fn(async () => undefined);
+		const modelContext = {registerTool} as unknown as ModelContext;
+		const resolved = resolveToolset({
+			genericTools: [{name: "ask_user_question"}],
+		});
+
+		await registerResolvedTools(
+			modelContext,
+			resolved,
+			{} as IToolsApiHandlerMap,
+			new AbortController().signal,
+		);
+
+		const names = registerTool.mock.calls.map((call) => call[0].name);
+		expect(names).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
+		expect(names).not.toContain("ask_user_question");
 	});
 });

@@ -7,6 +7,7 @@ import {
 	IAppBuilderActionPropsImportModelStateSchema,
 	IAppBuilderActionPropsRedoSchema,
 	IAppBuilderActionPropsResetParameterValuesSchema,
+	IAppBuilderActionPropsSelectionSchema,
 	IAppBuilderActionPropsSetParameterValueSchema,
 	IAppBuilderActionPropsSetParameterValuesSchema,
 	IAppBuilderActionPropsSoundSchema,
@@ -227,6 +228,9 @@ const INumberParameterSettingsSchema = z.object({
 		)
 		.optional(),
 	restrictToMarks: z.boolean().optional(),
+	// Number.prototype.toFixed accepts 0 to 100. An invalid value is ignored
+	// instead of invalidating the other settings.
+	decimalplaces: z.int().min(0).max(100).optional().catch(undefined),
 	min: z.number().optional(),
 	max: z.number().optional(),
 });
@@ -472,6 +476,12 @@ const IAppBuilderLegacyActionPropsMessageToParentSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+// Zod type definition for IAppBuilderLegacyActionPropsSelection
+const IAppBuilderLegacyActionPropsSelectionSchema =
+	IAppBuilderActionPropsSelectionSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Assigned after IAppBuilderActionDefinitionSchemaBase so nested executeActions
 // can recursively validate IAppBuilderActionDefinition values.
 // eslint-disable-next-line prefer-const -- declaration must precede the recursive schema body
@@ -562,6 +572,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.MessageToParent),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Selection),
+		props: IAppBuilderLegacyActionPropsSelectionSchema,
 	}),
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.ExecuteActions),
@@ -711,6 +725,10 @@ const IAppBuilderActionDefinitionSchemaBase = z.discriminatedUnion("type", [
 		props: IAppBuilderActionPropsMessageToParentSchema,
 	}),
 	z.strictObject({
+		type: z.literal(AppBuilderActionType.Selection),
+		props: IAppBuilderActionPropsSelectionSchema,
+	}),
+	z.strictObject({
 		type: z.literal(AppBuilderActionType.ExecuteActions),
 		props: IAppBuilderActionPropsExecuteActionsSchema,
 	}),
@@ -851,10 +869,27 @@ const IAppBuilderRootActionSlotsSchema = actionSlotsSchema({
 	hoveroff: actionSlotList(IAppBuilderSelectionActionSlotSchema).optional(),
 });
 
-function appBuilderNodeObject<T extends z.ZodRawShape>(shape: T) {
+/**
+ * Controls of `type: "parameter"`. The computation events run when that
+ * parameter was part of a customization. The control's `name` and `sessionId`
+ * identify the parameter, so these are plain slots (no `eventProps`).
+ */
+const IAppBuilderParameterControlActionSlotsSchema = actionSlotsSchema({
+	...nodeActionSlotShape,
+	computationstart: plainActionSlotListSchema.optional(),
+	computationend: plainActionSlotListSchema.optional(),
+	computationerror: plainActionSlotListSchema.optional(),
+});
+
+function appBuilderNodeObject<T extends z.ZodRawShape>(
+	shape: T,
+	actionSlots:
+		| typeof IAppBuilderNodeActionSlotsSchema
+		| typeof IAppBuilderParameterControlActionSlotsSchema = IAppBuilderNodeActionSlotsSchema,
+) {
 	return z.strictObject({
 		...shape,
-		actionSlots: IAppBuilderNodeActionSlotsSchema.optional(),
+		actionSlots: actionSlots.optional(),
 	});
 }
 
@@ -882,10 +917,13 @@ const IAppBuilderControlOutputRefSchema = z
 
 // Zod type definition for IAppBuilderControl
 const IAppBuilderControlSchema = z.discriminatedUnion("type", [
-	appBuilderNodeObject({
-		type: z.literal("parameter"),
-		props: IAppBuilderControlParameterRefSchema,
-	}),
+	appBuilderNodeObject(
+		{
+			type: z.literal("parameter"),
+			props: IAppBuilderControlParameterRefSchema,
+		},
+		IAppBuilderParameterControlActionSlotsSchema,
+	),
 	appBuilderNodeObject({
 		type: z.literal("export"),
 		props: IAppBuilderControlExportRefSchema,

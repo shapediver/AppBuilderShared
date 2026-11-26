@@ -38,6 +38,7 @@ import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {useLocalComputeSaveReload} from "./useLocalComputeSaveReload";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;
@@ -60,6 +61,11 @@ interface Props {
 	 * instance process will be spawned for that manager.
 	 */
 	onProcessManagerAttached?: (processManagerId: string | undefined) => void;
+	/**
+	 * Model view URL and ticket of the controller session. A local controller
+	 * looks slugs up among the other local Grasshopper documents first.
+	 */
+	controller?: {modelViewUrl?: string; ticket?: string};
 }
 
 type IParsedInstanceDefinition = {
@@ -85,6 +91,7 @@ export function useAppBuilderInstances(props: Props) {
 		appBuilderData,
 		processManagerId: sessionProcessManagerId,
 		onProcessManagerAttached,
+		controller,
 	} = props;
 
 	const {
@@ -285,7 +292,18 @@ export function useAppBuilderInstances(props: Props) {
 
 	// from the incoming slugs, retrieve the session data from the platform
 	const {sessions: sessionData, error: platformError} =
-		useResolveAppBuilderSessions(embeddedSessions, false);
+		useResolveAppBuilderSessions(
+			embeddedSessions,
+			false,
+			false,
+			controller,
+		);
+	// reload the page when a local document that serves an instance is saved
+	useLocalComputeSaveReload(
+		(appBuilderData?.instances ?? []).map(
+			(instance) => sessions[instance.sessionId]?.modelViewUrl,
+		),
+	);
 
 	// add some necessary flags to the resolved sessions
 	const resolvedSessions = useMemo(() => {
@@ -300,7 +318,7 @@ export function useAppBuilderInstances(props: Props) {
 		return sessionData;
 	}, [sessionData]);
 
-	// create the sessions
+	// create the sessions. useSessions subscribes to a localhost model view.
 	const {errors: sessionErrors} = useSessions(resolvedSessions ?? []);
 
 	useEffect(() => {

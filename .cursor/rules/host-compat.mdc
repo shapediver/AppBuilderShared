@@ -1,0 +1,26 @@
+---
+description: AppBuilderShared runs in several hosts. Modules that AppBuilderIJewel3D (WebGI) imports must not pull in @shapediver/viewer.viewport or viewer.features.*. Read before changing shared code.
+alwaysApply: false
+---
+
+# Shared code must work in every host
+
+Hosts: AppBuilderSdk (ShapeDiver viewer), AppBuilderIJewel3D / AppBuilderWebGI (WebGI renderer), AppBuilderAgent, and other forks.
+
+Importing `@shapediver/viewer.viewport` and `@shapediver/viewer.features.*` in shared is fine in general. The one constraint: **AppBuilderIJewel3D does not depend on those packages**, so no module on *its* import path may pull them in, directly or through a barrel.
+
+## iJewel's import path
+- iJewel typechecks and bundles only what its entry `src/AppBuilderRoot.tsx` imports, transitively. It imports shared modules by concrete file path, never through barrels.
+- To list exactly which shared files are on that path, in `../AppBuilderIJewel3D` run: `npx tsc -p . --listFilesOnly | rg src/shared`
+- Known members include `AppBuilderPage`, agent tools, application action slots, the e-commerce connector, the standard parameter UIs, `waitForAppBuilderViewport` and `resolveViewportIdFromStore`. The list above is the source of truth.
+
+## Rules for files on that path
+- Don't add imports that reach `@shapediver/viewer.viewport`, `@shapediver/viewer.features.*` or `useShapeDiverStoreViewport`. Put viewport-specific behavior behind host registration (`componentContext`, the action catalog, the `waitUntilReady` registry) instead.
+- Don't switch a deep import to a barrel (`entities/parameter`, `.../ui`), and don't move code so it is only reachable through a barrel.
+- Before renaming or removing an export, `rg` for it in the iJewel checkout too. Prefer additive APIs.
+- Everywhere in shared: no `webgi` imports and no host-specific hacks.
+
+## Verify a shared change that adds or moves imports in a file on iJewel's path
+1. Build the iJewel host against the change. In `../AppBuilderIJewel3D` (only if its working tree is clean): `git -C src/shared fetch origin`, `git -C src/shared checkout --detach <shared commit>`, then `npx tsc --noEmit -p .` and `pnpm build`. Afterwards check out the previous shared commit again.
+2. If the build fails only because iJewel's shared is far behind `development` (unrelated drift), report that and don't block. Otherwise fix it in shared.
+Changes to files that are not on iJewel's path need no iJewel check.

@@ -42,10 +42,11 @@ type InteractionPresentationSettings = {
 };
 
 /**
- * Selection, gumball and rectangle transform (parameter type `Interaction`,
- * told apart by `settings.type`) keep their settings in `props`; the drawing
- * (parameter type `Drawing`) keeps `activeMode` / `presentation` in `general`
- * (see the settings validation of the parameter components).
+ * Selection, gumball, rectangle transform and dragging (parameter type
+ * `Interaction`, told apart by `settings.type`) keep their settings in
+ * `props`; the drawing (parameter type `Drawing`) keeps `activeMode` /
+ * `presentation` in `general` (see the settings validation of the parameter
+ * components).
  */
 type InteractionSettings = {
 	type?: string;
@@ -80,8 +81,6 @@ export function isParameterControlEmpty(
 		return false;
 	}
 	props ??= {};
-	// dragging defaults to the widget presentation in every active mode
-	if (settings?.type === "dragging") return props.presentation === "toolbar";
 	return (
 		resolveInteractionPresentation(
 			props.presentation,

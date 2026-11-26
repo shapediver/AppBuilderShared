@@ -48,6 +48,7 @@ import {
 	usePendingSelectionRegistry,
 } from "../model/interaction/usePendingSelectionRegistry";
 import {useSelection} from "../model/interaction/useSelection";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import {useSelectionActivationState} from "../model/interaction/useSelectionActivationState";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
 import {useSuspendedSelectionRestore} from "../model/interaction/useSuspendedSelectionRestore";
@@ -276,6 +277,27 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNames,
 		requestSelectionRestore,
 	});
+	// An action sets the selected names the way a click does. The effect below
+	// submits when the selection accepts itself. That change must not be
+	// swallowed by skipNextAutomaticConfirmationRef.
+	const commitActionSelectionRef = useRef(false);
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: selectionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		maximumSelection,
+		nameFilter: selectionProps.nameFilter,
+		setSelectedNames: (names) => {
+			commitActionSelectionRef.current = true;
+			setSelectedNodeNames(names);
+		},
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
+	});
 
 	const acceptable =
 		selectedNodeNames.length >= minimumSelection &&
@@ -432,10 +454,13 @@ export default function ParameterSelectionComponent(
 	const changeValueRef = useRef(changeValue);
 	changeValueRef.current = changeValue;
 	useEffect(() => {
-		if (skipNextAutomaticConfirmationRef.current) {
+		const fromAction = commitActionSelectionRef.current;
+		commitActionSelectionRef.current = false;
+		if (skipNextAutomaticConfirmationRef.current && !fromAction) {
 			skipNextAutomaticConfirmationRef.current = false;
 			return;
 		}
+		skipNextAutomaticConfirmationRef.current = false;
 		// A selection equal to the committed value has nothing to confirm (e.g. a
 		// committed value adopted into the selection, or a pruned selection which
 		// was committed without a computation). A cleared selection is the
@@ -443,7 +468,7 @@ export default function ParameterSelectionComponent(
 		if (!hasPendingSelection && !clearedSinceLastConfirmationRef.current)
 			return;
 		if (acceptImmediately) changeValueRef.current(selectedNodeNames);
-	}, [acceptImmediately, selectedNodeNames]);
+	}, [acceptImmediately, hasPendingSelection, selectedNodeNames]);
 
 	/**
 	 * Callback function to reset the selected node names.
@@ -556,7 +581,10 @@ export default function ParameterSelectionComponent(
 	});
 	const clearButton = resolveParameterInteractionButtonTheme(
 		clearButtonTheme,
-		{label: `Clear ${toolbarLabel}`, icon: "tabler:circle-off"},
+		{
+			label: `Clear ${toolbarLabel}`,
+			icon: "tabler:circle-off",
+		},
 	);
 	const confirmButton = resolveParameterInteractionButtonTheme(
 		confirmButtonTheme,

@@ -9,7 +9,20 @@ import {
 	MaterialEngine,
 	POST_PROCESSING_EFFECT_TYPE,
 } from "@shapediver/viewer.viewport";
+import {Logger} from "./logger";
 
+/** Invalid effects already reported, so a re-render does not repeat the warning. */
+const reportedInvalidEffects = new Set<string>();
+
+/**
+ * Parse an interaction effect (selection, hover, available or dragging color).
+ *
+ * Accepted: a color string, a material definition, an outline post-processing
+ * effect, or a pulse effect. Any other object (e.g. `{"type": null}`) is
+ * dropped with a warning and `undefined` is returned, so the caller falls back
+ * to its default effect. Passing it on would make the viewer treat it as an
+ * outline effect it never created, which throws and unmounts the app.
+ */
 export const parseInteractionEffect = async (
 	effect?:
 		| string
@@ -44,5 +57,13 @@ export const parseInteractionEffect = async (
 		// we received a pulse effect
 		return effect as IPulseEffectDefinition;
 	}
-	return effect;
+
+	const stringified = JSON.stringify(effect);
+	if (!reportedInvalidEffects.has(stringified)) {
+		reportedInvalidEffects.add(stringified);
+		Logger.warn(
+			`Ignoring invalid interaction effect ${stringified}: "type" must be a material type, "outline" or "pulse". The default effect is used instead.`,
+		);
+	}
+	return undefined;
 };

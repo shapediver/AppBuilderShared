@@ -1,6 +1,7 @@
-import type {
-	GenericToolSettings,
-	IAppBuilderAgent,
+import {
+	GenericToolName,
+	type GenericToolSettings,
+	type IAppBuilderAgent,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {
 	defaultSettingsFor,
@@ -15,12 +16,25 @@ export type ResolvedGenericTool = {
 	settings: GenericToolSettings;
 };
 
+/**
+ * Listed generic tools. The agent config is not validated at runtime, so
+ * `genericTools` may arrive as something other than an array (e.g. an object);
+ * that is treated as "nothing listed", as are entries that are not objects.
+ */
+function listedGenericTools(listed: unknown): GenericToolSettings[] {
+	if (!Array.isArray(listed)) return [];
+	return listed.filter(
+		(tool): tool is GenericToolSettings =>
+			typeof tool === "object" && tool !== null,
+	);
+}
+
 /** Last listed settings per tool name. Used only when defaults are on. */
 function genericToolsByName(
 	listed: GenericToolSettings[] | undefined,
 ): Map<string, GenericToolSettings> {
 	const map = new Map<string, GenericToolSettings>();
-	for (const tool of listed ?? []) {
+	for (const tool of listedGenericTools(listed)) {
 		map.set(tool.name, tool);
 	}
 	return map;
@@ -30,7 +44,8 @@ function genericToolsByName(
  * In-scope generic tools for one agent (or defaults when `agent` is missing).
  * `useGenericToolDefaults !== false` → every in-scope name, overlay from `genericTools`.
  * `useGenericToolDefaults === false` → listed in-scope tools only (`genericToolsByName` unused).
- * `specificTools` and `ask_user_question` are ignored.
+ * `specificTools` and `ask_user_question` are ignored
+ * (see {@link isAskUserQuestionAllowed}).
  */
 export function resolveToolset(
 	agent:
@@ -41,7 +56,7 @@ export function resolveToolset(
 
 	if (agent && agent.useGenericToolDefaults === false) {
 		const resolved: ResolvedGenericTool[] = [];
-		for (const tool of agent.genericTools ?? []) {
+		for (const tool of listedGenericTools(agent.genericTools)) {
 			if (!isInScopeGenericToolName(tool.name)) continue;
 			if (!isGenericToolSettingsFor(tool, tool.name)) continue;
 			resolved.push({name: tool.name, settings: tool});
@@ -57,4 +72,23 @@ export function resolveToolset(
 				: defaultSettingsFor(name);
 		return {name, settings};
 	});
+}
+
+/**
+ * Whether the agent may use `ask_user_question`. App Builder never runs it;
+ * the Agent chat registers it when this is `true` (sent on `getAgentConfig`).
+ * `useGenericToolDefaults !== false` (or no agent) → allowed.
+ * `useGenericToolDefaults === false` → allowed only when `genericTools` lists it.
+ */
+export function isAskUserQuestionAllowed(
+	agent:
+		| Pick<IAppBuilderAgent, "useGenericToolDefaults" | "genericTools">
+		| undefined,
+): boolean {
+	if (agent && agent.useGenericToolDefaults === false) {
+		return listedGenericTools(agent.genericTools).some(
+			(tool) => tool.name === GenericToolName.AskUserQuestion,
+		);
+	}
+	return true;
 }

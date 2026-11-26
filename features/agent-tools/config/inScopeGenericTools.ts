@@ -4,8 +4,10 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 
 /**
- * Generic tools the agent can call.
+ * Generic tools App Builder runs for the agent.
  * Excludes `ask_user_question` and `get_metric`.
+ * `ask_user_question` is only an allow/block setting: the Agent chat runs it
+ * (see `isAskUserQuestionAllowed`).
  * `get_metric` stays in the agent schema so saved apps still load, and is ignored.
  */
 export type InScopeGenericToolName = Exclude<
@@ -41,8 +43,6 @@ export function isGenericToolSettingsFor<N extends InScopeGenericToolName>(
 ): settings is Extract<GenericToolSettings, {name: N}> {
 	return settings.name === name;
 }
-
-export const ASK_USER_QUESTION_TOOL_NAME = GenericToolName.AskUserQuestion;
 
 type DefaultGenericToolSettings = {
 	[K in InScopeGenericToolName]: Extract<GenericToolSettings, {name: K}>;

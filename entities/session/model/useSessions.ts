@@ -1,6 +1,7 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useLocalComputeSaveReload} from "@AppBuilderLib/features/appbuilder/model/useLocalComputeSaveReload";
 import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
@@ -43,6 +44,7 @@ export function useSessions(
 	const promiseChain = useRef(Promise.resolve());
 
 	const eventTracking = useEventTracking();
+	useLocalComputeSaveReload(props.map((session) => session.modelViewUrl));
 
 	useEffect(() => {
 		promiseChain.current = promiseChain.current.then(async () => {

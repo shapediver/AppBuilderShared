@@ -12,6 +12,7 @@ import AppBuilderActionImportParameterValuesComponent from "./AppBuilderActionIm
 import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
 import AppBuilderActionRedoComponent from "./AppBuilderActionRedoComponent";
 import AppBuilderActionResetParameterValuesComponent from "./AppBuilderActionResetParameterValuesComponent";
+import AppBuilderActionSelectionComponent from "./AppBuilderActionSelectionComponent";
 import AppBuilderActionSetBrowserLocationComponent from "./AppBuilderActionSetBrowserLocationComponent";
 import AppBuilderActionSetContainerVisibilityComponent from "./AppBuilderActionSetContainerVisibilityComponent";
 import AppBuilderActionSetParameterValuesComponent from "./AppBuilderActionSetParameterValuesComponent";
@@ -95,6 +96,10 @@ export const sharedAppBuilderActions: Record<
 			AppBuilderActionType.SetContainerVisibility
 		],
 		component: AppBuilderActionSetContainerVisibilityComponent,
+	},
+	[AppBuilderActionType.Selection]: {
+		...defaultAppBuilderActionRuns[AppBuilderActionType.Selection],
+		component: AppBuilderActionSelectionComponent,
 	},
 	[AppBuilderActionType.ExecuteActions]: {
 		isAction: isExecuteActionsAction,

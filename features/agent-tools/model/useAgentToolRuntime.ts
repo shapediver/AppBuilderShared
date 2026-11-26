@@ -6,6 +6,7 @@ import {
 	type ExecutableSpecificTool,
 } from "../config/resolveSpecificTools";
 import {
+	isAskUserQuestionAllowed,
 	resolveToolset,
 	type ResolvedGenericTool,
 } from "../config/resolveToolset";
@@ -43,6 +44,11 @@ export type UseAgentToolRuntimeResult = {
 	 * Passed into ToolsApi `getAgentConfig` (parameterized, not a singleton).
 	 */
 	agentConfig: IAppBuilderAgent | undefined;
+	/**
+	 * Whether the agent may use `ask_user_question` ({@link isAskUserQuestionAllowed}).
+	 * Sent on ToolsApi `getAgentConfig`; never a WebMCP or ToolsApi tool.
+	 */
+	askUserQuestion: boolean;
 };
 
 /**
@@ -86,10 +92,7 @@ export function useAgentToolRuntime(
 		namespace: namespace ?? "",
 		appBuilderData,
 		resolvedGenericTools,
-		resolvedSpecificTools: resolveSpecificTools(
-			agentConfig,
-			resolvedGenericTools.map((tool) => tool.name),
-		),
+		resolvedSpecificTools: resolveSpecificTools(agentConfig),
 	});
 
 	return {
@@ -98,5 +101,6 @@ export function useAgentToolRuntime(
 		toolHandlers,
 		snapshotComplete,
 		agentConfig,
+		askUserQuestion: isAskUserQuestionAllowed(agentConfig),
 	};
 }

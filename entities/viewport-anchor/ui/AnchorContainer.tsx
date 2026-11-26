@@ -7,6 +7,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
 import {EMPTY_CONTENT_ATTRIBUTE} from "@AppBuilderLib/features/appbuilder/lib/isContainerEmpty";
 import {overlayDefinedFields} from "@AppBuilderLib/features/appbuilder/lib/overlayDefinedFields";
@@ -45,6 +46,7 @@ import type {JSX} from "react";
 import {
 	default as React,
 	useCallback,
+	useContext,
 	useEffect,
 	useMemo,
 	useRef,
@@ -52,6 +54,7 @@ import {
 } from "react";
 import {useShallow} from "zustand/react/shallow";
 import {IAnchor2d, IAnchor3d} from "../config/shapediverStoreViewportAnchors";
+import {anchorFillsContainer} from "../lib/anchorFillsContainer";
 import {anchorPointerEvents} from "../lib/anchorPointerEvents";
 import {cleanUnit, toCanvasPixels} from "../lib/utils";
 import {useAnchorSelection} from "../model/useAnchorSelection";
@@ -60,6 +63,21 @@ import {useCanvasSize} from "../model/useCanvasSize";
 import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {ViewportAnchorProps2d} from "./ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "./ViewportAnchor3d";
+
+/**
+ * Passes the orientation of the container this renders in. Below the mobile
+ * breakpoint that is the standard container receiving the anchor content.
+ */
+function WithContainerOrientation(props: {
+	children: (
+		orientation: React.ContextType<
+			typeof AppBuilderContainerContext
+		>["orientation"],
+	) => React.ReactNode;
+}) {
+	const {orientation} = useContext(AppBuilderContainerContext);
+	return <>{props.children(orientation)}</>;
+}
 
 export interface ViewportAnchorProps {
 	/** If the anchor allows pointer events */
@@ -627,55 +645,85 @@ export function useAnchorContainer({
 	 * Here we have a group with the icons and a group with the main element.
 	 */
 	const inner = (
-		<Stack
-			gap={0}
-			key={id}
-			{...anchorStackProps}
-			p={useContainer ? undefined : appBuilderPanelSpacing}
-		>
-			{(hasDragIcon || hasCloseIcon) && (
-				<Flex
-					ref={updateControlElementGroupRef}
-					align="center"
-					style={{
-						width: "100%",
-						pointerEvents: "auto",
-					}}
-				>
-					<Box style={{flex: 1}} />
-					<Group ta="center">{hasDragIcon && dragIconElement}</Group>
-					<Group
-						style={{
-							flex: 1,
-							display: "flex",
-							justifyContent: "flex-end",
-						}}
+		<WithContainerOrientation key={id}>
+			{(orientation) => {
+				const fill = anchorFillsContainer({
+					aboveMobileBreakpoint,
+					orientation,
+				});
+				return (
+					<Stack
+						gap={0}
+						{...anchorStackProps}
+						h={fill ? "100%" : anchorStackProps?.h}
+						p={useContainer ? undefined : appBuilderPanelSpacing}
 					>
-						{hasCloseIcon && closeIconElement}
-					</Group>
-				</Flex>
-			)}
-			<Group
-				w={aboveMobileBreakpoint ? width : "100%"}
-				h={aboveMobileBreakpoint ? height : "100%"}
-				style={{
-					overflow: "auto",
-				}}
-			>
-				<ScrollArea
-					h={"100%"}
-					w={"100%"}
-					style={{
-						maxWidth: aboveMobileBreakpoint ? maxWidth : "100%",
-						maxHeight: aboveMobileBreakpoint ? maxHeight : "100%",
-					}}
-					className={shellClasses.addShellWidgetsContainer}
-					type="auto"
-				>
-					{element}
-				</ScrollArea>
-			</Group>
-		</Stack>
+						{(hasDragIcon || hasCloseIcon) && (
+							<Flex
+								ref={updateControlElementGroupRef}
+								align="center"
+								style={{
+									width: "100%",
+									pointerEvents: "auto",
+								}}
+							>
+								<Box style={{flex: 1}} />
+								<Group ta="center">
+									{hasDragIcon && dragIconElement}
+								</Group>
+								<Group
+									style={{
+										flex: 1,
+										display: "flex",
+										justifyContent: "flex-end",
+									}}
+								>
+									{hasCloseIcon && closeIconElement}
+								</Group>
+							</Flex>
+						)}
+						{fill ? (
+							// lay out like the container's own content: no
+							// scroll area, so percentage heights resolve
+							<Group
+								wrap="nowrap"
+								gap={appBuilderPanelSpacing}
+								style={{flex: 1, minHeight: 0, minWidth: 0}}
+							>
+								{element}
+							</Group>
+						) : (
+							<Group
+								w={aboveMobileBreakpoint ? width : "100%"}
+								h={aboveMobileBreakpoint ? height : "100%"}
+								style={{
+									overflow: "auto",
+								}}
+							>
+								<ScrollArea
+									h={"100%"}
+									w={"100%"}
+									style={{
+										maxWidth: aboveMobileBreakpoint
+											? maxWidth
+											: "100%",
+										maxHeight: aboveMobileBreakpoint
+											? maxHeight
+											: "100%",
+									}}
+									className={
+										shellClasses.addShellWidgetsContainer
+									}
+									type="auto"
+								>
+									{element}
+								</ScrollArea>
+							</Group>
+						)}
+					</Stack>
+				);
+			}}
+		</WithContainerOrientation>
 	);
 
 	/**

@@ -1,3 +1,4 @@
+import {combinedSelectionNameFilter} from "@AppBuilderLib/entities/parameter/lib/combinedSelectionNameFilter";
 import {SentValues} from "@AppBuilderLib/entities/parameter/lib/sentValues";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useAutomaticSceneUpdatePointerHold} from "@AppBuilderLib/entities/parameter/model/useAutomaticSceneUpdatePointerHold";
@@ -36,12 +37,16 @@ import {
 import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
 import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import {resolveAutomaticSceneUpdate} from "../lib/automaticSceneUpdate";
-import {hasLocalTransformationDelta} from "../lib/transformedNodes";
+import {
+	hasLocalTransformationDelta,
+	hasSelectedLocalTransformationDelta,
+} from "../lib/transformedNodes";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useGumball} from "../model/interaction/useGumball";
 import {useInteractionEnginePause} from "../model/interaction/useInteractionEngine";
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
+import {useSelectionActionTarget} from "../model/interaction/useSelectionActionTarget";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
@@ -184,6 +189,9 @@ export default function ParameterGumballComponent(
 		alwaysActive,
 	);
 	const [gumballActive, setGumballActive] = useState(false);
+	// suspended while another interaction runs in the viewport: no hover, no
+	// selection and no gizmo until it ends (the selection is kept)
+	const [gumballSuspended, setGumballSuspended] = useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -205,6 +213,7 @@ export default function ParameterGumballComponent(
 		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
+		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 		closeTransform,
@@ -212,13 +221,30 @@ export default function ParameterGumballComponent(
 		sessionDependencies,
 		viewportId,
 		gumballProps,
-		gumballActive,
+		gumballActive && !gumballSuspended,
 		parseTransformation(value),
 		true,
 		executing,
 		// editing is paused during a computation, like the other parameters
 		busy,
 	);
+	// Used only when a selection action names this parameter.
+	useSelectionActionTarget({
+		ownerKey: interactionOwnerKey,
+		candidateNodes,
+		selectedNodeNames,
+		maximumSelection: gumballProps.maximumSelection ?? Infinity,
+		nameFilter: combinedSelectionNameFilter(
+			gumballProps.nameFilter,
+			gumballProps.objects,
+		),
+		setSelectedNames: setSelectedNodeNames,
+		parameter: {
+			namespace,
+			id: definition.id,
+			name: definition.name,
+		},
+	});
 
 	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";
 	const confirmButton = resolveParameterInteractionButtonTheme(
@@ -236,7 +262,6 @@ export default function ParameterGumballComponent(
 
 	const automaticallyActivated =
 		alwaysActive || gumballProps.activeMode === "activeOnStart";
-	const [gumballSuspended, setGumballSuspended] = useState(false);
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: interactionOwnerKey,
@@ -450,11 +475,18 @@ export default function ParameterGumballComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	// Automatic scene update (always active tools only): a moved handle sends
-	// the transformation like Confirm would, debounced by the timeout. The
-	// identity transformations emitted on creation of the gizmo are not sent.
+	// Automatic scene update (always active tools only): a moved handle of the
+	// selected object sends the transformation like Confirm would, debounced
+	// by the timeout. The identity matrix emitted when its gizmo is created
+	// is not sent. A local matrix left on an object that is no longer
+	// selected is a move already made, and must not be sent again when the
+	// selected gizmo is created on the updated nodes.
 	const hasLocalTransformation =
 		hasLocalTransformationDelta(transformedNodeNames);
+	const hasSelectedLocalTransformation = hasSelectedLocalTransformationDelta(
+		transformedNodeNames,
+		selectedNodeNames,
+	);
 	// A move while a request is in flight is not sent: after our own request
 	// the gizmo is recreated on the new nodes and the move is dropped; after
 	// another parameter's execution the move is sent once it ends.
@@ -465,7 +497,7 @@ export default function ParameterGumballComponent(
 			seenTransformedNodeNamesRef.current !== transformedNodeNames;
 		seenTransformedNodeNamesRef.current = transformedNodeNames;
 		if (!automaticSceneUpdate || !effectiveGumballActive) return;
-		if (!hasLocalTransformation) {
+		if (!hasSelectedLocalTransformation) {
 			movedWhileExecutingRef.current = false;
 			return;
 		}
@@ -478,7 +510,7 @@ export default function ParameterGumballComponent(
 		if (!moved && !movedWhileExecutingRef.current) return;
 		movedWhileExecutingRef.current = false;
 		changeValue(transformedNodeNames, automaticSceneUpdateTimeout);
-	}, [transformedNodeNames, executing]);
+	}, [transformedNodeNames, selectedNodeNames, executing]);
 
 	// Clear: the committed transformations are undone (the parameter is reset
 	// to its default value and executed), a pending transformation is dropped.
@@ -514,7 +546,19 @@ export default function ParameterGumballComponent(
 		persistent: alwaysActive,
 		allowToolbarPopoverDismissal: gumballPresentation === "toolbar",
 		onDisable: resetTransformation,
-		onSuspend: () => setGumballSuspended(true),
+		onSuspend: () => {
+			// another interaction cancels an unconfirmed move, like Cancel (a
+			// scheduled automatic update is still sent); the gizmo created on
+			// resume would not offer Confirm / Cancel for it
+			if (!automaticSceneUpdate && hasLocalTransformation) {
+				closeTransform();
+				restoreTransformedNodeNames(
+					structuredClone(lastConfirmedValue),
+					structuredClone(transformedNodeNames),
+				);
+			}
+			setGumballSuspended(true);
+		},
 		onResume: () => setGumballSuspended(false),
 		setDisableOtherParameters: actions.setDisableOtherParameters,
 	});

@@ -1,9 +1,11 @@
+import {subscribeParameterCommitted} from "@AppBuilderLib/entities/parameter/model/parameterCommitNotice";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	APP_BUILDER_CUSTOM_EVENT_PATTERN,
 	type AppBuilderApplicationEvent,
 	type AppBuilderCustomEventName,
 	type AppBuilderInteractionEvent,
+	type AppBuilderParameterComputationEvent,
 	type AppBuilderUiEvent,
 	type IAppBuilderActionSlot,
 	type IAppBuilderActionSlotEventProps,
@@ -291,6 +293,154 @@ export function isSessionCustomizationFailedTask(event: {
 }
 
 /**
+ * Viewer `TASK_CATEGORY.SESSION_CUSTOMIZATION.CUSTOMIZE_PARALLEL`: an
+ * instance computation, which changes neither the parameter values nor the
+ * scene node of the session.
+ */
+export const SESSION_CUSTOMIZATION_PARALLEL_CATEGORY = "customize_parallel";
+
+/** Fields of a viewer `ITaskEvent` read by a {@link ComputationTaskFilter}. */
+export type ComputationTaskEvent = {
+	id: string;
+	type?: string;
+	category?: string;
+	status?: string;
+	data?: unknown;
+};
+
+/**
+ * Decides which session customization task events run the computation
+ * slots of a node: `start` for `computationstart` (TASK_START), `end` for
+ * `computationend` (TASK_END), `cancel` for `computationerror` (TASK_CANCEL).
+ * Each is called for every session customization task event.
+ */
+export interface ComputationTaskFilter {
+	start(event: ComputationTaskEvent): boolean;
+	end(event: ComputationTaskEvent): boolean;
+	cancel(event: ComputationTaskEvent): boolean;
+	/**
+	 * Whether the parameter's current value differs from the last computed
+	 * one. A computation span opens before TASK_START, after the executor has
+	 * set the value, and uses this so `computationstart` can run then.
+	 */
+	matchesCurrentChange(): boolean;
+	/**
+	 * Listen for commits. Call again after {@link dispose}: React runs the
+	 * effect cleanup and then the effect once more, and the filter object
+	 * stays the one created in `useMemo`.
+	 */
+	listen(): () => void;
+	/** Stop listening for commits of this parameter. */
+	dispose(): void;
+}
+
+/**
+ * Filter for the computation slots of a parameter control. The task events
+ * carry only the session id, so a customization counts for the parameter
+ * when, at TASK_START, its value differs from the last computed one (the
+ * executor sets the value before it customizes). `sessionValue` is not used:
+ * `requestExports` (default exports) does not update it.
+ *
+ * At TASK_END the value of the task becomes the last computed one, unless a
+ * newer task has already ended. The live value is not used in general: the
+ * executor may already have set the next value while it uploads files. Only
+ * a `File` is read again at the end, as `customize` replaces it by its id.
+ *
+ * A failed customization runs `computationerror`. A superseded one is
+ * forgotten: the newer customization still sees the changed value.
+ *
+ * A `commit` that sets the value without a customization becomes the last
+ * computed value. The ending task does not put its start value back.
+ */
+export function createParameterComputationTaskFilter(
+	sessionId: string,
+	parameterId: string,
+	getValue: () => unknown,
+): ComputationTaskFilter {
+	let lastComputedValue = getValue();
+	let startedTasks = 0;
+	let lastEndedTask = 0;
+	const tasks = new Map<
+		string,
+		{order: number; value: unknown; committed: boolean}
+	>();
+	const onCommitted = (value: unknown) => {
+		lastComputedValue = value;
+		for (const task of tasks.values()) task.committed = true;
+	};
+	let stopListening: (() => void) | undefined;
+	const ensureListening = () => {
+		if (stopListening) return;
+		stopListening = subscribeParameterCommitted(
+			sessionId,
+			parameterId,
+			onCommitted,
+		);
+	};
+	const stop = () => {
+		stopListening?.();
+		stopListening = undefined;
+	};
+	ensureListening();
+	return {
+		start(event) {
+			if (event.type !== SESSION_CUSTOMIZATION_TASK_TYPE) return false;
+			if (event.category === SESSION_CUSTOMIZATION_PARALLEL_CATEGORY)
+				return false;
+			if (
+				readStringField(event.data, ["sessionId", "session"]) !==
+				sessionId
+			)
+				return false;
+			const value = getValue();
+			if (value === lastComputedValue) return false;
+			tasks.set(event.id, {
+				order: ++startedTasks,
+				value,
+				committed: false,
+			});
+			return true;
+		},
+		end(event) {
+			const task = tasks.get(event.id);
+			if (!task) return false;
+			tasks.delete(event.id);
+			if (task.order > lastEndedTask) {
+				lastEndedTask = task.order;
+				if (!task.committed) {
+					lastComputedValue =
+						task.value instanceof Blob ? getValue() : task.value;
+				}
+			}
+			return true;
+		},
+		cancel(event) {
+			if (!tasks.delete(event.id)) return false;
+			return isSessionCustomizationFailedTask(event);
+		},
+		matchesCurrentChange() {
+			return getValue() !== lastComputedValue;
+		},
+		listen() {
+			ensureListening();
+			return stop;
+		},
+		dispose: stop,
+	};
+}
+
+/**
+ * Computation events of a parameter control (the root has the same names,
+ * see {@link APP_BUILDER_APPLICATION_EVENTS}). They are run by
+ * `AppBuilderParameterComputationSlots`, not by the DOM wrapper of the control.
+ */
+export const APP_BUILDER_PARAMETER_COMPUTATION_EVENTS = [
+	"computationstart",
+	"computationend",
+	"computationerror",
+] as const satisfies readonly AppBuilderParameterComputationEvent[];
+
+/**
  * Events valid on the App Builder root: application events plus viewport
  * pointer/`click` (those attach to the viewport host, not to a UI node).
  */
@@ -309,6 +459,10 @@ export const APP_BUILDER_SLOT_EVENTS = {
 	tab: APP_BUILDER_UI_EVENTS,
 	container: APP_BUILDER_UI_EVENTS,
 	control: APP_BUILDER_UI_EVENTS,
+	parameterControl: [
+		...APP_BUILDER_UI_EVENTS,
+		...APP_BUILDER_PARAMETER_COMPUTATION_EVENTS,
+	],
 	toolbar: APP_BUILDER_UI_EVENTS,
 	viewport: APP_BUILDER_UI_EVENTS,
 	application: APP_BUILDER_APPLICATION_EVENTS,
@@ -577,6 +731,19 @@ export function selectionSlotNameFilterKey(
 		viewportId: eventProps?.viewportId ?? viewportId,
 		nameFilter: normalizedNameFilter(eventProps) ?? null,
 	});
+}
+
+/**
+ * Cache key for one root's selection. {@link selectionSlotGroupKey} ignores
+ * the namespace, and two App Builders can share a viewport and the same
+ * selection config.
+ */
+export function selectionSlotCacheKey(
+	namespace: string,
+	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
+	viewportId: string,
+): string {
+	return `${namespace}\0${selectionSlotGroupKey(eventProps, viewportId)}`;
 }
 
 /**

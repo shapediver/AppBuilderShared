@@ -88,6 +88,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		createThreadOnLoad?: boolean,
 		modelState?: IToolsApiModelStateHandlers,
 		refreshJwtToken?: () => Promise<string>,
+		askUserQuestion?: boolean,
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
@@ -122,6 +123,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 					agentConfig,
 					showThreadHistory,
 					createThreadOnLoad,
+					askUserQuestion,
 				),
 			),
 		);
@@ -238,6 +240,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 		createThreadOnLoad?: boolean,
 		modelState?: IToolsApiModelStateHandlers,
 		refreshJwtToken?: () => Promise<string>,
+		askUserQuestion?: boolean,
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -258,6 +261,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 			createThreadOnLoad,
 			modelState,
 			refreshJwtToken,
+			askUserQuestion,
 		);
 	}
 }
