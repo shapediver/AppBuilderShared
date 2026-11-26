@@ -7,16 +7,23 @@ jest.mock("@shapediver/viewer.session", () => ({
 	},
 }));
 
-jest.mock("@shapediver/viewer.viewport", () => ({
-	MaterialEngine: {
-		instance: {
-			createMaterialDataFromDefinition: jest.fn(async (definition) => ({
-				material: definition,
-			})),
+// Virtual: hosts without the ShapeDiver viewport (iJewel) don't install this package.
+jest.mock(
+	"@shapediver/viewer.viewport",
+	() => ({
+		MaterialEngine: {
+			instance: {
+				createMaterialDataFromDefinition: jest.fn(
+					async (definition) => ({
+						material: definition,
+					}),
+				),
+			},
 		},
-	},
-	POST_PROCESSING_EFFECT_TYPE: {OUTLINE: "outline"},
-}));
+		POST_PROCESSING_EFFECT_TYPE: {OUTLINE: "outline"},
+	}),
+	{virtual: true},
+);
 
 jest.mock("../logger", () => ({
 	Logger: {warn: (...args: unknown[]) => warn(...args)},
