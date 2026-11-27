@@ -144,11 +144,13 @@ export default function ParameterDraggingComponent(
 		const result = validateDraggingParameterSettings(definition.settings);
 		if (result.success) {
 			const validated = result.data.props as IDraggingParameterProps;
-			if (!validated.draggingColor)
+			// null means "no effect" and must not be replaced by the default
+			if (validated.draggingColor === undefined)
 				validated.draggingColor = draggingColor;
-			if (!validated.availableColor)
+			if (validated.availableColor === undefined)
 				validated.availableColor = availableColor;
-			if (!validated.hoverColor) validated.hoverColor = hoverColor;
+			if (validated.hoverColor === undefined)
+				validated.hoverColor = hoverColor;
 			return validated;
 		} else {
 			notifications.error({

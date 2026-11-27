@@ -158,9 +158,12 @@ export default function ParameterGumballComponent(
 		);
 		if (result.success) {
 			const props = result.data.props as IGumballTransformParameterProps;
-			if (!props.selectionColor) props.selectionColor = selectionColor;
-			if (!props.availableColor) props.availableColor = availableColor;
-			if (!props.hoverColor) props.hoverColor = hoverColor;
+			// null means "no effect" and must not be replaced by the default
+			if (props.selectionColor === undefined)
+				props.selectionColor = selectionColor;
+			if (props.availableColor === undefined)
+				props.availableColor = availableColor;
+			if (props.hoverColor === undefined) props.hoverColor = hoverColor;
 			return props;
 		} else {
 			notifications.error({
